@@ -1,0 +1,13 @@
+function G = fcn(th, g, l1, l2, m1, m2, a1 ,a2)
+%#codegen
+th1 = th(1);
+th2 = th(2);
+
+
+Gmatrix = [...
+	g*(a1*m1*sin(th1) + a1*m2*sin(th1) - l1*m1*sin(th1) + a2*m2*sin(th1 + th2) - l2*m2*sin(th1 + th2));...
+	g*m2*sin(th1 + th2)*(a2 - l2)...
+	];
+ 
+G = Gmatrix; % Even though it's a vector...
+
