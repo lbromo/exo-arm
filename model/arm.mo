@@ -15,6 +15,7 @@ AngularVelocity w1_0[1,3](start=0);
 AngularVelocity w2_0[1,3](start=0);
 AngularAcceleration a1_0[1,3] (start=0);
 AngularAcceleration a2_0[1,3] (start=0);
+AngularAcceleration a1_1[1,3] (start=0);
 
 // Denavit-hartenberg parameters for rotation matrices
 final parameter Length a1=0.25;
@@ -41,6 +42,9 @@ final parameter Mass lowerArmMass = lowerArmDim[1,1]*lowerArmDim[1,2]*lowerArmDi
 
 // Gravitational acceleration in 0 coordinates
 final parameter Acceleration g0[1,4]=[9.81, 0, 0, 0];
+
+final parameter FircotionCoefficient B1=0.1;
+final parameter FircotionCoefficient B2=0.1;
 
 // Rotation matrices
 Real T01[4,4];
@@ -111,10 +115,11 @@ I2_0 = T01[1:3,1:3]*I2*T01[1:3,1:3];
 //k1 = sum(0.5*(m1+upperArmMass)*transpose(v1)*v1+0.5*w1_0*I1_0*transpose(w1_0));
 //k2 = sum(0.5*(m2+lowerArmMass)*transpose(v2)*v2+0.5*w2_0*I2_0*transpose(w2_0));
 
-w1_1 = [0, 0, der(thetaShoulder)];
-w2_2 = [0, 0, der(thetaElbow)];
-
 a1_0 = der(w1_0);
 a2_0 = der(w2_0);
+a1_1 = der(w1_1);
+
+tau1 = I1 * a1_1 - w1_1 * B1 - l1 * (m1+upperArmMass);
+
 
 end arm;
