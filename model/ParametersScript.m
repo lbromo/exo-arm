@@ -66,5 +66,5 @@ plotopt = { 'floorlevel',-0.1, ...
             'jvec',...
             'noshadow'};
 
-arm = SerialLink(L, 'name', 'Exoskeleton','plotopt',plotopt);
-save('SerialLinkCC','arm');
+params.arm = SerialLink(L, 'name', 'Exoskeleton','plotopt',plotopt);
+%save('SerialLinkCC','arm');

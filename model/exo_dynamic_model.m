@@ -1,10 +1,8 @@
 function [xdot] = exo_dynamic_model(t, x,torque, params)
-
-  x;
-
   theta = x(1:2);
   thetadot = x(3:4);
 
+  params.arm.plot(theta');
 %
 % initheta=[0 0];
 % inithetad=[0 0];
