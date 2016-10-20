@@ -4,11 +4,9 @@ function [xdot] = exo_dynamic_model(t, x, torque, params)
   theta = x(1:2);
   thetadot = x(3:4);
 
-  if t > 0.1
+  if t > 5
     torque = [0; 0];
   end
-
-  t
 
   %params.arm.plot(theta');
 %
