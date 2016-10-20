@@ -1,8 +1,14 @@
 function [xdot] = exo_dynamic_model(t, x,torque, params)
+	persistent t_clk;
+
+	if isempty(t_clk)
+		t_clk = 1;
+	end
+
   theta = x(1:2);
   thetadot = x(3:4);
 
-  params.arm.plot(theta');
+ 
 %
 % initheta=[0 0];
 % inithetad=[0 0];
@@ -17,5 +23,14 @@ function [xdot] = exo_dynamic_model(t, x,torque, params)
   thetadotdot = Minv*(torque-V-G-F);
 
   xdot = [thetadot; thetadotdot];
+telaps = toc;
+
+if telaps > t_clk
+	params.arm.plot(theta');
+	t
+	timestr = sprintf('%4.1f sec elapsed, %3.1f %% of the way', telaps, (t-1)*100/2);
+	t_clk = t_clk + 1;
+	disp(timestr)
+end
 
 end
