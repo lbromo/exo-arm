@@ -1,7 +1,7 @@
 
 void setup(){
 
-	Serial.Begin(9600);
+	Serial.begin(9600);
 
 }
 
