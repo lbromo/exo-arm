@@ -1,4 +1,5 @@
-#define SAMPLE_F 1000 // Hz
+#define SAMPLE_F 4 // Hz
+#define SAMPLE_T_MS 1000 * 1/SAMPLE_F
 #define START_CHAR '$'
 #define SHOULDER 1
 #define ELBOW 2
@@ -67,24 +68,42 @@ int getVel(int joint){
 	}
 }
 
+void sendMeas(int joint, unsigned long time, int ang, int vel, int cur){
+
+Serial.println(START_CHAR);
+Serial.print(',');
+Serial.print(joint);
+Serial.print(',');
+Serial.print(time);
+Serial.print(',');
+Serial.print(ang);
+Serial.print(',');
+Serial.print(vel);
+Serial.print(',');
+Serial.println(cur);
+
+}
 
 void loop(){
 
-int vel1, cur1, angle1;
-int vel2, cur2, angle2;
+int t_start;
+int vel1, cur1, ang1;
+int vel2, cur2, ang2;
+unsigned long time; 
 
-angle1 = getPos(SHOULDER);
+t_start = millis();
+
+ang1 = getPos(SHOULDER);
 cur1 = getCur(SHOULDER);
 vel1 = getVel(SHOULDER);
+time = millis();
+sendMeas(SHOULDER, time, ang1, vel1, cur1);
 
-angle2 = getPos(ELBOW);
+ang2 = getPos(ELBOW);
 cur2 = getCur(ELBOW);
 vel2 = getVel(ELBOW);
+sendMeas(ELBOW, time, ang2, vel2, cur2);
 
-Serial.print(START_CHAR);
-Serial.print(SHOULDER);
-Serial.print(vel1);
-Serial.print(cur1);
-Serial.println(angle1);
+while((time+SAMPLE_T_MS) > millis());
 
 }
