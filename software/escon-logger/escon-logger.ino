@@ -85,6 +85,6 @@ Serial.print(START_CHAR);
 Serial.print(SHOULDER);
 Serial.print(vel1);
 Serial.print(cur1);
-Serial.print(angle1);
+Serial.println(angle1);
 
 }
