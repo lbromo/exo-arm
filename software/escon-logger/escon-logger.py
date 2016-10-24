@@ -1,5 +1,5 @@
 import serial
-SER_PORT = "/dev/ttyACM0"
+SER_PORT = "/dev/ttyMCC"
 BAUD = 9600
 
 MOTOR1_FILE = "motor1.log"
