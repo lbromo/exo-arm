@@ -1,11 +1,4 @@
-function [xdot] = exo_dynamic_model(t, x, torque, params)
-  theta = x(1:2);
-  thetadot = x(3:4);
-
-  if t > 5
-    torque = [0; 0];
-  end
-
+function [xdot] = exo_dynamic_model(t, x,torque, params)
   Minv=minv_matrix(theta, params.l1, params.l2, params.m1, params.m2, params.a1, params.a2, params.I1, params.I2);
 
   V=v_matrix(theta,thetadot, params.l2, params.m2, params.a1, params.a2);
@@ -15,5 +8,4 @@ function [xdot] = exo_dynamic_model(t, x, torque, params)
   thetadotdot = Minv*(torque-(V+G+F));
 
   xdot = [thetadot; thetadotdot];
-
 end

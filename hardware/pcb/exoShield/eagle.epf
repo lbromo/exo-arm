@@ -1,0 +1,23 @@
+[Eagle]
+Version="07 07 00"
+Platform="Linux"
+Serial="62191E841E-LSR-WLM-1EL"
+Globals="Globals"
+Desktop="Desktop"
+
+[Globals]
+AutoSaveProject=1
+UsedLibrary="/home/morten/.dropbox-adapa/Dropbox/-= ADAPA - R&D/-= Electronics/PCB/Motors/Movement Controller v2.3/Movement Controller.lbr"
+UsedLibrary="E14_Arduino_revC.lbr"
+UsedLibrary="SparkFun-Boards.lbr"
+UsedLibrary="exoShield.lbr"
+
+[Win_1]
+Type="Control Panel"
+Loc="0 18 1275 1002"
+State=2
+Number=0
+
+[Desktop]
+Screen="2560 1024"
+Window="Win_1"

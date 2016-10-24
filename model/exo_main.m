@@ -19,7 +19,7 @@ t_span = [0 10];
 
 %% So we have way to many samples, and no "specific" sampling time..
 %% We "create" one by taking unique time samples with a 0.01 spacing
-[C,ia,ic] = uniquetol(t, 0.001);
+%[C,ia,ic] = uniquetol(t, 0.001);
 
 theta1 = x(ia,1);
 theta2 = x(ia,2);
