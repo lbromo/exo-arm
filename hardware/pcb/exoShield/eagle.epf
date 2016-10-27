@@ -8,13 +8,12 @@ Desktop="Desktop"
 [Globals]
 AutoSaveProject=1
 UsedLibrary="/home/morten/.dropbox-adapa/Dropbox/-= ADAPA - R&D/-= Electronics/PCB/Motors/Movement Controller v2.3/Movement Controller.lbr"
-UsedLibrary="E14_Arduino_revC.lbr"
 UsedLibrary="SparkFun-Boards.lbr"
 UsedLibrary="exoShield.lbr"
 
 [Win_1]
 Type="Control Panel"
-Loc="0 18 1275 1002"
+Loc="1280 18 3195 1058"
 State=2
 Number=0
 
