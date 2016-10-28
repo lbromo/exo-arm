@@ -19,13 +19,12 @@ l2  = 0.151;   % [m] Distance from {2} to CoM of link 2
 m2  = 0.231;	% [kg] Mass of link 2
 
 %% Frictions 
-cm=[0.1427 0.3032]; 
-vm=[0.07933 0.3446]; 
+cm=[0.01 0.05]; 
+vm=[0.00005 0.00055]; 
 
 % Estimation Parameters
-vm(1) = par(2);
 cm(1) = par(1);
-
+vm(1) = par(2);
 
 %% Inertias
 [I1, I2] = InertiaCalculations([a1 a2],[m1 m2]);

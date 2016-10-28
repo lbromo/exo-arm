@@ -33,8 +33,8 @@ Izz1=I1(3,3);Izz2=I2(3,3);
 
 
 %% Frictions 
-cm=[0.1427 0.3032]; 
-vm= [0.07933 0.3446]; 
+cm=[0.01 0.05]; 
+vm= [0.00005 0.00055]; 
 
 % %% Save all variables for use in other scripts
 % save('ModelParams',...

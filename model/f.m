@@ -10,7 +10,7 @@ function [xdot] = f(x, u, params)
 
 if (abs(F) > abs(u-V-G))
 	if (abs(thetadot) < 0.01)
-		F = (u-V-G);
+% 		F = (u-V-G);
 	end
 end
 
