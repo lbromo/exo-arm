@@ -23,9 +23,8 @@ cm=[0.1427 0.3032];
 vm=[0.07933 0.3446]; 
 
 % Estimation Parameters
-a1 = par(1);
-a2 = par(2);
-
+vm(1) = par(2);
+cm(1) = par(1);
 
 
 %% Inertias

@@ -1,6 +1,6 @@
 %% Exo Dynamic Model Script
 
-clear all; clc; close all;
+%clear all; clc; close all;
 
 % disp('Run "roblocks" to open RVC Simulink Library')
 % warning('off','all') % Suppress annoying character encoding warning when opening the model
