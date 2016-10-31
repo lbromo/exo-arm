@@ -1,13 +1,5 @@
-
-#include "libraries/FreeRTOSv9.0.0/FreeRTOS/Source/include/FreeRTOS.h"
-#include "libraries/FreeRTOSv9.0.0/FreeRTOS/Source/include/task.h"
-/*
-#include "libraries/FreeRTOSv9.0.0/FreeRTOS/Source/include/semphr.h"
-#include "libraries/FreeRTOSv9.0.0/FreeRTOS/Source/include/queue.h"
-#include "libraries/FreeRTOSv9.0.0/FreeRTOS/Source/include/timers.h"
-#include "libraries/FreeRTOSv9.0.0/FreeRTOS/Source/include/event_groups.h"
-#include "libraries/FreeRTOSv9.0.0/FreeRTOS/Source/include/mpu_prototypes.h"
-*/
+#include "FreeRTOS.h"
+#include "task.h"
 
 void vBlinkTask(void *pvParameters){
   bool flag = false;
