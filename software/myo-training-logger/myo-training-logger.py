@@ -28,14 +28,14 @@ if __name__ == '__main__':
     NO_OF_SAMPLES = int(sys.argv[1])
     myo = myo_raw.MyoRaw()
     myo.connect()
-
+    myo.mc_start_collection()
     myo.add_emg_handler(on_emg)
 
     try:
         for sample_no in range(0,NO_OF_SAMPLES):
             EMG_FILE = "./logs/"+sys.argv[2]+str(sample_no)+".log"
             emg_file_h = open(EMG_FILE, 'w')
-            print("Move arm" + str(sample_no))
+            print("Rep " + str(sample_no+1) + ", move arm")
             meas_no = 0
             while(meas_no<NO_OF_MEAS):
                 myo.run(1)

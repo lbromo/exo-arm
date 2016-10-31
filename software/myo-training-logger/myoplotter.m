@@ -1,8 +1,8 @@
 % myoplotter(name,fid)
 function myoplotter(name, fid)
 
-if isempty(fid)
-	fid=1
+if ~exist('fid')
+	fid=1;
 end
 
 % Load data
@@ -21,6 +21,7 @@ for pod_id = 2:NO_OF_PODS
 		plot(data{sample_no}(:,pod_id));
 		hold on;
 	end
+	ylim([0 600]);
 	titlestr = sprintf('Pod no %d', pod_id-1);
 	title(titlestr)
 	grid on;
