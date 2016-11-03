@@ -40,8 +40,8 @@ def logging_thread(ser):
                                         motor1_file_h.write(data + "\n")
                                 elif motor == 2:
                                         motor2_file_h.write(data + "\n")
-                                        print("Logging stopped")
-                                        ser.close()
+                print("Logging stopped")
+                ser.close()
 
 
 def control_thread(ser, sig):
