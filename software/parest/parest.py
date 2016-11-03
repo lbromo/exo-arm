@@ -36,6 +36,7 @@ def logging_thread(ser):
             print(str(initmsg))
             if str(initmsg) == START:
                 msg = ser.readline()
+                print(str(msg))
                 motor, data = decodeMsg(msg)
                 #print(data)
                 if motor == 1:
