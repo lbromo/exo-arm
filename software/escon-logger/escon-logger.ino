@@ -3,6 +3,8 @@
 #define START_CHAR '$'
 #define SHOULDER 1
 #define ELBOW 2
+#include <TaskScheduler.h>
+
 
 // Analog inputs
 int pin_vel1 = A0;
@@ -12,15 +14,27 @@ int pin_vel2 = A3;
 int pin_cur2 = A4;
 int pin_pos2 = A5;
 
-/*
+
 // Outputs
-int pin_on1 = 7;
-int pin_dir1 = 8;
-int pin_pwm1 = 9;
+int pin_on1 = 2;
+int pin_dir1 = 3;
+int pin_pwm1 = 4;
 int pin_on2 = 7;
 int pin_dir2 = 8;
 int pin_pwm2 = 9;
-*/
+
+
+
+// Callback methods prototypes
+void set_pwm();
+void measure();
+
+//Tasks
+Task t1(5, TASK_FOREVER, &set_pwm);
+Task t2(5, TASK_FOREVER, &measure);
+Scheduler runner;
+
+
 
 int getPos(int joint){
 
@@ -93,10 +107,55 @@ vel2 = getVel(ELBOW);
 sendMeas(ELBOW, time, ang2, vel2, cur2);
 }
 
-void setup(){
-    Serial.begin(9600);
+
+void set_pwm(){
+int Bcount;
+Bcount=Serial.available();
+char input_Buffer[10];
+char pwm1_buffer[3];
+char pwm2_buffer[3];
+
+if (Bcount >= 9){ /* 1 byte for direction (0 or 1), 3 byte for pwm (0-100 %), 1 byte for newline*/
+Serial.readBytes(input_Buffer, Bcount);
+
+outdir1=atoi(input_Buffer[0]);
+memcpy(pwm1_buffer, input_Buffer[1], 3);
+outpwm1=atoi(pwm_bufffer);
+
+outdir2=atoi(input_Buffer[4]);
+memcpy(pwm2_buffer, input_Buffer[5], 3);
+outpwm2=atoi(pwm_bufffer);
+
+digitalWrite(pin_dir1,outdir1);
+digitalWrite(pin_dir2,outdir2);
+setPwmFrequency(pin_pwm1,outpwm1);
+setPwmFrequency(pin_pwm2,outpwm2);
 }
 
+}
+
+
+void setup(){
+    Serial.begin(9600);
+
+  Serial.println("Scheduler running");
+  
+  runner.init();
+  
+  runner.addTask(t1);
+  
+  runner.addTask(t2);
+  
+  t1.enable();
+ 
+  t2.enable();
+ 
+}
+
+
+
 void loop(){
+
+runner.execute();
 
 }
