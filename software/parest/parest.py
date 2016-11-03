@@ -54,7 +54,7 @@ def control_thread(ser, sig):
                         print(out)
                         ser.write(out)
                         time.sleep(starttime+SAMPLE_PERIOD_S - time.time())
-                        stop = True
+                stop = True
 
 if __name__ == "__main__":
         ser = serial.Serial()
