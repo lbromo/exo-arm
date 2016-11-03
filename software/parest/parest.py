@@ -32,10 +32,11 @@ def logging_thread(ser):
         if ser.isOpen():
                 while not stop:
                         initmsg = ser.readline()
+                        print(str(initmsg))
                         if str(initmsg) == START:
                                 msg = ser.readline()
                                 motor, data = decodeMsg(msg)
-                                print(data)
+                                #print(data)
                                 if motor == 1:
                                         motor1_file_h.write(data + "\n")
                                 elif motor == 2:
