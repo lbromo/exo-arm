@@ -94,6 +94,7 @@ Serial.println(cur);
 void measure(){
 int vel1, cur1, ang1;
 int vel2, cur2, ang2;
+unsigned long time;
 
 ang1 = getPos(SHOULDER);
 cur1 = getCur(SHOULDER);
@@ -109,7 +110,7 @@ sendMeas(ELBOW, time, ang2, vel2, cur2);
 
 
 void set_pwm(){
-int Bcount;
+int Bcount, outdir1, outpwm1, outdir2, outpwm2;
 Bcount=Serial.available();
 char input_Buffer[10];
 char pwm1_buffer[3];
@@ -118,18 +119,20 @@ char pwm2_buffer[3];
 if (Bcount >= 9){ /* 1 byte for direction (0 or 1), 3 byte for pwm (0-100 %), 1 byte for newline*/
 Serial.readBytes(input_Buffer, Bcount);
 
-outdir1=atoi(input_Buffer[0]);
-memcpy(pwm1_buffer, input_Buffer[1], 3);
-outpwm1=atoi(pwm_bufffer);
+outdir1=atoi(&input_Buffer[0]);
+memcpy(pwm1_buffer, &input_Buffer[1], 3);
+outpwm1=atoi(pwm1_buffer);
 
-outdir2=atoi(input_Buffer[4]);
-memcpy(pwm2_buffer, input_Buffer[5], 3);
-outpwm2=atoi(pwm_bufffer);
+outdir2=atoi(&input_Buffer[4]);
+memcpy(pwm2_buffer, &input_Buffer[5], 3);
+outpwm2=atoi(pwm2_buffer);
 
 digitalWrite(pin_dir1,outdir1);
 digitalWrite(pin_dir2,outdir2);
-setPwmFrequency(pin_pwm1,outpwm1);
-setPwmFrequency(pin_pwm2,outpwm2);
+analogWrite(pin_pwm1,outpwm1);
+analogWrite(pin_pwm2,outpwm2);
+digitalWrite(pin_on1,1);
+digitalWrite(pin_on2,1);
 }
 
 }
@@ -149,7 +152,11 @@ void setup(){
   t1.enable();
  
   t2.enable();
- 
+
+ pinMode(pin_on1,OUTPUT);
+ pinMode(pin_on2,OUTPUT);
+ pinMode(pin_dir1,OUTPUT);
+ pinMode(pin_dir2,OUTPUT); 
 }
 
 
