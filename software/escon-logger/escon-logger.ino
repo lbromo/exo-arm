@@ -22,13 +22,6 @@ int pin_dir2 = 8;
 int pin_pwm2 = 9;
 */
 
-void setup(){
-
-	Serial.begin(9600);
-
-}
-
-
 int getPos(int joint){
 
 	if (joint == SHOULDER){
@@ -84,14 +77,9 @@ Serial.println(cur);
 
 }
 
-void loop(){
-
-int t_start;
+void measure(){
 int vel1, cur1, ang1;
 int vel2, cur2, ang2;
-unsigned long time; 
-
-t_start = millis();
 
 ang1 = getPos(SHOULDER);
 cur1 = getCur(SHOULDER);
@@ -103,7 +91,12 @@ ang2 = getPos(ELBOW);
 cur2 = getCur(ELBOW);
 vel2 = getVel(ELBOW);
 sendMeas(ELBOW, time, ang2, vel2, cur2);
+}
 
-while((time+SAMPLE_T_MS) > millis());
+void setup(){
+    Serial.begin(9600);
+}
+
+void loop(){
 
 }
