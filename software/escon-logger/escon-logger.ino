@@ -124,7 +124,6 @@ void set_pwm(){
                 Serial.print(input_Buffer);
 
 
-
                 memcpy(dir1_buffer, input_Buffer, 1);
                 outdir1=atoi(dir1_buffer);
                 memcpy(pwm1_buffer, &input_Buffer[1], 3);
@@ -134,11 +133,6 @@ void set_pwm(){
                 outdir2=atoi(dir2_buffer);
                 memcpy(pwm2_buffer, &input_Buffer[5], 3);
                 outpwm2=atoi(pwm2_buffer);
-
-                Serial.print(outdir1);
-                Serial.print("\n");
-                Serial.print(outdir2);
-                Serial.print("\nHej\n"); 
 
                 digitalWrite(pin_dir1,outdir1);
                 digitalWrite(pin_dir2,outdir2);
