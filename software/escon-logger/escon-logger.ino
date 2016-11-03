@@ -146,7 +146,7 @@ void set_pwm(){
                 digitalWrite(pin_on2,1);
                 Serial.println("HERE IS WHAT WAS WRITTEN:");
                 Serial.print(pin_dir1);
-                Serial.println(pin1_pwm);
+                Serial.println(pin_pwm1);
 
         }
 
