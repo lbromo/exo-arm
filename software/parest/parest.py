@@ -30,7 +30,7 @@ def decodeMsg(msg):
 def logging_thread(ser):
     print("Logging thread started")
     if ser.isOpen():
-    	print("Port is open!")
+        print("Port is open!")
         while not stop:
             initmsg = ser.readline()
             print(str(initmsg))
