@@ -53,7 +53,9 @@ def control_thread(ser, sig):
                         out = str.encode(a)
                         print(out)
                         ser.write(out)
-                        time.sleep(starttime+SAMPLE_PERIOD_S - time.time())
+                        time_to_sleep = starttime+SAMPLE_PERIOD_S - time.time()
+                        if time_to_sleep > 0:
+	                        time.sleep(time_to_sleep)
                 stop = True
 
 if __name__ == "__main__":
