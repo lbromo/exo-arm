@@ -56,7 +56,7 @@ def control_thread(ser, sig):
                         time_to_sleep = starttime+SAMPLE_PERIOD_S - time.time()
                         if time_to_sleep > 0:
 	                        time.sleep(time_to_sleep)
-				print("Ctrl stopped")
+                print("Ctrl stopped")
                 stop = True
 
 if __name__ == "__main__":
