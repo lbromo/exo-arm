@@ -6,10 +6,10 @@ from scipy import signal
 import numpy as np
 import time
 
-SAMPLE_F_HZ = 4
+SAMPLE_F_HZ = 10
 SAMPLE_PERIOD_S = 1/SAMPLE_F_HZ
 
-SER_PORT = "/dev/ttyACM0"
+SER_PORT = "/dev/ttyMCC"
 BAUD = 9600
 
 MOTOR1_FILE = "motor1.log"
@@ -80,7 +80,7 @@ if __name__ == "__main__":
                 log.start()
                 ctrl.start()
                 log.join()
-                crtl.join()
+                ctrl.join()
         except Exception as e:
                 print(e)
                 print("Error: Unable to start Thread")

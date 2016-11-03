@@ -30,8 +30,8 @@ void set_pwm();
 void measure();
 
 //Tasks
-Task t1(5, TASK_FOREVER, &set_pwm);
-Task t2(5, TASK_FOREVER, &measure);
+Task t1(100, TASK_FOREVER, &set_pwm);
+Task t2(100, TASK_FOREVER, &measure);
 Scheduler runner;
 
 
