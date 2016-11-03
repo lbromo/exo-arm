@@ -114,18 +114,31 @@ void set_pwm(){
         Bcount=Serial.available();
         char input_Buffer[10];
         char pwm1_buffer[3];
+        char dir1_buffer[1];
         char pwm2_buffer[3];
+        char dir2_buffer[1];
 
         if (Bcount >= 9){ /* 1 byte for direction (0 or 1), 3 byte for pwm (0-100 %), 1 byte for newline*/
                 Serial.readBytes(input_Buffer, Bcount);
 
-                outdir1=atoi(input_Buffer[0]);
+                Serial.print(input_Buffer);
+
+
+
+                memcpy(dir1_buffer, input_Buffer, 1);
+                outdir1=atoi(dir1_buffer);
                 memcpy(pwm1_buffer, &input_Buffer[1], 3);
                 outpwm1=atoi(pwm1_buffer);
 
-                outdir2=atoi(input_Buffer[4]);
+                memcpy(dir2_buffer, &input_Buffer[4], 1);
+                outdir2=atoi(dir2_buffer);
                 memcpy(pwm2_buffer, &input_Buffer[5], 3);
                 outpwm2=atoi(pwm2_buffer);
+
+                Serial.print(outdir1);
+                Serial.print("\n");
+                Serial.print(outdir2);
+                Serial.print("\nHej\n"); 
 
                 digitalWrite(pin_dir1,outdir1);
                 digitalWrite(pin_dir2,outdir2);
@@ -143,6 +156,12 @@ void setup(){
 
         Serial.println("Scheduler running");
 
+        
+        pinMode(pin_on1,OUTPUT);
+        pinMode(pin_on2,OUTPUT);
+        pinMode(pin_dir1,OUTPUT);
+        pinMode(pin_dir2,OUTPUT);
+
         runner.init();
 
         runner.addTask(t1);
@@ -152,11 +171,6 @@ void setup(){
         t1.enable();
 
         t2.enable();
-
-        pinMode(pin_on1,OUTPUT);
-        pinMode(pin_on2,OUTPUT);
-        pinMode(pin_dir1,OUTPUT);
-        pinMode(pin_dir2,OUTPUT);
 }
 
 
