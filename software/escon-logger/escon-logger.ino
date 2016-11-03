@@ -77,6 +77,7 @@ int getVel(int joint){
 
 void sendMeas(int joint, unsigned long time, int ang, int vel, int cur){
 
+        Serial.println("HERE IS A MESSAGE FOR LOGGING:");
         Serial.println(START_CHAR);
         Serial.print(',');
         Serial.print(joint);
@@ -121,13 +122,16 @@ void set_pwm(){
         if (Bcount >= 9){ /* 1 byte for direction (0 or 1), 3 byte for pwm (0-100 %), 1 byte for newline*/
                 Serial.readBytes(input_Buffer, Bcount);
 
-                Serial.print(input_Buffer);
+                Serial.println("THIS IS WHAT WAS RECEIVED");
+                Serial.println(input_Buffer);
 
 
                 memcpy(dir1_buffer, input_Buffer, 1);
                 outdir1=atoi(dir1_buffer);
                 memcpy(pwm1_buffer, &input_Buffer[1], 3);
                 outpwm1=atoi(pwm1_buffer);
+
+
 
                 memcpy(dir2_buffer, &input_Buffer[4], 1);
                 outdir2=atoi(dir2_buffer);
@@ -140,6 +144,10 @@ void set_pwm(){
                 analogWrite(pin_pwm2,outpwm2);
                 digitalWrite(pin_on1,1);
                 digitalWrite(pin_on2,1);
+                Serial.println("HERE IS WHAT WAS WRITTEN:");
+                Serial.print(pin_dir1);
+                Serial.println(pin1_pwm);
+
         }
 
 }
