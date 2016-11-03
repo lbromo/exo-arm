@@ -6,7 +6,7 @@ from scipy import signal
 import numpy as np
 import time
 
-SAMPLE_F_HZ = 10
+SAMPLE_F_HZ = 1000
 SAMPLE_PERIOD_S = 1/SAMPLE_F_HZ
 
 SER_PORT = "/dev/ttyMCC"
