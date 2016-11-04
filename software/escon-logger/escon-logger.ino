@@ -175,8 +175,8 @@ int* read_msg(){
         chkbt = Serial.read();
         while(chkbt != '$') {
                 chkbt = Serial.read();
-                Serial.println("waiting for start char");
-                delay(500);
+//                Serial.println("waiting for start char");
+                delay(100);
         };
         
         // Wait for whole message to be available
