@@ -64,7 +64,9 @@ if __name__ == "__main__":
                 print("Ctrl:" + str(out))
                 logging_thread(ser)
                 logging_thread(ser)
-                time.sleep(starttime+SAMPLE_PERIOD_S-time.time())
+                time_to_sleep = starttime+SAMPLE_PERIOD_S-time.time()
+                if time_to_sleep > 0:
+                    time.sleep()
 
     except Exception as e:
         print(e)
