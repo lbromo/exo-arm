@@ -74,7 +74,7 @@ if __name__ == "__main__":
     motor1_file_h = open(MOTOR1_FILE, 'w');
     motor2_file_h = open(MOTOR2_FILE, 'w');
 
-    motor1_file_h.write("time,angle,velocity,current\n")
+    motor1_file_h.write("time,angle,velocity,current \n")
     motor2_file_h.write("time,angle,velocity,current\n")
     t = np.linspace(0,20,100)
     sig = signal.square(2*np.pi*t, duty=0.5)
