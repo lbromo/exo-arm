@@ -43,6 +43,7 @@ def logging_thread(ser):
                     motor1_file_h.write(data + "\n")
                 elif motor == 2:
                     motor2_file_h.write(data + "\n")
+                print("Logged..")
         print("Logging stopped")
         ser.close()
 
@@ -54,9 +55,10 @@ def control_thread(ser, sig):
             starttime = time.time()
             a = '$' + '1' + str(int(255*sig[i])).zfill(3) + '1' + str(int(255*sig[i])).zfill(3)
             out = str.encode(a)
-            print(out)
+            # print(out)
             ser.write(out)
             time_to_sleep = starttime+SAMPLE_PERIOD_S - time.time()
+            print("Controlled..")
             if time_to_sleep > 0:
                 time.sleep(time_to_sleep)
         print("Ctrl stopped")
