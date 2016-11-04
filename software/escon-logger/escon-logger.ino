@@ -94,7 +94,7 @@ void sendMeas(int joint, unsigned long time, int ang, int vel, int cur){
 
 void measure(){
         // LET THE WORLD KNOW WE ARE EXECUTING
-        digitalWrite(12,1);
+        digitalWrite(pin_on1,1);
         int vel1, cur1, ang1;
         int vel2, cur2, ang2;
         unsigned long time;
@@ -111,7 +111,7 @@ void measure(){
         sendMeas(ELBOW, time, ang2, vel2, cur2);
 
         //WE DONE YO
-        digitalWrite(12,0);
+        digitalWrite(pin_on1,0);
 }
 
 /*
@@ -214,7 +214,7 @@ int* read_msg(){
 
 void set_pwm(){
         // LET THE WORLD KNOW WE ARE EXECUTING
-        digitalWrite(11,1);
+        digitalWrite(pin_on2,1);
 
         int* data_arr;
         data_arr = read_msg();
@@ -225,7 +225,7 @@ void set_pwm(){
         analogWrite(pin_pwm2, data_arr[3]);
 
         // WE DONE YO
-        digitalWrite(11,0);
+        digitalWrite(pin_on2,0);
 
 }
 
