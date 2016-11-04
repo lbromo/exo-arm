@@ -9,6 +9,7 @@ if __name__ == "__main__":
 	ser = serial.Serial(timeout = TIMEOUT, baudrate = BAUD, port = SER_PORT)
 
 	if not ser.isOpen():
+		print("Opening Serial...")
 		ser.open()
 		while ser.inWaiting > 0:
 			ser.read()
