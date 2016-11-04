@@ -77,7 +77,7 @@ int getVel(int joint){
 
 void sendMeas(int joint, unsigned long time, int ang, int vel, int cur){
 
-        Serial.println("HERE IS A MESSAGE FOR LOGGING:");
+        //Serial.println("HERE IS A MESSAGE FOR LOGGING:");
         Serial.println(START_CHAR);
         Serial.print(',');
         Serial.print(joint);
