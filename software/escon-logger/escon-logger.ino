@@ -235,9 +235,6 @@ void setup(){
 
         Serial.println("Scheduler running");
         
-        pinMode(11,OUTPUT);
-        pinMode(12,OUTPUT);
-
         led = 0;
         
         pinMode(pin_on1,OUTPUT);
