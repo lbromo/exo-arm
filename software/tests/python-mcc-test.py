@@ -7,7 +7,7 @@ TIMEOUT = 0.5
 
 if __name__ == "__main__":
 	ser = serial.Serial(timeout = TIMEOUT, baudrate = BAUD, port = SER_PORT)
-
+	ser.close()
 	if not ser.isOpen():
 		print("Opening Serial...")
 		ser.open()
