@@ -13,7 +13,7 @@ if __name__ == "__main__":
 		ser.open()
 		while ser.inWaiting() > 0:
 			ser.read()
-	else:
+	if ser.isOpen():
 		for i in range(1,10):
 			out = str.encode(str(i))
 			ser.write(out)
