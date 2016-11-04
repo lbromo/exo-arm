@@ -31,7 +31,7 @@ def logging_thread(ser):
     print("Logging thread started")
     if ser.isOpen():
         print("Port is open!")
-        while stop==False:
+        while not stop:
             initmsg = ser.readline()
             print("Waiting...")
             if str(initmsg) == START:
