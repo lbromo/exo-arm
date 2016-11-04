@@ -23,6 +23,6 @@ if __name__ == "__main__":
 				print("We messed up..")
 			else:
 				print("Its all good..")
-			ser.close()
+		ser.close()
 
 
