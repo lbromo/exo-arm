@@ -10,9 +10,10 @@ if __name__ == "__main__":
 
 	if not ser.isOpen():
 		ser.open()
-		ser.flush()
+		while ser.inWaiting > 0:
+			ser.read()
 	else:
-		for i in range(1,9):
+		for i in range(1,10):
 			out = str.encode(str(i))
 			ser.write(out)
 			ret = str(ser.read())
