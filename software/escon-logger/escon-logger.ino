@@ -30,8 +30,8 @@ void set_pwm();
 void measure();
 
 //Tasks
-Task t1(SAMPLE_T_MS/2, TASK_FOREVER, &set_pwm);
-Task t2(SAMPLE_T_MS/2, TASK_FOREVER, &measure);
+Task t1(SAMPLE_T_MS, TASK_FOREVER, &set_pwm);
+Task t2(SAMPLE_T_MS, TASK_FOREVER, &measure);
 Scheduler runner;
 
 
@@ -176,7 +176,7 @@ int* read_msg(){
         while(chkbt != '$') {
                 chkbt = Serial.read();
 //                Serial.println("waiting for start char");
-                delay(50);
+                delay(5);
         };
         
         // Wait for whole message to be available
