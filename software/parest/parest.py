@@ -6,7 +6,7 @@ from scipy import signal
 import numpy as np
 import time
 
-SAMPLE_F_HZ = 1
+SAMPLE_F_HZ = 100
 SAMPLE_PERIOD_S = 1/SAMPLE_F_HZ
 
 SER_PORT = "/dev/ttyMCC"
@@ -33,7 +33,7 @@ def logging_thread(ser):
         print("Port is open!")
         while not stop:
             initmsg = ser.readline()
-            print("Waiting...")
+#            print("Waiting...")
             if str(initmsg) == START:
                 msg = ser.readline()
 #                print(str(msg))
@@ -60,7 +60,6 @@ def control_thread(ser, sig):
             time_to_sleep = starttime+SAMPLE_PERIOD_S - time.time()
             print("Controlled..")
             if time_to_sleep > 0:
-                print(str(time_to_sleep))
                 time.sleep(time_to_sleep)
         print("Ctrl stopped")
         stop = True
