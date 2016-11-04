@@ -25,7 +25,7 @@ int pin_pwm2 = 9;
 
 
 void setup(){
-        Serial.begin(9600);
+        Serial.begin(115200);
 
         Serial.println("Scheduler running");
         

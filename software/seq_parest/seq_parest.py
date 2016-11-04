@@ -5,11 +5,11 @@ import numpy as np
 import time
 import sys
 
-SAMPLE_F_HZ = 50
+SAMPLE_F_HZ = 100
 SAMPLE_PERIOD_S = 1/SAMPLE_F_HZ
 
 SER_PORT = sys.argv[1]
-BAUD = 9600
+BAUD = 115200
 
 MOTOR1_FILE = "motor1.log"
 MOTOR2_FILE = "motor2.log"
@@ -64,7 +64,9 @@ if __name__ == "__main__":
                 print("Ctrl:" + str(out))
                 logging_thread(ser)
                 logging_thread(ser)
+
                 time_to_sleep = starttime+SAMPLE_PERIOD_S-time.time()
+                print(time_to_sleep)
                 if time_to_sleep > 0:
                     time.sleep(time_to_sleep)
 
