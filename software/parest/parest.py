@@ -64,7 +64,7 @@ def control_thread(ser, sig):
 
 
 if __name__ == "__main__":
-    ser = serial.Serial()
+    ser = serial.Serial(timeout=1)
     ser.port = SER_PORT
     ser.baudrate = BAUD
     ser.open()
