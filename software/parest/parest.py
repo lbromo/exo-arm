@@ -38,7 +38,7 @@ def logging_thread(ser):
                 msg = ser.readline()
 #                print(str(msg))
                 motor, data = decodeMsg(msg)
-                print(data)
+#                print(data)
                 if motor == 1:
                     motor1_file_h.write(data + "\n")
                 elif motor == 2:
