@@ -28,15 +28,15 @@ def logging_thread(ser):
     if ser.isOpen():
         starttime = time.time()
         initmsg = ser.readline()
-        print(str(initmsg))
+        
         if str(initmsg) == START:
             msg = ser.readline()
             motor, data = decodeMsg(msg)
+            print("Received msg: " + str(data))
             if motor == 1:
                 motor1_file_h.write(data + "\n")
             elif motor == 2:
                 motor2_file_h.write(data + "\n")
-            print("Logged..")
 
 if __name__ == "__main__":
     ser = serial.Serial(timeout=0.5)
@@ -61,8 +61,10 @@ if __name__ == "__main__":
                 out = str.encode(a)
                 # print(out)
                 ser.write(out)
-                print("Controlled..")
-                logging_thread(ser);
+                print("Ctrl:" + str(out))
+                logging_thread(ser)
+                logging_thread(ser)
+                time.sleep(SAMPLE_PERIOD_S)
 
     except Exception as e:
         print(e)
