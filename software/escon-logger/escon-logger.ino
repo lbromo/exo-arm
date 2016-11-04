@@ -175,8 +175,8 @@ int* read_msg(){
         chkbt = Serial.read();
         while(chkbt != '$') {
                 chkbt = Serial.read();
-                //Serial.println("waiting for start char");
-                //delay(500);
+                Serial.println("waiting for start char");
+                delay(500);
         };
         
         // Wait for whole message to be available
@@ -216,7 +216,7 @@ void set_pwm(){
         // LET THE WORLD KNOW WE ARE EXECUTING
         digitalWrite(pin_on2,led);
         led = !led;
-        
+
         int* data_arr;
         data_arr = read_msg();
 
