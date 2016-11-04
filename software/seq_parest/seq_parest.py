@@ -66,7 +66,7 @@ if __name__ == "__main__":
                 logging_thread(ser)
                 time_to_sleep = starttime+SAMPLE_PERIOD_S-time.time()
                 if time_to_sleep > 0:
-                    time.sleep()
+                    time.sleep(time_to_sleep)
 
     except Exception as e:
         print(e)
