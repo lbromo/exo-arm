@@ -11,7 +11,7 @@ if __name__ == "__main__":
 	if not ser.isOpen():
 		print("Opening Serial...")
 		ser.open()
-		while ser.inWaiting > 0:
+		while ser.inWaiting() > 0:
 			ser.read()
 	else:
 		for i in range(1,10):
