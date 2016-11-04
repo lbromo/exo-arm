@@ -38,23 +38,6 @@ def logging_thread(ser):
                 motor2_file_h.write(data + "\n")
             print("Logged..")
 
-
-
-def control_thread(ser, sig):
-    global stop
-    if ser.isOpen():
-        for i in range(0, len(sig)):
-            starttime = time.time()
-            a = '$' + '1' + str(int(255*sig[i])).zfill(3) + '1' + str(int(255*sig[i])).zfill(3)
-            out = str.encode(a)
-            # print(out)
-            ser.write(out)
-            time_to_sleep = starttime+SAMPLE_PERIOD_S - time.time()
-            print("Controlled..")
-        print("Ctrl stopped")
-        stop = True
-
-
 if __name__ == "__main__":
     ser = serial.Serial(timeout=0.5)
     ser.port = SER_PORT

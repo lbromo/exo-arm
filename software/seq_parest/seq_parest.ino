@@ -170,7 +170,7 @@ int* read_msg(){
 
 void set_pwm(){
         // LET THE WORLD KNOW WE ARE EXECUTING
-        digitalWrite(pin_on2,led);
+        digitalWrite(pin_on2,1);
         //led = !led;
 
         int* data_arr;
