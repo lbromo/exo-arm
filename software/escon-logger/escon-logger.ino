@@ -214,8 +214,9 @@ int* read_msg(){
 
 void set_pwm(){
         // LET THE WORLD KNOW WE ARE EXECUTING
-        digitalWrite(pin_on2,1);
-
+        digitalWrite(pin_on2,led);
+        led = !led;
+        
         int* data_arr;
         data_arr = read_msg();
 
@@ -225,7 +226,7 @@ void set_pwm(){
         analogWrite(pin_pwm2, data_arr[3]);
 
         // WE DONE YO
-        digitalWrite(pin_on2,0);
+//        digitalWrite(pin_on2,0);
 
 }
 
