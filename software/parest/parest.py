@@ -9,7 +9,7 @@ import time
 SAMPLE_F_HZ = 1
 SAMPLE_PERIOD_S = 1/SAMPLE_F_HZ
 
-SER_PORT = "/dev/ttyACM0"
+SER_PORT = "/dev/ttyMCC"
 BAUD = 9600
 
 MOTOR1_FILE = "motor1.log"
