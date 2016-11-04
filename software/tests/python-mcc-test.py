@@ -11,6 +11,7 @@ if __name__ == "__main__":
 	if not ser.isOpen():
 		print("Opening Serial...")
 		ser.open()
+		print("Flushing Serial...")
 		while ser.inWaiting() > 0:
 			ser.read()
 	if ser.isOpen():
@@ -18,7 +19,10 @@ if __name__ == "__main__":
 			out = str.encode(str(i))
 			ser.write(out)
 			ret = str(ser.read())
-			print(ret)
-	ser.close()
+			if not ret[2] == str(i):
+				print("We messed up..")
+			else:
+				print("Its all good..")
+			ser.close()
 
 
