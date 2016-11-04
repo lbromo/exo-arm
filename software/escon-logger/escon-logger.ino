@@ -1,4 +1,4 @@
-#define SAMPLE_F 4 // Hz
+#define SAMPLE_F 100 // Hz
 #define SAMPLE_T_MS 1000 * 1/SAMPLE_F
 #define START_CHAR '$'
 #define SHOULDER 1
@@ -30,8 +30,8 @@ void set_pwm();
 void measure();
 
 //Tasks
-Task t1(1000, TASK_FOREVER, &set_pwm);
-Task t2(1000, TASK_FOREVER, &measure);
+Task t1(SAMPLE_T_MS/2, TASK_FOREVER, &set_pwm);
+Task t2(SAMPLE_T_MS/2, TASK_FOREVER, &measure);
 Scheduler runner;
 
 
@@ -176,7 +176,7 @@ int* read_msg(){
         while(chkbt != '$') {
                 chkbt = Serial.read();
 //                Serial.println("waiting for start char");
-                delay(100);
+                delay(50);
         };
         
         // Wait for whole message to be available
