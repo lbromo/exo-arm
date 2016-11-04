@@ -7,11 +7,12 @@ TIMEOUT = 0.5
 
 if __name__ == "__main__":
 	ser = serial.Serial(timeout = TIMEOUT, baudrate = BAUD, port = SER_PORT)
-	
+
 	if not ser.isOpen():
 		ser.open()
+		ser.flush()
 	else:
-		for i in range(1,100):
+		for i in range(1,9):
 			out = str.encode(str(i))
 			ser.write(out)
 			ret = str(ser.read())
