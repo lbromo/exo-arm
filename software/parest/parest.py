@@ -9,7 +9,7 @@ import time
 SAMPLE_F_HZ = 1
 SAMPLE_PERIOD_S = 1/SAMPLE_F_HZ
 
-SER_PORT = "/dev/ttyMCC"
+SER_PORT = "/dev/ttyACM0"
 BAUD = 9600
 
 MOTOR1_FILE = "motor1.log"
@@ -31,14 +31,14 @@ def logging_thread(ser):
     print("Logging thread started")
     if ser.isOpen():
         print("Port is open!")
-        while not stop:
+        while stop==False:
             initmsg = ser.readline()
-            print(str(initmsg))
+#            print(str(initmsg))
             if str(initmsg) == START:
                 msg = ser.readline()
-                print(str(msg))
+#                print(str(msg))
                 motor, data = decodeMsg(msg)
-                #print(data)
+                print(data)
                 if motor == 1:
                     motor1_file_h.write(data + "\n")
                 elif motor == 2:
@@ -52,7 +52,7 @@ def control_thread(ser, sig):
     if ser.isOpen():
         for i in range(0, len(sig)):
             starttime = time.time()
-            a = '1' + str(int(127*sig[i])).zfill(3) + '1' + str(int(127*sig[i])).zfill(3)
+            a = '$' + '1' + str(int(255*sig[i])).zfill(3) + '1' + str(int(255*sig[i])).zfill(3)
             out = str.encode(a)
             print(out)
             ser.write(out)
@@ -61,6 +61,7 @@ def control_thread(ser, sig):
                 time.sleep(time_to_sleep)
         print("Ctrl stopped")
         stop = True
+
 
 if __name__ == "__main__":
     ser = serial.Serial()
@@ -73,7 +74,7 @@ if __name__ == "__main__":
 
     motor1_file_h.write("time,angle,velocity,current\n")
     motor2_file_h.write("time,angle,velocity,current\n")
-    t = np.linspace(0,20,100)
+    t = np.linspace(0,20,10)
     sig = signal.square(2*np.pi*t, duty=0.5)
     sig = (sig+1)/2
 
