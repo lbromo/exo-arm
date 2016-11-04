@@ -5,7 +5,7 @@ import numpy as np
 import time
 import sys
 
-SAMPLE_F_HZ = 100
+SAMPLE_F_HZ = 50
 SAMPLE_PERIOD_S = 1/SAMPLE_F_HZ
 
 SER_PORT = sys.argv[1]
