@@ -3,8 +3,8 @@
 #define START_CHAR '$'
 #define SHOULDER 1
 #define ELBOW 2
-#include <TaskScheduler.h>
 
+bool led;
 
 // Analog inputs
 int pin_vel1 = A0;
@@ -23,18 +23,20 @@ int pin_on2 = 7;
 int pin_dir2 = 8;
 int pin_pwm2 = 9;
 
-bool led;
 
-// Callback methods prototypes
-void set_pwm();
-void measure();
+void setup(){
+        Serial.begin(9600);
 
-//Tasks
-Task t1(SAMPLE_T_MS, TASK_FOREVER, &set_pwm);
-Task t2(SAMPLE_T_MS, TASK_FOREVER, &measure);
-Scheduler runner;
+        Serial.println("Scheduler running");
+        
+        led = 0;
+        
+        pinMode(pin_on1,OUTPUT);
+        pinMode(pin_on2,OUTPUT);
+        pinMode(pin_dir1,OUTPUT);
+        pinMode(pin_dir2,OUTPUT);
 
-
+}
 
 int getPos(int joint){
 
@@ -114,50 +116,6 @@ void measure(){
         digitalWrite(pin_on1,0);
 }
 
-/*
-void set_pwm(){
-        int Bcount, outdir1, outpwm1, outdir2, outpwm2;
-        Bcount=Serial.available();
-        char input_Buffer[10];
-        char pwm1_buffer[3];
-        char dir1_buffer[1];
-        char pwm2_buffer[3];
-        char dir2_buffer[1];
-
-        if (Bcount >= 9){ //1 byte for direction (0 or 1), 3 byte for pwm (0-100 %), 1 byte for newline
-                Serial.readBytes(input_Buffer, Bcount);
-
-                Serial.println("THIS IS WHAT WAS RECEIVED");
-                Serial.println(input_Buffer);
-
-
-                memcpy(dir1_buffer, input_Buffer, 1);
-                outdir1=atoi(dir1_buffer);
-                memcpy(pwm1_buffer, &input_Buffer[1], 3);
-                outpwm1=atoi(pwm1_buffer);
-
-
-
-                memcpy(dir2_buffer, &input_Buffer[4], 1);
-                outdir2=atoi(dir2_buffer);
-                memcpy(pwm2_buffer, &input_Buffer[5], 3);
-                outpwm2=atoi(pwm2_buffer);
-
-                digitalWrite(pin_dir1,outdir1);
-                digitalWrite(pin_dir2,outdir2);
-                analogWrite(pin_pwm1,outpwm1);
-                analogWrite(pin_pwm2,outpwm2);
-                digitalWrite(pin_on1,1);
-                digitalWrite(pin_on2,1);
-                Serial.println("HERE IS WHAT WAS WRITTEN:");
-                Serial.print(pin_dir1);
-                Serial.println(pin_pwm1);
-
-        }
-
-}
-*/
-
 int* read_msg(){
 
         char dir1_buff[2], dir2_buff[2];
@@ -175,8 +133,6 @@ int* read_msg(){
         chkbt = Serial.read();
         while(chkbt != '$') {
                 chkbt = Serial.read();
-//                Serial.println("waiting for start char");
-                t1.delay(5);
         };
         
         // Wait for whole message to be available
@@ -228,35 +184,18 @@ void set_pwm(){
         // WE DONE YO
         digitalWrite(pin_on2,0);
 
+
 }
-
-void setup(){
-        Serial.begin(9600);
-
-        Serial.println("Scheduler running");
-        
-        led = 0;
-        
-        pinMode(pin_on1,OUTPUT);
-        pinMode(pin_on2,OUTPUT);
-        pinMode(pin_dir1,OUTPUT);
-        pinMode(pin_dir2,OUTPUT);
-
-        runner.init();
-
-        runner.addTask(t1);
-
-        runner.addTask(t2);
-
-        t1.enable();
-
-        t2.enable();
-}
-
 
 
 void loop(){
 
-        runner.execute();
+	int starttime;
+	starttime = int(millis());
+
+	measure();
+	set_pwm();
+
+	//delay(starttime+SAMPLE_T_MS-int(millis()));
 
 }

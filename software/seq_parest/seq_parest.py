@@ -1,6 +1,4 @@
 import serial
-import collections
-import threading
 import scipy
 from scipy import signal
 import numpy as np
@@ -19,8 +17,6 @@ START = str('b\'$\\r\\n\'')
 MOTORIDINDEX = 3
 MSGSTARTINDEX = 5
 
-stop = False
-
 def decodeMsg(msg):
     msgstr = str(msg)
     motorid = int(msgstr[MOTORIDINDEX])
@@ -29,27 +25,19 @@ def decodeMsg(msg):
 
 
 def logging_thread(ser):
-    print("Logging thread started")
     if ser.isOpen():
-        print("Port is open!")
-        while not stop:
-            starttime = time.time()
-            initmsg = ser.readline()
-#            print("Waiting...")
-            if str(initmsg) == START:
-                msg = ser.readline()
-#                print(str(msg))
-                motor, data = decodeMsg(msg)
-#                print(data)
-                if motor == 1:
-                    motor1_file_h.write(data + "\n")
-                elif motor == 2:
-                    motor2_file_h.write(data + "\n")
-                print("Logged..")
-            else:
-                print("Timeout")
-        print("Logging stopped")
-        ser.close()
+        starttime = time.time()
+        initmsg = ser.readline()
+        print(str(initmsg))
+        if str(initmsg) == START:
+            msg = ser.readline()
+            motor, data = decodeMsg(msg)
+            if motor == 1:
+                motor1_file_h.write(data + "\n")
+            elif motor == 2:
+                motor2_file_h.write(data + "\n")
+            print("Logged..")
+
 
 
 def control_thread(ser, sig):
@@ -63,8 +51,6 @@ def control_thread(ser, sig):
             ser.write(out)
             time_to_sleep = starttime+SAMPLE_PERIOD_S - time.time()
             print("Controlled..")
-            if time_to_sleep > 0:
-                time.sleep(time_to_sleep)
         print("Ctrl stopped")
         stop = True
 
@@ -85,15 +71,16 @@ if __name__ == "__main__":
     sig = (sig+1)/2
 
     try:
-        print("Starting threads")
-        log = threading.Thread(target=logging_thread,args=(ser,))
-        ctrl= threading.Thread(target=control_thread,args=(ser, sig))
-        log.daemon=True
-        ctrl.daemon=True
-        log.start()
-        ctrl.start()
-        log.join()
-        ctrl.join()
+        if ser.isOpen():
+            for i in range(0, len(sig)):
+                starttime = time.time()
+                a = '$' + '1' + str(int(255*sig[i])).zfill(3) + '1' + str(int(255*sig[i])).zfill(3)
+                out = str.encode(a)
+                # print(out)
+                ser.write(out)
+                print("Controlled..")
+                logging_thread(ser);
+
     except Exception as e:
         print(e)
         print("Error: Unable to start Thread")
