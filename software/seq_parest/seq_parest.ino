@@ -25,9 +25,9 @@ int pin_pwm2 = 9;
 
 
 void setup(){
-        Serial.begin(115200);
+        Serial0.begin(115200);
 
-        Serial.println("Scheduler running");
+        Serial0.println("Scheduler running");
         
         led = 0;
         
@@ -81,18 +81,18 @@ int getVel(int joint){
 
 void sendMeas(int joint, unsigned long time, int ang, int vel, int cur){
 
-        //Serial.println("HERE IS A MESSAGE FOR LOGGING:");
-        Serial.println(START_CHAR);
-        Serial.print(',');
-        Serial.print(joint);
-        Serial.print(',');
-        Serial.print(time);
-        Serial.print(',');
-        Serial.print(ang);
-        Serial.print(',');
-        Serial.print(vel);
-        Serial.print(',');
-        Serial.println(cur);
+        //Serial0.println("HERE IS A MESSAGE FOR LOGGING:");
+        Serial0.println(START_CHAR);
+        Serial0.print(',');
+        Serial0.print(joint);
+        Serial0.print(',');
+        Serial0.print(time);
+        Serial0.print(',');
+        Serial0.print(ang);
+        Serial0.print(',');
+        Serial0.print(vel);
+        Serial0.print(',');
+        Serial0.println(cur);
 
 }
 
@@ -132,28 +132,28 @@ int* read_msg(){
         dir2_buff[1] = '\0';
 
         // Wait for start char..
-        chkbt = Serial.read();
+        chkbt = Serial0.read();
         while(chkbt != '$') {
-                chkbt = Serial.read();
+                chkbt = Serial0.read();
         };
         
         // Wait for whole message to be available
-        while(Serial.available() < 8) {
-                //Serial.println("waiting for rest of msg");
+        while(Serial0.available() < 8) {
+                //Serial0.println("waiting for rest of msg");
                 //delay(500);
         };
 
         // Read and convert all the shit!
-        dir1_buff[0] = Serial.read();
+        dir1_buff[0] = Serial0.read();
         for (int i = 0; i<3; i++){
-                pwm1_buff[i] = Serial.read();
+                pwm1_buff[i] = Serial0.read();
         }
         dir1 = atoi(dir1_buff);
         pwm1 = atoi(pwm1_buff);
 
-        dir2_buff[0] = Serial.read();
+        dir2_buff[0] = Serial0.read();
         for (int i = 0; i<3; i++){
-                pwm2_buff[i] = Serial.read();
+                pwm2_buff[i] = Serial0.read();
         }
         dir2 = atoi(dir2_buff);
         pwm2 = atoi(pwm2_buff);
