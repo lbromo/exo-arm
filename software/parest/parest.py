@@ -9,7 +9,7 @@ import time
 SAMPLE_F_HZ = 100
 SAMPLE_PERIOD_S = 1/SAMPLE_F_HZ
 
-SER_PORT = "/dev/ttyMCC"
+SER_PORT = "/dev/ttyACM1"
 BAUD = 9600
 
 MOTOR1_FILE = "motor1.log"
@@ -32,6 +32,7 @@ def logging_thread(ser):
     if ser.isOpen():
         print("Port is open!")
         while not stop:
+            starttime = time.time()
             initmsg = ser.readline()
 #            print("Waiting...")
             if str(initmsg) == START:
@@ -44,6 +45,8 @@ def logging_thread(ser):
                 elif motor == 2:
                     motor2_file_h.write(data + "\n")
                 print("Logged..")
+            else:
+                print("Timeout")
         print("Logging stopped")
         ser.close()
 
@@ -66,7 +69,7 @@ def control_thread(ser, sig):
 
 
 if __name__ == "__main__":
-    ser = serial.Serial(timeout=1)
+    ser = serial.Serial(timeout=0.5)
     ser.port = SER_PORT
     ser.baudrate = BAUD
     ser.open()
