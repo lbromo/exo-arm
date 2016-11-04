@@ -35,6 +35,8 @@ void setup(){
         pinMode(pin_on2,OUTPUT);
         pinMode(pin_dir1,OUTPUT);
         pinMode(pin_dir2,OUTPUT);
+        pinMode(pin_pwm1,OUTPUT);
+        pinMode(pin_pwm2,OUTPUT);
 
 }
 
