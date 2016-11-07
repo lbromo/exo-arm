@@ -135,14 +135,18 @@ int* read_msg(){
         chkbt = Serial.read();
         while(chkbt != '$') {
                 chkbt = Serial.read();
+                
         };
+        digitalWrite(pin_on2,0);
         
         // Wait for whole message to be available
         while(Serial.available() < 8) {
+          
                 //Serial.println("waiting for rest of msg");
                 //delay(500);
         };
-
+          digitalWrite(pin_on2,1);
+          
         // Read and convert all the shit!
         dir1_buff[0] = Serial.read();
         for (int i = 0; i<3; i++){
@@ -195,9 +199,9 @@ void loop(){
 	int starttime;
 	starttime = int(millis());
 
+  set_pwm();
 	measure();
-	set_pwm();
-
+	
 	//delay(starttime+SAMPLE_T_MS-int(millis()));
 
 }
