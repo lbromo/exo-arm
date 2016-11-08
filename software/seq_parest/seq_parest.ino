@@ -3,6 +3,7 @@
 #define START_CHAR '$'
 #define SHOULDER 1
 #define ELBOW 2
+#define MSG_LEN 10
 
 bool led;
 
@@ -18,7 +19,7 @@ int pin_pos2 = A5;
 // Outputs
 int pin_on1 = 2;
 int pin_dir1 = 3;
-int pin_pwm1 = 4;
+int pin_pwm1 = 5;
 int pin_on2 = 7;
 int pin_dir2 = 8;
 int pin_pwm2 = 9;
@@ -37,6 +38,8 @@ void setup(){
         pinMode(pin_dir2,OUTPUT);
         pinMode(pin_pwm1,OUTPUT);
         pinMode(pin_pwm2,OUTPUT);
+        pinMode(13,OUTPUT);
+        pinMode(12,OUTPUT);
 
 }
 
@@ -97,8 +100,6 @@ void sendMeas(int joint, unsigned long time, int ang, int vel, int cur){
 }
 
 void measure(){
-        // LET THE WORLD KNOW WE ARE EXECUTING
-        digitalWrite(pin_on1,1);
         int vel1, cur1, ang1;
         int vel2, cur2, ang2;
         unsigned long time;
@@ -114,18 +115,19 @@ void measure(){
         vel2 = getVel(ELBOW);
         sendMeas(ELBOW, time, ang2, vel2, cur2);
 
-        //WE DONE YO
-        digitalWrite(pin_on1,0);
 }
 
-int* read_msg(){
+void read_msg(){
 
-        char dir1_buff[2], dir2_buff[2];
+        char dir1_buff[2], dir2_buff[2], on1_buff[2], on2_buff[2];
         char pwm1_buff[4], pwm2_buff[4];
         char chkbt;
-        int dir1, dir2, pwm1, pwm2;
-        
+        int on1, on2, dir1, dir2, pwm1, pwm2;
+        int data_arr[6];
+
         // String terminators for later use with atoi()
+        on1_buff[1] = '\0';
+        on2_buff[1] = '\0';
         pwm1_buff[3] = '\0';
         pwm2_buff[3] = '\0';
         dir1_buff[1] = '\0';
@@ -135,63 +137,52 @@ int* read_msg(){
         chkbt = Serial.read();
         while(chkbt != '$') {
                 chkbt = Serial.read();
-                
+                digitalWrite(13,1);
         };
-        digitalWrite(pin_on2,0);
         
+        digitalWrite(13,0);
+
         // Wait for whole message to be available
-        while(Serial.available() < 8) {
-          
+        while(Serial.available() < MSG_LEN) {
+            digitalWrite(12,1);
                 //Serial.println("waiting for rest of msg");
                 //delay(500);
         };
-          digitalWrite(pin_on2,1);
-          
+        digitalWrite(12,0);
+
         // Read and convert all the shit!
+        on1_buff[0] = Serial.read();
         dir1_buff[0] = Serial.read();
+        
         for (int i = 0; i<3; i++){
                 pwm1_buff[i] = Serial.read();
         }
+        
+        on1 = atoi(on1_buff);
         dir1 = atoi(dir1_buff);
         pwm1 = atoi(pwm1_buff);
 
+        on2_buff[0] = Serial.read();
         dir2_buff[0] = Serial.read();
+        
         for (int i = 0; i<3; i++){
                 pwm2_buff[i] = Serial.read();
         }
+
+        on2 = atoi(on2_buff);
         dir2 = atoi(dir2_buff);
         pwm2 = atoi(pwm2_buff);
 
-        int data_arr[4];
 
-        data_arr[0] = dir1;  
-        data_arr[1] = pwm1;  
-        data_arr[2] = dir2;  
-        data_arr[3] = pwm2;  
-
-
-        return data_arr;
-
+        digitalWrite(pin_on1, on1);
+        digitalWrite(pin_dir1, dir1);
+        analogWrite(pin_pwm1, pwm1);
+        digitalWrite(pin_on2, on2);
+        digitalWrite(pin_dir2, dir2);
+        analogWrite(pin_pwm2, pwm2);
+        
 }
 
-void set_pwm(){
-        // LET THE WORLD KNOW WE ARE EXECUTING
-        digitalWrite(pin_on2,1);
-        //led = !led;
-
-        int* data_arr;
-        data_arr = read_msg();
-
-        digitalWrite(pin_dir1, data_arr[0]);
-        analogWrite(pin_pwm1, data_arr[1]);
-        digitalWrite(pin_dir2, data_arr[2]);
-        analogWrite(pin_pwm2, data_arr[3]);
-
-        // WE DONE YO
-        digitalWrite(pin_on2,0);
-
-
-}
 
 
 void loop(){
@@ -199,9 +190,12 @@ void loop(){
 	int starttime;
 	starttime = int(millis());
 
-  set_pwm();
+    read_msg();
 	measure();
 	
 	//delay(starttime+SAMPLE_T_MS-int(millis()));
+
+//    digitalWrite(pin_on1,LOW);
+//    digitalWrite(pin_on2,LOW);
 
 }

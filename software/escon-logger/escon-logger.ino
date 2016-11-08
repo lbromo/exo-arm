@@ -3,6 +3,7 @@
 #define START_CHAR '$'
 #define SHOULDER 1
 #define ELBOW 2
+#define MSG_LEN 10
 #include <TaskScheduler.h>
 
 
@@ -93,8 +94,6 @@ void sendMeas(int joint, unsigned long time, int ang, int vel, int cur){
 }
 
 void measure(){
-        // LET THE WORLD KNOW WE ARE EXECUTING
-        digitalWrite(pin_on1,1);
         int vel1, cur1, ang1;
         int vel2, cur2, ang2;
         unsigned long time;
@@ -110,8 +109,6 @@ void measure(){
         vel2 = getVel(ELBOW);
         sendMeas(ELBOW, time, ang2, vel2, cur2);
 
-        //WE DONE YO
-        digitalWrite(pin_on1,0);
 }
 
 /*
@@ -160,12 +157,14 @@ void set_pwm(){
 
 int* read_msg(){
 
-        char dir1_buff[2], dir2_buff[2];
+        char dir1_buff[2], dir2_buff[2], on1_buff[2], on2_buff[2];
         char pwm1_buff[4], pwm2_buff[4];
         char chkbt;
-        int dir1, dir2, pwm1, pwm2;
+        int on1, on2, dir1, dir2, pwm1, pwm2;
         
         // String terminators for later use with atoi()
+        on1_buff[1] = '\0';
+        on2_buff[1] = '\0';
         pwm1_buff[3] = '\0';
         pwm2_buff[3] = '\0';
         dir1_buff[1] = '\0';
@@ -180,32 +179,38 @@ int* read_msg(){
         };
         
         // Wait for whole message to be available
-        while(Serial.available() < 8) {
+        while(Serial.available() < MSG_LEN) {
                 //Serial.println("waiting for rest of msg");
                 //delay(500);
         };
 
         // Read and convert all the shit!
+        on1_buff[0] = Serial.read();
         dir1_buff[0] = Serial.read();
         for (int i = 0; i<3; i++){
                 pwm1_buff[i] = Serial.read();
         }
+        on1 = atoi(on1_buff);
         dir1 = atoi(dir1_buff);
         pwm1 = atoi(pwm1_buff);
 
+        on2_buff[0] = Serial.read();
         dir2_buff[0] = Serial.read();
         for (int i = 0; i<3; i++){
                 pwm2_buff[i] = Serial.read();
         }
+        on2 = atoi(on2_buff);
         dir2 = atoi(dir2_buff);
         pwm2 = atoi(pwm2_buff);
 
-        int data_arr[4];
+        int data_arr[6*sizeof(int)];
 
-        data_arr[0] = dir1;  
-        data_arr[1] = pwm1;  
-        data_arr[2] = dir2;  
-        data_arr[3] = pwm2;  
+        data_arr[0] = on1;  
+        data_arr[1] = dir1;  
+        data_arr[2] = pwm1;  
+        data_arr[3] = on2;  
+        data_arr[4] = dir2;  
+        data_arr[5] = pwm2;  
 
 
         return data_arr;
@@ -213,25 +218,22 @@ int* read_msg(){
 }
 
 void set_pwm(){
-        // LET THE WORLD KNOW WE ARE EXECUTING
-        digitalWrite(pin_on2,led);
         //led = !led;
 
         int* data_arr;
         data_arr = read_msg();
 
-        digitalWrite(pin_dir1, data_arr[0]);
-        analogWrite(pin_pwm1, data_arr[1]);
-        digitalWrite(pin_dir2, data_arr[2]);
-        analogWrite(pin_pwm2, data_arr[3]);
-
-        // WE DONE YO
-        digitalWrite(pin_on2,0);
+        digitalWrite(pin_on1, data_arr[0]);
+        digitalWrite(pin_dir1, data_arr[1]);
+        analogWrite(pin_pwm1, data_arr[2]);
+        digitalWrite(pin_on2, data_arr[3]);
+        digitalWrite(pin_dir2, data_arr[4]);
+        analogWrite(pin_pwm2, data_arr[5]);
 
 }
 
 void setup(){
-        Serial.begin(9600);
+        Serial.begin(115200);
 
         Serial.println("Scheduler running");
         
