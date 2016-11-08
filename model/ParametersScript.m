@@ -8,6 +8,8 @@
 % warning('on','all')
 % addpath(genpath(cd));
 
+disp('Parametersscript')
+
 %% Constants
 g   = 9.81;     % [m/s^2] Gravitational acceleration
 Ts	= 0.004;	% [s] Sampling period
@@ -44,7 +46,7 @@ vm= [0.00005 0.00055];
 % 		'I1','I2',...
 % 		'g'...
 % 		);
-
+global params
 params.m1 = m1;
 params.m2 = m2;
 params.a1 = a1;
