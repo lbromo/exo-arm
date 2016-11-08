@@ -1,5 +1,10 @@
 %% Create model
 
+addpath('../')
+
+ParametersScript
+
+opt = nlgreyestOptions('Display', 'on');
 m = idnlgrey('gb_sim', [4 2 4], {0.01 0.05}, [0;0;0;0], 0.01)
 
 
