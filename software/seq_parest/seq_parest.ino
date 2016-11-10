@@ -26,6 +26,9 @@ int pin_pwm2 = 9;
 
 
 void setup(){
+
+        analogReference(EXTERNAL);
+
         Serial.begin(115200);
 
         Serial.println("Scheduler running");
@@ -41,6 +44,8 @@ void setup(){
         pinMode(13,OUTPUT);
         pinMode(12,OUTPUT);
 
+        analogWrite(pin_pwm1, 10);
+        analogWrite(pin_pwm2, 10);
 
 }
 
