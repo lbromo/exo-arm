@@ -19,9 +19,9 @@ BAUD = 115200
 
 ts = str(time.time())
 
-INPUT_FILE = "input" + ts + ".log"
-MOTOR1_FILE = "motor1" + ts + ".log"
-MOTOR2_FILE = "motor2" + ts + ".log"
+INPUT_FILE = "input.log"
+MOTOR1_FILE = "motor1.log"
+MOTOR2_FILE = "motor2.log"
 START = str('b\'$\\r\\n\'')
 MOTORIDINDEX = 3
 MSGSTARTINDEX = 5
@@ -74,7 +74,7 @@ if __name__ == "__main__":
 
     motor1_file_h = open(uniquify(MOTOR1_FILE), 'w')
     motor2_file_h = open(uniquify(MOTOR2_FILE), 'w')
-    input_file_h = open((INPUT_FILE), 'w')
+    input_file_h = open(uniquify(INPUT_FILE), 'w')
 
     motor1_file_h.write("time,angle,velocity,current \n")
     motor2_file_h.write("time,angle,velocity,current\n")
