@@ -8,12 +8,12 @@
 bool led;
 
 // Analog inputs
-int pin_vel1 = A0;
-int pin_cur1 = A1;
-int pin_pos1 = A2;
-int pin_vel2 = A3;
-int pin_cur2 = A4;
-int pin_pos2 = A5;
+int pin_vel2 = A1;
+int pin_pos2 = A2;
+int pin_cur2 = A3;
+int pin_cur1 = A3;
+int pin_vel1 = A4;
+int pin_pos1 = A5;
 
 
 // Outputs
@@ -40,6 +40,7 @@ void setup(){
         pinMode(pin_pwm2,OUTPUT);
         pinMode(13,OUTPUT);
         pinMode(12,OUTPUT);
+
 
 }
 
