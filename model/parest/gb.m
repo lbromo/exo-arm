@@ -24,7 +24,7 @@ data = iddata(x', u', Ts);
 %% Estimate
 opt = nlgreyestOptions;
 opt.Display = 'off';
-opt.SearchMethod = 'auto';
+opt.SearchMethod = 'gn';
 opt.SearchOption.MaxIter = 10000;
 opt.GradientOptions.GradientType = 'Refined';
 

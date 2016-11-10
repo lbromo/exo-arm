@@ -20,6 +20,26 @@ START = str('b\'$\\r\\n\'')
 MOTORIDINDEX = 3
 MSGSTARTINDEX = 5
 
+import tempfile
+import itertools as IT
+import os
+
+def uniquify(path, sep = ''):
+    def name_sequence():
+        count = IT.count()
+        yield ''
+        while True:
+            yield '{s}{n:d}'.format(s = sep, n = next(count))
+    orig = tempfile._name_sequence
+    with tempfile._once_lock:
+        tempfile._name_sequence = name_sequence()
+        path = os.path.normpath(path)
+        dirname, basename = os.path.split(path)
+        filename, ext = os.path.splitext(basename)
+        fd, filename = tempfile.mkstemp(dir = dirname, prefix = filename, suffix = ext)
+        tempfile._name_sequence = orig
+    return filename
+
 def decodeMsg(msg):
     msgstr = str(msg)
     motorid = int(msgstr[MOTORIDINDEX])
@@ -50,15 +70,15 @@ if __name__ == "__main__":
     ser.baudrate = BAUD
     ser.open()
 
-    motor1_file_h = open(MOTOR1_FILE, 'w')
-    motor2_file_h = open(MOTOR2_FILE, 'w')
-    input_file_h = open(INPUT_FILE, 'w')
+    motor1_file_h = open(uniquify(MOTOR1_FILE), 'w')
+    motor2_file_h = open(uniquify(MOTOR2_FILE), 'w')
+    input_file_h = open((INPUT_FILE), 'w')
 
     motor1_file_h.write("time,angle,velocity,current \n")
     motor2_file_h.write("time,angle,velocity,current\n")
     input_file_h.write("on1,dir1,pwm1,on2,dir2,pwm2\n")
     t = np.linspace(0,T_END_S,T_END_S*SAMPLE_F_HZ)
-    
+
     sig_motor1 = signal.square(1/PULSE_PERIOD_S*2*np.pi*t, duty=0.5)
     sig_motor2 = np.zeros(len(t))
 
@@ -75,7 +95,7 @@ if __name__ == "__main__":
         if ser.isOpen():
             for i in range(0, len(t)):
                 starttime = time.time()
-                
+
                 # Parsing
                 a = '$' + str(on1) + str(dir1) + str(int(sig_motor1[i])).zfill(3) + str(on2) + str(dir2) + str(int(sig_motor2[i])).zfill(3)
                 out = str.encode(a)
