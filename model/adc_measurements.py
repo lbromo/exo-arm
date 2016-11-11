@@ -50,7 +50,7 @@ print("elbow_amps = %f * adc_value + %f" % (a, b))
 ####
 
 vel_meas = {
-    'rmps': [0, 10000],
+    'rmps': [-10000, 10000],
     'volts': [0, 3.3],
     'adc_values': [0, 1023]
 }
@@ -95,7 +95,7 @@ print("shoulder_amps = %f * adc_value + %f" % (a, b))
 ####
 
 vel_meas = {
-    'rmps': [0, 6000],
+    'rmps': [-6000, 6000],
     'volts': [0, 3.3],
     'adc_values': [0, 1023]
 }
