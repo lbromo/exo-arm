@@ -14,19 +14,24 @@ from multiprocessing import Process, Queue
 import matplotlib.pyplot as plt
 import collections
 
-PULSE_PERIOD_S = 1
-T_END_S = 10
+PULSE_PERIOD_S = 2
+T_END_S = 1
 SAMPLE_F_HZ = 100
 SAMPLE_PERIOD_S = 1/SAMPLE_F_HZ
+SEQ_LEN = T_END_S * SAMPLE_F_HZ
 
 SER_PORT = sys.argv[1]
 BAUD = 115200
 
-ts = str(time.time())
+PWM_MAX = 230
+PWM_MIN = 10
 
-INPUT_FILE = "input.log"
-MOTOR1_FILE = "motor1.log"
-MOTOR2_FILE = "motor2.log"
+ARM_UP = 1
+ARM_DOWN = 0
+
+INPUT_FILE = "./logs/input_.log"
+MOTOR1_FILE = "./logs/motor1_.log"
+MOTOR2_FILE = "./logs/motor2_.log"
 START = str('b\'$\\r\\n\'')
 MOTORIDINDEX = 3
 MSGSTARTINDEX = 5
@@ -126,16 +131,25 @@ def log1msg(ser, q):
 def clamp(n, minn, maxn):
     return max(min(maxn, n), minn)
 
+def intTo3Bytes(intvar):
+    return str.encode(str(intvar).zfill(3))
+
+def parseMsg(on1, dir1, pwm1, on2, dir2, pwm2):
+    return str.encode('$' + str(on1) + str(int(dir1)) + str(int(pwm1)).zfill(3) + str(on2) + str(int(dir2)) + str(int(pwm2)).zfill(3))
+
 if __name__ == "__main__":
     q = Queue()
     p = Process(target=pPlot, args=(q,))
     p.start()
 
-    ser = serial.Serial(timeout=0.5)
-    ser.port = SER_PORT
-    ser.baudrate = BAUD
-    ser.open()
+    # Serial stuff
+    ser = serial.Serial(SER_PORT, BAUD, timeout=0.5)
+    if not ser.isOpen():
+        ser.open()
+    
+    ser.write(b'$000' + intTo3Bytes(PWM_MIN) + b'00' + intTo3Bytes(PWM_MIN))
 
+# File initialization
     motor1_file_h = open(uniquify(MOTOR1_FILE), 'w')
     motor2_file_h = open(uniquify(MOTOR2_FILE), 'w')
     input_file_h = open(uniquify(INPUT_FILE), 'w')
@@ -143,44 +157,52 @@ if __name__ == "__main__":
     motor1_file_h.write("time,angle,velocity,current \n")
     motor2_file_h.write("time,angle,velocity,current\n")
     input_file_h.write("on1,dir1,pwm1,on2,dir2,pwm2\n")
-    t = np.linspace(0,T_END_S,T_END_S*SAMPLE_F_HZ)
 
-    sig_motor1 = 30 * signal.square(1/PULSE_PERIOD_S*2*np.pi*t, duty=0.5)
-    sig_motor2 = np.zeros(len(t))
+# Signal Vectors
+    t = np.linspace(0,T_END_S,SEQ_LEN)
 
-    on1 = 1
+    sig_motor1 = 30 * np.ones(SEQ_LEN)
+    sig_motor2 = 30 * np.ones(SEQ_LEN)#signal.square(1/PULSE_PERIOD_S*2*np.pi*t, duty=0.5)
+
+    on1 = 0
+    dir2 = signal.square(1/PULSE_PERIOD_S*2*np.pi*t, duty=0.5)
+    on2 = 0
     dir1 = signal.square(1/PULSE_PERIOD_S*2*np.pi*t, duty=0.5)
-    on2 = 1
-    dir2 = 1
-
-    for i in range(0,len(t)):
-        sig_motor1[i] = clamp(sig_motor1[i],30,230)
-        sig_motor2[i] = clamp(sig_motor2[i],30,230)
-        dir1[i] = clamp(dir1[i], 0,1);
 
 
+# Clamp signals to range
+    for i in range(0,SEQ_LEN):
+        sig_motor1[i] = clamp(sig_motor1[i],PWM_MIN,PWM_MAX)
+        sig_motor2[i] = clamp(sig_motor2[i],PWM_MIN,PWM_MAX)
+        dir1[i] = clamp(dir1[i], ARM_DOWN,ARM_UP)
+        dir2[i] = clamp(dir2[i], ARM_DOWN,ARM_UP)
 
+    print('Starting loop')
 
     try:
         if ser.isOpen():
-            for i in range(0, len(t)-1):
+            for i in range(0, SEQ_LEN-1):
                 starttime = time.time()
+                
+                out = parseMsg(on1, dir1[i], sig_motor1[i], on2, dir2[i], sig_motor2[i])
 
-                # Parsing
-                a = '$' + str(on1) + str(int(dir1[i])) + str(int(sig_motor1[i])).zfill(3) + str(on2) + str(dir2) + str(int(sig_motor2[i])).zfill(3)
-                out = str.encode(a)
+                # Writing on serial
                 ser.write(out)
 
-                input_file_h.write(str(on1) + ',' + str(dir1[i]) + ',' + str(int(sig_motor1[i])).zfill(3) + ',' + str(on2) + ',' + str(dir2) + ',' + str(int(sig_motor2[i])).zfill(3) + '\n')
+                # Logging
+                input_file_h.write(str(on1) + ',' + str(dir1[i]) + ',' + str(int(sig_motor1[i])).zfill(3) + ',' + str(on2) + ',' + str(int(dir2[i])) + ',' + str(int(sig_motor2[i])).zfill(3) + '\n')
                 print("Ctrl:" + str(out))
                 log1msg(ser, q)
                 log1msg(ser, q)
 
+                # Wait for next sample period
                 time_to_sleep = starttime+SAMPLE_PERIOD_S-time.time()
                 print(time_to_sleep)
+                # Only wait if we made it in time 
                 if time_to_sleep > 0:
                     time.sleep(time_to_sleep)
-            ser.write(b'$0001000010')
+            # Make sure that arm stops a rest after the run
+        ser.write(b'$000' + intTo3Bytes(PWM_MIN) + b'00' + intTo3Bytes(PWM_MIN))
 
     except Exception as e:
         print(e)
