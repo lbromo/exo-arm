@@ -42,9 +42,9 @@ y = a * x + b
 
 print("amps = %f * adc_value + %f" % (a, b))
 
-plt.plot(curr_meas['adc_values'], curr_meas['amps'], 'o')
-plt.plot(x, y)
-plt.show()
+# plt.plot(curr_meas['adc_values'], curr_meas['amps'], 'o')
+# plt.plot(x, y)
+# plt.show()
 
 ####
 
@@ -62,6 +62,6 @@ y = a * x + b
 
 print("vel = %f * adc_value + %f" % (a, b))
 
-plt.plot(vel_meas['adc_values'], vel_meas['rmps'], 'o')
-plt.plot(x, y)
-plt.show()
+# plt.plot(vel_meas['adc_values'], vel_meas['rmps'], 'o')
+# plt.plot(x, y)
+# plt.show()
