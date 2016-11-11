@@ -28,8 +28,9 @@ print("elbow_angle = %f * adc_value + %f" % (a, b))
 
 
 ##
+
 curr_meas = {
-    'amps': [0, 7.5],
+    'amps': [0, 3],
     'volts': [0, 3.3],
     'adc_values': [0, 1023]
 }
@@ -49,7 +50,7 @@ print("elbow_amps = %f * adc_value + %f" % (a, b))
 ####
 
 vel_meas = {
-    'rmps': [0, 6000],
+    'rmps': [0, 10000],
     'volts': [0, 3.3],
     'adc_values': [0, 1023]
 }
@@ -72,8 +73,9 @@ print("elbow_vel = %f * adc_value + %f" % (a, b))
 #######################################################################
 
 ##
+
 curr_meas = {
-    'amps': [0, 3],
+    'amps': [0, 7.5],
     'volts': [0, 3.3],
     'adc_values': [0, 1023]
 }
@@ -93,7 +95,7 @@ print("shoulder_amps = %f * adc_value + %f" % (a, b))
 ####
 
 vel_meas = {
-    'rmps': [0, 10000],
+    'rmps': [0, 6000],
     'volts': [0, 3.3],
     'adc_values': [0, 1023]
 }
