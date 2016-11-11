@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 #######################################################################
-#                      EBLOW ANGLE                                    #
+#                      EBLOW                                          #
 #######################################################################
 
 # Measurements
@@ -20,7 +20,7 @@ a, b = np.polyfit(angle_meas['adc_values'], angle_meas['degrees'], 1)
 x = np.linspace(0, 1024, 100)  # ADC range
 y = a * x + b
 
-print("angle = %f * adc_value + %f" % (a, b))
+print("elbow_angle = %f * adc_value + %f" % (a, b))
 
 # plt.plot(angle_meas['adc_values'], angle_meas['degrees'], 'o')
 # plt.plot(x, y)
@@ -40,7 +40,7 @@ a, b = np.polyfit(curr_meas['adc_values'], curr_meas['amps'], 1)
 x = np.linspace(0, 1024, 100)  # ADC range
 y = a * x + b
 
-print("amps = %f * adc_value + %f" % (a, b))
+print("elbow_amps = %f * adc_value + %f" % (a, b))
 
 # plt.plot(curr_meas['adc_values'], curr_meas['amps'], 'o')
 # plt.plot(x, y)
@@ -60,7 +60,51 @@ a, b = np.polyfit(vel_meas['adc_values'], vel_meas['rmps'], 1)
 x = np.linspace(0, 1024, 100)  # ADC range
 y = a * x + b
 
-print("vel = %f * adc_value + %f" % (a, b))
+print("elbow_vel = %f * adc_value + %f" % (a, b))
+
+# plt.plot(vel_meas['adc_values'], vel_meas['rmps'], 'o')
+# plt.plot(x, y)
+# plt.show()
+
+
+#######################################################################
+#                      SHOULDER                                       #
+#######################################################################
+
+##
+curr_meas = {
+    'amps': [0, 3],
+    'volts': [0, 3.3],
+    'adc_values': [0, 1023]
+}
+
+a, b = np.polyfit(curr_meas['adc_values'], curr_meas['amps'], 1)
+
+# plot stuff
+x = np.linspace(0, 1024, 100)  # ADC range
+y = a * x + b
+
+print("shoulder_amps = %f * adc_value + %f" % (a, b))
+
+# plt.plot(curr_meas['adc_values'], curr_meas['amps'], 'o')
+# plt.plot(x, y)
+# plt.show()
+
+####
+
+vel_meas = {
+    'rmps': [0, 10000],
+    'volts': [0, 3.3],
+    'adc_values': [0, 1023]
+}
+
+a, b = np.polyfit(vel_meas['adc_values'], vel_meas['rmps'], 1)
+
+# plot stuff
+x = np.linspace(0, 1024, 100)  # ADC range
+y = a * x + b
+
+print("shoulder_vel = %f * adc_value + %f" % (a, b))
 
 # plt.plot(vel_meas['adc_values'], vel_meas['rmps'], 'o')
 # plt.plot(x, y)
