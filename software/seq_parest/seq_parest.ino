@@ -8,9 +8,9 @@
 bool led;
 
 // Analog inputs
+int pin_cur2 = A0;
 int pin_vel2 = A1;
 int pin_pos2 = A2;
-int pin_cur2 = A3;
 int pin_cur1 = A3;
 int pin_vel1 = A4;
 int pin_pos1 = A5;

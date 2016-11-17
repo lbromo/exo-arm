@@ -14,9 +14,15 @@ from multiprocessing import Process, Queue
 import matplotlib.pyplot as plt
 import collections
 
-PULSE_PERIOD_S = 2
-T_END_S = 1
+PULSE_PERIOD_ELBOW_S = 3
+PULSE_PERIOD_SHOULDER_S = 4
+
+T_END_S = 20
 SAMPLE_F_HZ = 100
+
+TEST_PWM_ELBOW = 200
+TEST_PWM_SHOULDER = 120
+
 SAMPLE_PERIOD_S = 1/SAMPLE_F_HZ
 SEQ_LEN = T_END_S * SAMPLE_F_HZ
 
@@ -29,12 +35,13 @@ PWM_MIN = 10
 ARM_UP = 1
 ARM_DOWN = 0
 
-INPUT_FILE = "./logs/input_.log"
-MOTOR1_FILE = "./logs/motor1_.log"
-MOTOR2_FILE = "./logs/motor2_.log"
+INPUT_FILE = "./logs/input_" + sys.argv[2] + ".log"
+MOTOR1_FILE = "./logs/motor1_" + sys.argv[2] + ".log"
+MOTOR2_FILE = "./logs/motor2_" + sys.argv[2] + ".log"
 START = str('b\'$\\r\\n\'')
 MOTORIDINDEX = 3
 MSGSTARTINDEX = 5
+
 
 
 # "time,angle,velocity,current\n"
@@ -109,24 +116,53 @@ def decodeMsg(msg):
     msgstr = str(msg)
     motorid = int(msgstr[MOTORIDINDEX])
     datastr = msgstr[MSGSTARTINDEX:msgstr.find('\\')]
-    return (motorid, datastr)
+    splittedData = datastr.split(',')
+    dataints = (int(splittedData[0]), int(splittedData[1]), int(splittedData[2]), int(splittedData[3]))
+    if motorid == 1:
+        dataUnits = (dataints[0], convertToAngle(dataints[1]), convertToVel_Elbow(dataints[2]), convertToCurrent_Elbow(dataints[3]))
+    elif motorid == 2:
+        dataUnits = (dataints[0], convertToAngle(dataints[1]), convertToVel_Shoulder(dataints[2]), convertToCurrent_Shoulder(dataints[3]))
+    return (motorid, dataUnits)
+
+def convertToAngle(angNoUnit):
+    print("ANGNOUNIT" + str(angNoUnit))
+    angDeg = -0.296 * angNoUnit + 204
+    return angDeg
+
+def convertToCurrent_Elbow(curNoUnit):
+    curA = 0.005865* (curNoUnit-511.5) 
+    return curA
+
+def convertToVel_Elbow(velNoUnit):
+    velRpm = 0.977517 * (velNoUnit-511.5)
+    velDegS = velRpm * 6
+    return velDegS
+
+def convertToCurrent_Shoulder(curNoUnit):
+    curA = 0.014663 * (curNoUnit - 511.5)
+    return curA
+
+def convertToVel_Shoulder(velNoUnit):
+    velRpm = 0.977517 * (velNoUnit- 511.5)
+    velDegS = velRpm * 6
+    return velDegS
 
 
-def log1msg(ser, q):
+def log1msg(ser):
     if ser.isOpen():
         starttime = time.time()
         initmsg = ser.readline()
 
         if str(initmsg) == START:
             msg = ser.readline()
-            motor, data = decodeMsg(msg)
-            print("Received msg: " + str(data))
+            motor, data_w_units = decodeMsg(msg)
+            print("Received msg: " + str(data_w_units))
             if motor == 1:
-                motor1_file_h.write(data + "\n")
+                motor1_file_h.write(','.join([str(x) for x in data_w_units]) + "\n")
             elif motor == 2:
-                motor2_file_h.write(data + "\n")
+                motor2_file_h.write(','.join([str(x) for x in data_w_units]) + "\n")
 
-            q.put((motor, data))
+            #q.put((motor, data))
 
 def clamp(n, minn, maxn):
     return max(min(maxn, n), minn)
@@ -138,21 +174,21 @@ def parseMsg(on1, dir1, pwm1, on2, dir2, pwm2):
     return str.encode('$' + str(on1) + str(int(dir1)) + str(int(pwm1)).zfill(3) + str(on2) + str(int(dir2)) + str(int(pwm2)).zfill(3))
 
 if __name__ == "__main__":
-    q = Queue()
-    p = Process(target=pPlot, args=(q,))
-    p.start()
+ #   q = Queue()
+ #   p = Process(target=pPlot, args=(q,))
+ #   p.start()
 
     # Serial stuff
     ser = serial.Serial(SER_PORT, BAUD, timeout=0.5)
     if not ser.isOpen():
         ser.open()
     
-    ser.write(b'$000' + intTo3Bytes(PWM_MIN) + b'00' + intTo3Bytes(PWM_MIN))
+    ser.write(b'$00' + intTo3Bytes(PWM_MIN) + b'00' + intTo3Bytes(PWM_MIN))
 
 # File initialization
-    motor1_file_h = open(uniquify(MOTOR1_FILE), 'w')
-    motor2_file_h = open(uniquify(MOTOR2_FILE), 'w')
-    input_file_h = open(uniquify(INPUT_FILE), 'w')
+    motor1_file_h = open((MOTOR1_FILE), 'w')
+    motor2_file_h = open((MOTOR2_FILE), 'w')
+    input_file_h = open((INPUT_FILE), 'w')
 
     motor1_file_h.write("time,angle,velocity,current \n")
     motor2_file_h.write("time,angle,velocity,current\n")
@@ -161,13 +197,13 @@ if __name__ == "__main__":
 # Signal Vectors
     t = np.linspace(0,T_END_S,SEQ_LEN)
 
-    sig_motor1 = 30 * np.ones(SEQ_LEN)
-    sig_motor2 = 30 * np.ones(SEQ_LEN)#signal.square(1/PULSE_PERIOD_S*2*np.pi*t, duty=0.5)
+    sig_motor1 = TEST_PWM_ELBOW * np.ones(SEQ_LEN) # signal.square(1/PULSE_PERIOD_S*2*np.pi*t, duty=0.5)
+    sig_motor2 = TEST_PWM_SHOULDER * np.ones(SEQ_LEN)
 
-    on1 = 0
-    dir2 = signal.square(1/PULSE_PERIOD_S*2*np.pi*t, duty=0.5)
-    on2 = 0
-    dir1 = signal.square(1/PULSE_PERIOD_S*2*np.pi*t, duty=0.5)
+    on1 = 1
+    dir1 = signal.square(1/PULSE_PERIOD_ELBOW_S*2*np.pi*t, duty=0.5)
+    on2 = 1
+    dir2 = signal.square(1/PULSE_PERIOD_SHOULDER_S*2*np.pi*t, duty=0.5)
 
 
 # Clamp signals to range
@@ -192,8 +228,8 @@ if __name__ == "__main__":
                 # Logging
                 input_file_h.write(str(on1) + ',' + str(dir1[i]) + ',' + str(int(sig_motor1[i])).zfill(3) + ',' + str(on2) + ',' + str(int(dir2[i])) + ',' + str(int(sig_motor2[i])).zfill(3) + '\n')
                 print("Ctrl:" + str(out))
-                log1msg(ser, q)
-                log1msg(ser, q)
+                log1msg(ser)
+                log1msg(ser)
 
                 # Wait for next sample period
                 time_to_sleep = starttime+SAMPLE_PERIOD_S-time.time()
@@ -202,11 +238,10 @@ if __name__ == "__main__":
                 if time_to_sleep > 0:
                     time.sleep(time_to_sleep)
             # Make sure that arm stops a rest after the run
-        ser.write(b'$000' + intTo3Bytes(PWM_MIN) + b'00' + intTo3Bytes(PWM_MIN))
+        ser.write(b'$00' + intTo3Bytes(PWM_MIN) + b'00' + intTo3Bytes(PWM_MIN))
 
     except Exception as e:
-        print(e)
-        print("Error: Unable to start Thread")
+        raise e
 
     print('done')
-    p.join()
+    # p.join()
