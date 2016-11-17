@@ -22,9 +22,9 @@ y = a * x + b
 
 print("elbow_angle = %f * adc_value + %f" % (a, b))
 
-# plt.plot(angle_meas['adc_values'], angle_meas['degrees'], 'o')
-# plt.plot(x, y)
-# plt.show()
+plt.plot(angle_meas['adc_values'], angle_meas['degrees'], 'o')
+plt.plot(x, y)
+plt.show()
 
 
 ##
