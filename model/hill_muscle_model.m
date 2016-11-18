@@ -1,27 +1,70 @@
-function [xdot] = hill_muscle_model(x, a, params)
-  length = x(1);
-  velocity = x(2);
+function [xdot] = hill_muscle_model(t, x, a, params)
+  %%
+  % x = [Lm; Vm]
+  % xdot(1) = x(2);
+  % xdot(2) = 1/M * Ftot
+  % Ftot = Fse - (Fce + Fpe)
 
-  %% CE elements
-  DLce = length;% - params.Lce0;
+  Lm = x(1);
+  Vm = x(2);
 
-  Vcemax = 2*params.Lce0 + 8*params.Lce0 * params.alpha;
-  Vce0 = 1/2*(a + 1) * Vcemax;
+  % Fce = Fmax * a * f(Lm) * g(Vm):
+  % g(Vm):
+  g = (1 - Vm / params.Vmax) / (1 + 4*Vm / params.Vmax);
+  % f(Lm):
+  f = ((Lm/params.Lmopt - 1) / params.w)^2;
 
-  fl=exp(-0.5 * (((DLce/params.Lce0) - params.phim) / (params.phiv))^2)
-  fv=0.1433/(0.1074+exp(-1.3*sinh(2.8*(velocity/Vce0)+1.64)))
+  Fce = a*g*f*params.Fmax;
 
-  Fce=a*fl*fv*params.Fcemax;
+  % Fpe = Fp(Lm) + Fd(Vm):
+  % Fp(Lm):
+  if(Lm < params.Lms)
+    Fp = 0;
+  elseif(params.Lms <= Lm && Lm <= params.Lmc)
+    Fp = params.Kml/params.Kme * (exp(params.Kme*(Lm - params.Lms))-1);
+  else
+    Fp = params.Fmc + params.Km*(Lm - params.Lmc);
+  end
+  % Fd(Vm):
+  Fd = params.Bm * Vm;
 
-  % SE elements
-  Fsemax = 1.3 * params.Fcemax;
-  DLsemax = 0.03 * params.Lts;
-  DLse = DLce;
+  Fpe = Fp + Fd;
 
-  Fpe=(Fsemax/(exp(params.Sse)-1))*(exp((params.Sse/DLsemax)*DLse)-1);
+  % Fse(Lt):
+  % Lt = const - Lm
+  Lt = params.Ltot - Lm;
+
+  if(Lt < params.Lts)
+    Fse = 0;
+  elseif(params.Lts <= Lt && Lt <= params.Ltc)
+    Fse = params.Ktl / params.Kte * (exp(params.Kte*(Lt - params.Lts))-1);
+  else
+    Fse = params.Ftc + params.Kt * (Lt - params.Lts);
+  end
+
+  %% CE elements - looks fair
+  % Real-Time Myoprocessors for a Neural Controlled Powered Exoskeleton Arm
+  % DLce = L - params.Lce0% WRONG
+  %
+  % Vcemax = 2*params.Lce0 + 8*params.Lce0 * params.alpha;
+  % Vce0 = 1/2*(a + 1) * Vcemax;
+  %
+  % fl=exp(-0.5 * (((DLce./params.Lce0) - params.phim) / (params.phiv)).^2);
+  % fv=0.1433./(0.1074+exp(-1.3*sinh(2.8*(L_dot./Vce0)+1.64)));
+  %
+  % Fce=a*fl.*fv*params.Fcemax;
+
+  %% SE elements
+  % Real-Time Myoprocessors for a Neural Controlled Powered Exoskeleton Arm
+  % Fpemax = 0.05 * params.Fcemax;
+  % DLpemax = params.Lmax - (L + params.Lts);
+  % DLpe = DLce;
+
+  % Fpe=(Fpemax/(exp(params.Spe)-1)) * (exp((params.Spe./DLpemax).*DLpe)-1);
+
+  acc = (1/params.M)*(Fse - (Fce+Fpe));
+
+  xdot = [Vm; acc];
 
 
-  acceleration = (1/params.M)*(Fce+Fpe);
-
-  xdot = [velocity; acceleration];
 end
