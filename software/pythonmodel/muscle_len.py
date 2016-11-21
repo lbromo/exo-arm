@@ -10,7 +10,6 @@ def ML(cst,r,s,t,u,angs):
   return l
 
 def BB(angs):
-  print("Biceps Brachii")
   cst = 378.06
   r = [0, 0]
   s = [0, 0, 0, 0]
@@ -19,7 +18,6 @@ def BB(angs):
   return ML(cst,r,s,t,u,angs)
 
 def TB(angs):
-  print("Triceps Brachii")
   cst = 260.05
   r = [0, 0]
   s = [0, 0, 0, 0]
@@ -33,7 +31,7 @@ def muscle_len(name, angs):
   'BB': BB,
   'TB': TB,
   }
-  func = switcher.get(name, lambda:"nothing")
+  func = switcher.get(name, lambda x: (_ for _ in ()).throw(Exception("No such muscle")))
   return func(angs)
 
 if __name__ == '__main__':
