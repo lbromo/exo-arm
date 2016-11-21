@@ -1,10 +1,13 @@
 #! /usr/bin/env python3
 import numpy as np
+from enum import Enum
 
+import muscle_len as utils
 
 class Muscle():
 
   def __init__(self,
+               muscle_type='BB',  # MUSCLE_TYPES.Biceps_Brachii,
                max_length=404.6,
                optimal_fiber_length=130.7,
                tensor_slack_length=229.8,
@@ -21,8 +24,19 @@ class Muscle():
     self.spe = spe
     self.phi_m = phi_m
     self.phi_v = phi_v
+    self.__prev_len__ = 0
 
-  def get_force_estimate(self, length, velocity, activation_level):
+
+  def get_force_estimate(self, angles, activation_level):
+    length = self.__get_muscle_length__(angles)
+    velocity = length - self.__prev_len__
+
+    return self.__get_force_estimate__(length, velocity, activation_level)
+
+  def __get_muscle_length__(self, angles):
+    return utils.muscle_len(angles)
+
+  def __get_force_estimate__(self, length, velocity, activation_level):
     a = activation_level
     # CE Element
     # Real-Time Myoprocessors for a Neural Controlled Powered Exoskeleton Arm
