@@ -1,13 +1,12 @@
 #! /usr/bin/env python3
 import numpy as np
-from enum import Enum
 
-import muscle_len as utils
+import muscle_utils
 
 class Muscle():
 
   def __init__(self,
-               muscle_type='BB',  # MUSCLE_TYPES.Biceps_Brachii,
+               muscle_type=muscle_utils.MUSCLE_NAME.BICEPS_BRACHII,
                max_length=404.6,
                optimal_fiber_length=130.7,
                tensor_slack_length=229.8,
@@ -40,8 +39,13 @@ class Muscle():
     # length - magic constant from utils (ask Morten why)
     return self.__get_force_estimate__(length - 378.06, velocity, activation_level)
 
+  def get_torque_estimate(self, angles, activation_level, joint):
+    F = self.get_force_estimate(angles, activation_level)
+    moment_arm = muscle_utils.get_muscle_value(self.muscle_type, angles[2], joint) # HACK
+    return moment_arm * F
+
   def __get_muscle_length__(self, angles):
-    return utils.muscle_len(self.muscle_type, angles)
+    return muscle_utils.get_muscle_value(self.muscle_type, angles)
 
   def __get_force_estimate__(self, length, velocity, activation_level):
     a = activation_level
@@ -69,15 +73,24 @@ class Muscle():
 if __name__ == '__main__':
   import matplotlib.pyplot as plt
 
-  F = []
+  F, tau = ([], [])
   m = Muscle()
+  activation_level = 0.2
 
   length = []
 
   for a in range(0,180):
     angs = [0,0,a,0]
     length.append(m.__get_muscle_length__(angs))
-    F.append(m.get_force_estimate(angs, 1))
+    F.append(m.get_force_estimate(angs, activation_level))
+    tau.append(m.get_torque_estimate(angs, activation_level, muscle_utils.MUSCLE_JOINT.ELBOW))
 
+  plt.figure(1)
+
+  plt.subplot(2, 1, 1)
   plt.plot(length, F, 'x')
+
+  plt.subplot(2, 1, 2)
+  plt.plot(tau, 'x')
+
   plt.show()
