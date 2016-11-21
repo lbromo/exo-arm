@@ -1,5 +1,5 @@
 function [xdot] = hill_muscle_model(t, x, a, params)
-  %%
+  %% Fra lækkerlækkerhill:
   % x = [Lm; Vm]
   % xdot(1) = x(2);
   % xdot(2) = 1/M * Ftot
@@ -43,28 +43,35 @@ function [xdot] = hill_muscle_model(t, x, a, params)
   end
 
   %% CE elements - looks fair
+% Real-Time Myoprocessors for a Neural Controlled Powered Exoskeleton Arm
+  DLce = Lm;% - params.Lms;% WRONG
+  %
+  Vcemax = 2*params.Lce0 + 8*params.Lce0 * params.alpha;
+  Vce0 = 1/2*(a + 1) * Vcemax;
+  %
+  fl=exp(-0.5 * (((DLce./params.Lce0) - params.phim) / (params.phiv)).^2);
+  fv=0.1433./(0.1074+exp(-1.3*sinh(2.8*(Vm./Vce0)+1.64)));
+  %
+  Fce=a*fl.*fv*params.Fcemax;
+
+  %% PE elements
   % Real-Time Myoprocessors for a Neural Controlled Powered Exoskeleton Arm
-  % DLce = L - params.Lce0% WRONG
-  %
-  % Vcemax = 2*params.Lce0 + 8*params.Lce0 * params.alpha;
-  % Vce0 = 1/2*(a + 1) * Vcemax;
-  %
-  % fl=exp(-0.5 * (((DLce./params.Lce0) - params.phim) / (params.phiv)).^2);
-  % fv=0.1433./(0.1074+exp(-1.3*sinh(2.8*(L_dot./Vce0)+1.64)));
-  %
-  % Fce=a*fl.*fv*params.Fcemax;
+  Fpemax = 0.05 * params.Fcemax;
+  DLpemax = params.Lmax - (params.Lce0 + params.Lts);
+  DLpe = DLce;
+
+  Fpe=(Fpemax/(exp(params.Spe)-1)) * (exp((params.Spe./DLpemax).*DLpe)-1);
 
   %% SE elements
-  % Real-Time Myoprocessors for a Neural Controlled Powered Exoskeleton Arm
-  % Fpemax = 0.05 * params.Fcemax;
-  % DLpemax = params.Lmax - (L + params.Lts);
-  % DLpe = DLce;
+  %
+  Fsemax = 1.3 * params.Fcemax;
+  DLsemax = 0.03 * params.Lts;
+  DLse = params.Lmax + Lm;
+  Fse = (Fsemax/(exp(params.Sse)-1)) * (exp((params.Sse./DLsemax).*DLse)-1)
 
-  % Fpe=(Fpemax/(exp(params.Spe)-1)) * (exp((params.Spe./DLpemax).*DLpe)-1);
-
-  acc = (1/params.M)*(Fse - (Fce+Fpe));
+  Fse = 0;
+  acc = Fse - (Fce+Fpe) / params.M;
 
   xdot = [Vm; acc];
-
 
 end
