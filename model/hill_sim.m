@@ -10,43 +10,18 @@ params.Sse = 2.8;
 
 %%
 params.phim = 0.1;
-params.phiv = 0.5;
+params.phiv = 0.7;
 params.M = 1000;
 
-%%
-% Fra lækkerlækkerhill
-%params.Fmax = 3913;
-%params.Lmopt = 0.0959;
-%params.Vmax = 0.5179;
-%params.w = 0.643;
-%params.Kte = 3022;
-%params.Ktl = 31140;
-%params.Kt = 635540;
-%params.Lts = 0.3185;
-%params.Ltc = 0.3185;
-%params.Ftc = 200;
-%params.Kme = 90.4;
-%params.Kml = 487.5;
-%params.Km = 6770;
-%params.Lms = 0.0959;
-%params.Lmc = 0.125;
-%params.Fmc = 69.4723;
-%params.Bm = 257.1;
+l = [-250:1:50];
+v = [];
+F = zeros(1,length(l)-1);
+for k = 1:length(l)-1
+  v(k) = l(k+1) - l(k);
+  F(k) = hill_muscle_model(l(k), v(k), 1, params);
+end
 
-% Own
-%params.Ltot = 40.46;
-
-ts = 0.1;
-t = 1:ts:1000;
-
-x = [0;0];
-a = zeros(1,length(t));
-a(1:10) = 0.5;
-
-%for k = 1:(t(end) - 1) * 1/ts
-%  x(:,k+1) = x(:,k) + ts*hill_muscle_model(0, x(:,k), a(k), params);
-%end
-
+%{
 Fpemax = 0.05 * params.Fcemax;
 DLpemax = params.Lmax - (params.Lce0 + params.Lts)
 
@@ -70,3 +45,4 @@ Fpe2 = (Fpemax/(exp(params.Spe)-1)) * (exp((params.Spe./DLpemax).*Lm)-1);
 %Fse = (Fsemax/(exp(params.Sse)-1)) * (exp((params.Sse./DLsemax).*DLse)-1);
 
 F = Fce2 + Fpe2;
+%}
