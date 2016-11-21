@@ -42,7 +42,7 @@ class Muscle():
   def get_torque_estimate(self, angles, activation_level, joint):
     F = self.get_force_estimate(angles, activation_level)
     moment_arm = muscle_utils.get_muscle_value(self.muscle_type, angles[2], joint) # HACK
-    return moment_arm * F
+    return moment_arm/1000 * F
 
   def __get_muscle_length__(self, angles):
     return muscle_utils.get_muscle_value(self.muscle_type, angles)
@@ -75,7 +75,7 @@ if __name__ == '__main__':
 
   F, tau = ([], [])
   m = Muscle()
-  activation_level = 0.2
+  activation_level = 1
 
   length = []
 
@@ -89,8 +89,16 @@ if __name__ == '__main__':
 
   plt.subplot(2, 1, 1)
   plt.plot(length, F, 'x')
+  plt.grid()
+  plt.title('Force - Length relationship')
+  plt.xlabel('Length [mm]')
+  plt.ylabel('Force [N]')
 
   plt.subplot(2, 1, 2)
   plt.plot(tau, 'x')
+  plt.grid()
+  plt.title('Torque - Angle relationship')
+  plt.xlabel('Angle')
+  plt.ylabel('tau [Nm]')
 
   plt.show()
