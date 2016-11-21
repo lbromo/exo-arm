@@ -6,7 +6,7 @@ def MA(par,ang):
   ma=0
   for i in range(0,l):
     print(i)
-    ma=ma+par[i]*ang**i    
+    ma=ma+par[i]*ang**i
   return ma  
 
 def BB(joint, ang):
@@ -33,7 +33,7 @@ def muscle_ma(name, ang, joint):
   'BB': BB,
   'TB': TB,
   }
-  func = switcher.get(name, lambda:"nothing")
+  func = switcher.get(name, lambda x: (_ for _ in ()).throw(Exception("No such muscle")))
   return func(joint, ang)
 
 if __name__ == '__main__':
