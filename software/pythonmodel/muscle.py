@@ -36,7 +36,6 @@ class Muscle():
       velocity = 0
 
     self.__prev_len__ = length
-    print(velocity)
 
     # length - magic constant from utils (ask Morten why)
     return self.__get_force_estimate__(length - 378.06, velocity, activation_level)
