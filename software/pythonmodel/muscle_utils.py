@@ -100,11 +100,11 @@ if __name__ == '__main__':
     angs = [0,0,a,10]
     biceps_len.append(get_muscle_value(MUSCLE_NAME.BICEPS_BRACHII, angs))
     biceps_ma_elbow.append(get_muscle_value(MUSCLE_NAME.BICEPS_BRACHII, a, MUSCLE_JOINT.ELBOW))
-    #biceps_ma_shoulder.append(get_muscle_value(MUSCLE_NAME.BICEPS_BRACHII, 1, MUSCLE_JOINT.SHOULDER))
+    biceps_ma_shoulder.append(get_muscle_value(MUSCLE_NAME.BICEPS_BRACHII, 1, MUSCLE_JOINT.SHOULDER))
 
     triceps_len.append(get_muscle_value(MUSCLE_NAME.TRICEPS_BRACHII, angs))
     triceps_ma_elbow.append(get_muscle_value(MUSCLE_NAME.TRICEPS_BRACHII, a, MUSCLE_JOINT.ELBOW))
-    #triceps_ma_shoulder.append(get_muscle_value(MUSCLE_NAME.TRICEPS_BRACHII, a, MUSCLE_JOINT.SHOULDER))
+    triceps_ma_shoulder.append(get_muscle_value(MUSCLE_NAME.TRICEPS_BRACHII, a, MUSCLE_JOINT.SHOULDER))
 
   plt.figure(1)
   plt.subplot(3, 1, 1)
