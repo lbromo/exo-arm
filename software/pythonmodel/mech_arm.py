@@ -133,7 +133,29 @@ class Mech_2_dof_arm():
       [(M[1, 0] + M[1, 1]) - EL2]
     ])
 
+    tmp_G_1 = sp.collect(sp.simplify(-rest[0]), g)
+    tmp_G_2 = sp.collect(sp.simplify(-rest[1]), g)
+    G_1 = sp.Add(*[argi for argi in tmp_G_1.args if argi.has(g)])
+    G_2 = sp.Add(*[argi for argi in tmp_G_2.args if argi.has(g)])
+
+    V_1 = sp.simplify(G_1) + rest[0]
+    V_2 = G_2 + rest[1]
+
+    G = sp.Matrix([G_1, G_2]).T
+    V = sp.Matrix([V_1, V_2]).T
+
+    G = sp.simplify(G)
+    V = sp.simplify(V)
+    M_inv = sp.simplify(M.inv())
+
+    return M_inv, G, V
+
+
+
 
 if __name__ == '__main__':
   m = Mech_2_dof_arm()
-  m.__generate_m_inv__()
+  M_inv, G, V = m.__generate_m_inv__()
+
+  sp.pprint(V)
+  sp.pprint(G)
