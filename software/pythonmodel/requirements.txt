@@ -1,0 +1,5 @@
+https://github.com/sympy/sympy/archive/master.zip
+matplotlib>=1.5.3
+numpy>=1.11.2
+cloudpickle>=0.2.1
+scipy>=0.18.1
