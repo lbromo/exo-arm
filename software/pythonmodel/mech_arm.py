@@ -12,7 +12,8 @@ class Mech_2_dof_arm():
 
   def __init__(
       self,
-      x0=np.matrix([0,0,0,0]).transpose(),
+      x0=np.array([[0], [0], [0], [0]]),
+      ts=0.01,
       I1=params.I1,
       l1=params.l1,
       a1=params.a1,
@@ -24,6 +25,8 @@ class Mech_2_dof_arm():
       g=params.g
   ):
     self.x = x0
+    self.ts = ts
+
     self.matrice_parameters = {
       'I1_xx': I1[0, 0],
       'I1_yy': I1[1, 1],
@@ -40,31 +43,60 @@ class Mech_2_dof_arm():
       'g': g
     }
 
-    symbolic_M_inv, symbolic_G, symbolic_V = self.__get_symbolic_matrices__()
+    symbolic_M_inv, symbolic_G, symbolic_V, symbolic_F = self.__get_symbolic_matrices__()
 
+    # insert constant
     self.M_inv = symbolic_M_inv.subs(self.matrice_parameters)
-    self.G = symbolic_G.subs(self.matrice_parameters)
-    self.V = symbolic_V.subs(self.matrice_parameters)
+    self.G = symbolic_G.transpose().subs(self.matrice_parameters)
+    self.V = symbolic_V.transpose().subs(self.matrice_parameters)
+    self.F = symbolic_F
 
-    sp.pprint(self.M_inv)
-    print('#' * 190)
-    sp.pprint(self.G)
-    print('#' * 190)
-    sp.pprint(self.V)
+    ## Convert to functions in the states
+    states = sp.symbols('th1 th2 dth1 dth2')
 
+    self.f_M_inv = sp.lambdify(states, self.M_inv)
+    self.f_G = sp.lambdify(states, self.G)
+    self.f_V = sp.lambdify(states, self.V)
+    self.f_F = sp.lambdify(states, self.F)
+
+  def step(self, u=np.array([[0], [0]])):
+    th1, th2, dth1, dth2 = float(self.x[0]), float(self.x[1]), float(self.x[2]), float(self.x[3])
+    # print('M:')
+    # print(self.f_M_inv(th1, th2, dth1, dth2))
+    # print('#'*80)
+
+    # print('G:')
+    # print(self.f_G(th1, th2, dth1, dth2))
+    # print('#'*80)
+
+    # print('V:')
+    # print(self.f_V(th1, th2, dth1, dth2))
+    # print('#'*80)
+
+    # print('F:')
+    # print(self.f_F(th1, th2, dth1, dth2))
+    # print('#'*80)
+
+    ddth = self.f_M_inv(th1, th2, dth1, dth2).dot(u - (self.f_V(th1, th2, dth1, dth2) + self.f_G(th1, th2, dth1, dth2) + self.f_F(th1, th2, dth1, dth2)))
+
+    xdot = np.concatenate((self.x[2:], ddth))
+
+    self.x = self.x + self.ts * xdot
+
+    return self.x
 
   def __get_symbolic_matrices__(self):
     try:
       with open(Mech_2_dof_arm.CLOUDPICKLE_FILE, 'rb') as f:
-        M_inv, G, V = cloudpickle.load(f)
+        M_inv, G, V, F = cloudpickle.load(f)
     except Exception as e:
       print(e)
-      M_inv, G, V = __generate_symbolic_matrices__()
+      M_inv, G, V, F = __generate_symbolic_matrices__()
       with open(Mech_2_dof_arm.CLOUDPICKLE_FILE, 'wb') as f:
-        cloudpickle.dump((M_inv, G, V), f)
+        cloudpickle.dump((M_inv, G, V, F), f)
 
 
-    return M_inv, G, V
+    return M_inv, G, V, F
 
 def __generate_symbolic_matrices__():
   t = sp.Symbol('t')
@@ -76,29 +108,37 @@ def __generate_symbolic_matrices__():
 
   g0 = sp.Matrix([g, 0, 0, 0]).T
 
-  th1 = sp.Function('th1')(t)
-  th2 = sp.Function('th2')(t)
-  dth1 = sp.Function('dth1')(t)
-  dth2 = sp.Function('dth2')(t)
-  ddth1 = sp.Function('ddth1')(t)
-  ddth2 = sp.Function('ddth2')(t)
+  # th1 = sp.Function('th1')(t)
+  # th2 = sp.Function('th2')(t)
+  # dth1 = sp.Function('dth1')(t)
+  # dth2 = sp.Function('dth2')(t)
+  # ddth1 = sp.Function('ddth1')(t)
+  # ddth2 = sp.Function('ddth2')(t)
+
+  th1 = sp.Symbol('th1')
+  th2 = sp.Symbol('th2')
+  dth1 = sp.Symbol('dth1')
+  dth2 = sp.Symbol('dth2')
+  ddth1 = sp.Symbol('ddth1')
+  ddth2 = sp.Symbol('ddth2')
+
 
   I1_xx, I1_yy, I1_zz = sp.symbols("I1_xx I1_yy I1_zz")
   I2_xx, I2_yy, I2_zz = sp.symbols("I2_xx I2_yy I2_zz")
 
   # Transformation matrices
   T01 = sp.Matrix([
-    [sp.cos(th1), -sp.sin(th1), 0, a1*sp.cos(th1)],
-    [sp.sin(th1),  sp.cos(th1), 0, a1*sp.sin(th1)],
-    [         0,           0, 1, 0],
-    [         0,           0, 0, 1]
+    [sp.cos(th1(t)), -sp.sin(th1(t)), 0, a1*sp.cos(th1(t))],
+    [sp.sin(th1(t)),  sp.cos(th1(t)), 0, a1*sp.sin(th1(t))],
+    [             0,               0, 1, 0],
+    [             0,               0, 0, 1]
   ])
 
   T12 = sp.Matrix([
-    [sp.cos(th2), -sp.sin(th2), 0, a2*sp.cos(th2)],
-    [sp.sin(th2),  sp.cos(th2), 0, a2*sp.sin(th2)],
-    [         0,           0, 1, 0],
-    [         0,           0, 0, 1]
+    [sp.cos(th2(t)), -sp.sin(th2(t)), 0, a2*sp.cos(th2(t))],
+    [sp.sin(th2(t)),  sp.cos(th2(t)), 0, a2*sp.sin(th2(t))],
+    [             0,               0, 1, 0],
+    [             0    ,           0, 0, 1]
   ])
 
   # Projections of centres of mass to the 0-frame, {0}
@@ -120,8 +160,8 @@ def __generate_symbolic_matrices__():
   I1 = sp.diag(I1_xx, I1_yy, I1_zz)
   I2 = sp.diag(I2_xx, I2_yy, I2_zz)
 
-  w1 = sp.Matrix([0, 0, sp.diff(th1, t)])
-  w2 = sp.Matrix([0, 0, sp.diff(th2, t)])
+  w1 = sp.Matrix([0, 0, sp.diff(th1(t), t)])
+  w2 = sp.Matrix([0, 0, sp.diff(th2(t), t)])
 
   # ========= CHANGES TO INERTIA ===================
   w1_0 = w1
@@ -135,29 +175,29 @@ def __generate_symbolic_matrices__():
 
   # The Euler-Lagrange Equation
   L = k1[0]+k2[0] - (u1[0]+u2[0])
-  L = L.subs(sp.diff(th1, t), dth1)
-  L = L.subs(sp.diff(th2, t), dth2)
+  L = L.subs(sp.diff(th1(t), t), dth1(t))
+  L = L.subs(sp.diff(th2(t), t), dth2(t))
 
-  EL1 = sp.diff(sp.diff(L, dth1), t) - sp.diff(L, th1)
-  EL2 = sp.diff(sp.diff(L, dth2), t) - sp.diff(L, th2)
+  EL1 = sp.diff(sp.diff(L, dth1(t)), t) - sp.diff(L, th1(t))
+  EL2 = sp.diff(sp.diff(L, dth2(t)), t) - sp.diff(L, th2(t))
 
-  EL1 = EL1.subs(sp.diff(th1, t), dth1)
-  EL1 = EL1.subs(sp.diff(th2, t), dth2)
-  EL2 = EL2.subs(sp.diff(th1, t), dth1)
-  EL2 = EL2.subs(sp.diff(th2, t), dth2)
+  EL1 = EL1.subs(sp.diff(th1(t), t), dth1(t))
+  EL1 = EL1.subs(sp.diff(th2(t), t), dth2(t))
+  EL2 = EL2.subs(sp.diff(th1(t), t), dth1(t))
+  EL2 = EL2.subs(sp.diff(th2(t), t), dth2(t))
 
-  EL1 = EL1.subs(sp.diff(dth1, t), ddth1)
-  EL1 = EL1.subs(sp.diff(dth2, t), ddth2)
-  EL2 = EL2.subs(sp.diff(dth1, t), ddth1)
-  EL2 = EL2.subs(sp.diff(dth2, t), ddth2)
+  EL1 = EL1.subs(sp.diff(dth1(t), t), ddth1(t))
+  EL1 = EL1.subs(sp.diff(dth2(t), t), ddth2(t))
+  EL2 = EL2.subs(sp.diff(dth1(t), t), ddth1(t))
+  EL2 = EL2.subs(sp.diff(dth2(t), t), ddth2(t))
 
-  tmp1 = sp.collect(sp.simplify(EL1), [ddth1, ddth2])
-  M_1_1 = sp.Add(*[argi for argi in tmp1.args if argi.has(ddth1)])
-  M_1_2 = sp.Add(*[argi for argi in tmp1.args if argi.has(ddth2)])
+  tmp1 = sp.collect(sp.simplify(EL1), [ddth1(t), ddth2(t)])
+  M_1_1 = sp.Add(*[argi for argi in tmp1.args if argi.has(ddth1(t))])
+  M_1_2 = sp.Add(*[argi for argi in tmp1.args if argi.has(ddth2(t))])
 
-  tmp2 = sp.collect(sp.simplify(EL2), [ddth1, ddth2])
-  M_2_1 = sp.Add(*[argi for argi in tmp2.args if argi.has(ddth1)])
-  M_2_2 = sp.Add(*[argi for argi in tmp2.args if argi.has(ddth2)])
+  tmp2 = sp.collect(sp.simplify(EL2), [ddth1(t), ddth2(t)])
+  M_2_1 = sp.Add(*[argi for argi in tmp2.args if argi.has(ddth1(t))])
+  M_2_2 = sp.Add(*[argi for argi in tmp2.args if argi.has(ddth2(t))])
 
   M = sp.Matrix([
     [M_1_1, M_1_2],
@@ -180,12 +220,46 @@ def __generate_symbolic_matrices__():
   G = sp.Matrix([G_1, G_2]).T
   V = sp.Matrix([V_1, V_2]).T
 
-  G = sp.simplify(G)
-  V = sp.simplify(V)
-  M_inv = sp.simplify(M.inv())
+  subs = {
+    th1(t): th1,
+    th2(t): th2,
+    dth2(t): dth2,
+    dth1(t): dth1,
+    ddth1(t): 1,
+    ddth2(t): 1,
+  }
 
-  return M_inv, G, V
+  G = sp.simplify(G).subs(subs)
+  V = sp.simplify(V).subs(subs)
+  M_inv = sp.simplify(M.inv()).subs(subs)
+
+
+  ## Friction model
+  #vm1, vm2, cm1, cm2 = sp.symbols('vm1 vm2 cm1 cm2')
+  cm1, cm2 = 0.01, 0.05
+  vm1, vm2 = 0.00005, 0.00055
+  F = sp.Matrix([
+    [vm1 * dth1 + cm1 * sp.sign(dth1)],
+    [vm2 * dth2 + cm2 * sp.sign(dth2)]
+  ])
+
+
+  return M_inv, G, V, F
 
 
 if __name__ == '__main__':
-  m = Mech_2_dof_arm()
+  import matplotlib.pyplot as plt
+  ts = 0.01
+  Tend = int(60 / ts)
+  x = np.array([[0], [0], [0], [0]])
+  u = np.zeros((2, Tend))
+  u[:, 1:100] = 1
+
+  m = Mech_2_dof_arm(x0=x, ts=ts)
+
+  for i in range(Tend):
+    tmp = m.step(u[:, i:(i+1)])
+    x = np.append(x, tmp, axis=1)
+
+  plt.plot(x[0, :])
+  plt.show()
