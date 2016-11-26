@@ -109,6 +109,12 @@ if __name__ == '__main__':
   plt.figure(1)
   plt.subplot(3, 1, 1)
   plt.plot(biceps_len)
+  len_file_h = open("bb-len.csv", 'w')
+  len_file_h.write("elbow_angle, len\n")
+  a = range(0,140)
+  for i in range(0, len(biceps_len)):
+    len_file_h.write(str(a[i]) + ',' + str(biceps_len[i]) + '\n');
+
 
   plt.subplot(3, 1, 2)
   plt.plot(biceps_ma_elbow)
