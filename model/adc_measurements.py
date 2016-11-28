@@ -50,7 +50,7 @@ print("elbow_amps = %f * adc_value + %f" % (a, b))
 ####
 
 vel_meas = {
-    'rmps': [-500, 500],
+    'rmps': [-1000, 1000],
     'volts': [0, 3.3],
     'adc_values': [0, 1023]
 }

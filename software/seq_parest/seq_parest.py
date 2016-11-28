@@ -14,10 +14,10 @@ from multiprocessing import Process, Queue
 import matplotlib.pyplot as plt
 import collections
 
-PULSE_PERIOD_ELBOW_S = 3
+PULSE_PERIOD_ELBOW_S = 5
 PULSE_PERIOD_SHOULDER_S = 4
 
-T_END_S = 20
+T_END_S = 100
 SAMPLE_F_HZ = 100
 
 TEST_PWM_ELBOW = 200
@@ -30,7 +30,7 @@ SER_PORT = sys.argv[1]
 BAUD = 115200
 
 PWM_MAX = 230
-PWM_MIN = 10
+PWM_MIN = 25
 
 ARM_UP = 1
 ARM_DOWN = 0
@@ -61,10 +61,10 @@ def pPlot(input_queue):
         }
     }
 
-    plt.ion()
+#    plt.ion()
     #plt.subplot(2, 3, 1)
-    m1_plot1, = plt.plot(np.zeros(1000), np.ones(1000))
-    print(m1_plot1)
+#    m1_plot1, = plt.plot(np.zeros(1000), np.ones(1000))
+#    print(m1_plot1)
     # plt.subplot(2, 3, 1)
     # m1_plot2 = plt.plot(np.zeros(1000),np.zeros(1000))
     # plt.subplot(2, 3, 2)
@@ -88,11 +88,11 @@ def pPlot(input_queue):
         values[motorid]['velocity'].append(vel)
         values[motorid]['current'].append(current)
 
-        if t % 100 == 0:
-            print(t)
-            m1_plot1.set_xdata(values[1]['time'])
-            m1_plot1.set_ydata(values[1]['angle'])
-            plt.show()
+        # if t % 100 == 0:
+ #           print(t)
+ #           m1_plot1.set_xdata(values[1]['time'])
+ #           m1_plot1.set_ydata(values[1]['angle'])
+ #           plt.show()
         t = t+1
 
 
@@ -125,7 +125,6 @@ def decodeMsg(msg):
     return (motorid, dataUnits)
 
 def convertToAngle(angNoUnit):
-    print("ANGNOUNIT" + str(angNoUnit))
     angDeg = -0.296 * angNoUnit + 204
     return angDeg
 
@@ -134,7 +133,7 @@ def convertToCurrent_Elbow(curNoUnit):
     return curA
 
 def convertToVel_Elbow(velNoUnit):
-    velRpm = 0.977517 * (velNoUnit-511.5)
+    velRpm = 1.955034 * (velNoUnit-511.5)
     velDegS = velRpm * 6
     return velDegS
 
@@ -143,7 +142,7 @@ def convertToCurrent_Shoulder(curNoUnit):
     return curA
 
 def convertToVel_Shoulder(velNoUnit):
-    velRpm = 0.977517 * (velNoUnit- 511.5)
+    velRpm = 1.955034 * (velNoUnit-511.5)
     velDegS = velRpm * 6
     return velDegS
 
@@ -173,6 +172,11 @@ def intTo3Bytes(intvar):
 def parseMsg(on1, dir1, pwm1, on2, dir2, pwm2):
     return str.encode('$' + str(on1) + str(int(dir1)) + str(int(pwm1)).zfill(3) + str(on2) + str(int(dir2)) + str(int(pwm2)).zfill(3))
 
+def parseSignal(inputsignal):
+    dirsig = np.sign(inputsignal)
+    inputsignal = np.abs(inputsignal)
+    return (inputsignal, dirsig)
+
 if __name__ == "__main__":
  #   q = Queue()
  #   p = Process(target=pPlot, args=(q,))
@@ -197,18 +201,25 @@ if __name__ == "__main__":
 # Signal Vectors
     t = np.linspace(0,T_END_S,SEQ_LEN)
 
-    sig_motor1 = TEST_PWM_ELBOW * np.ones(SEQ_LEN) # signal.square(1/PULSE_PERIOD_S*2*np.pi*t, duty=0.5)
+#    sig_motor1 = TEST_PWM_ELBOW * np.ones(SEQ_LEN) # signal.square(1/PULSE_PERIOD_S*2*np.pi*t, duty=0.5)
     sig_motor2 = TEST_PWM_SHOULDER * np.ones(SEQ_LEN)
 
+    sig_motor1 = TEST_PWM_ELBOW * np.sin(1/PULSE_PERIOD_ELBOW * 2*np.pi*t)
+    #sig_motor1 = TEST_PWM_ELBOW * np.ones(SEQ_LEN)
+    # sig_motor1 = PWM_MAX * np.linspace(-1,1,SEQ_LEN)
+
+
+    sig_motor1, dir1 = parseSignal(sig_motor1)
+    sig_motor2, dir2 = parseSignal(sig_motor2)
+    sig_motor1 = sig_motor1 + PWM_MIN
+
     on1 = 1
-    dir1 = signal.square(1/PULSE_PERIOD_ELBOW_S*2*np.pi*t, duty=0.5)
     on2 = 1
-    dir2 = signal.square(1/PULSE_PERIOD_SHOULDER_S*2*np.pi*t, duty=0.5)
 
 
 # Clamp signals to range
     for i in range(0,SEQ_LEN):
-        sig_motor1[i] = clamp(sig_motor1[i],PWM_MIN,PWM_MAX)
+        sig_motor1[i] = clamp(np.abs(sig_motor1[i]),PWM_MIN,PWM_MAX)
         sig_motor2[i] = clamp(sig_motor2[i],PWM_MIN,PWM_MAX)
         dir1[i] = clamp(dir1[i], ARM_DOWN,ARM_UP)
         dir2[i] = clamp(dir2[i], ARM_DOWN,ARM_UP)
@@ -227,13 +238,13 @@ if __name__ == "__main__":
 
                 # Logging
                 input_file_h.write(str(on1) + ',' + str(dir1[i]) + ',' + str(int(sig_motor1[i])).zfill(3) + ',' + str(on2) + ',' + str(int(dir2[i])) + ',' + str(int(sig_motor2[i])).zfill(3) + '\n')
-                print("Ctrl:" + str(out))
+#                print("Ctrl:" + str(out))
                 log1msg(ser)
                 log1msg(ser)
 
                 # Wait for next sample period
                 time_to_sleep = starttime+SAMPLE_PERIOD_S-time.time()
-                print(time_to_sleep)
+#                print(time_to_sleep)
                 # Only wait if we made it in time 
                 if time_to_sleep > 0:
                     time.sleep(time_to_sleep)
