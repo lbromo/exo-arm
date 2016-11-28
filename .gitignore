@@ -28,8 +28,20 @@
 *.out
 *.app
 
+# Hardaware editor stuff
 *.l\#*
 *.s\#*
 *.b\#*
 *.log
 *.pdf
+
+# Linux backups
+*~
+
+# Emacs backup
+\#*\#
+
+# Python related
+matrices
+venv
+__pycache__
