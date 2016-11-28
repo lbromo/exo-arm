@@ -2,6 +2,7 @@ import sympy as sp
 
 import numpy as np
 import cloudpickle
+import time
 
 import params
 
@@ -41,8 +42,8 @@ class Mech_2_dof_arm():
       'a2': params.a2,
       'm2': params.m2,
       'g': params.g,
-      'vm1': 0.5,
-      'vm2': 0.55,
+      'vm1': 1,
+      'vm2': 1,
       'cm1': 0.01,
       'cm2': 0.05
     }
@@ -66,9 +67,9 @@ class Mech_2_dof_arm():
     self.f_V = sp.lambdify(states, V, 'numpy')
     self.f_F = sp.lambdify(states, F, 'numpy')
 
-  def dx(self, x, u=np.array([0, 0])):
-    th1, th2, dth1, dth2 = float(x[0]), float(x[1]), float(x[2]), float(x[3])
-    dth = np.array([[x[2]], [x[3]]])
+  def step(self, u=np.array([0, 0])):
+    th1, th2, dth1, dth2 = float(self.x[0]), float(self.x[1]), float(self.x[2]), float(self.x[3])
+    dth = np.array([[dth1, dth2]])
     u = np.array([[u[0]], [u[1]]])
 
     M = self.f_M_inv(th1, th2, dth1, dth2)
@@ -78,9 +79,11 @@ class Mech_2_dof_arm():
 
     ddth = M.dot(u - (V + G + F))
 
-    xdot = np.concatenate([dth, ddth])
+    xdot = np.concatenate([dth.flatten(), ddth.flatten()])
 
-    return xdot.flatten()
+    self.x = self.x.flatten() + self.ts * xdot
+
+    return self.x
 
   def __get_symbolic_matrices__(self):
     try:
@@ -224,8 +227,8 @@ def __generate_symbolic_matrices__():
   cm1, cm2 = sp.symbols('cm1 cm2')  # 0.01, 0.05
   vm1, vm2 = sp.symbols('vm1 vm2')  # 0.00005, 0.00055
   F = sp.Matrix([
-    [vm1 * dth1 + cm1 * sp.sign(dth1)],
-    [vm2 * dth2 + cm2 * sp.sign(dth2)]
+    [vm1 * dth1], # + cm1 * sp.sign(dth1)],
+    [vm2 * dth2]  #+ cm2 * sp.sign(dth2)]
   ])
 
   subs = {
@@ -241,16 +244,6 @@ def __generate_symbolic_matrices__():
   V = V.subs(subs)
   M = M.subs(subs)
 
-
-  ## Friction model
-  #vm1, vm2, cm1, cm2 = sp.symbols('vm1 vm2 cm1 cm2')
-  cm1, cm2 = sp.symbols('cm1 cm2')  # 0.01, 0.05
-  vm1, vm2 = sp.symbols('vm1 vm2')  # 0.00005, 0.00055
-  F = sp.Matrix([
-    [vm1 * dth1 + cm1 * sp.sign(dth1)],
-    [vm2 * dth2 + cm2 * sp.sign(dth2)]
-  ])
-
   return M, G, V, F
 
 
@@ -261,12 +254,12 @@ if __name__ == '__main__':
 
 # Prepare for simluation
   ts = 0.01
-  Tend = int(30 / ts)
+  Tend = int(10 / ts)
   x = np.zeros((4, Tend))
   u = np.zeros((2, Tend))
   u[0, 0:100] = 4
-  u[1, 0:] = 0
-  #x[:, 0] = [1, 1, 0, 0]
+  u[1, 0:100] = 2
+  u[1,100:] = 0.75
 
   m = Mech_2_dof_arm(ts=ts)
 
@@ -279,20 +272,38 @@ if __name__ == '__main__':
   plt.show(False)
   plt.draw()
 
-  line, = ax.plot([], [], 'o-', lw=2)
+  line, = ax.plot([0,
+                   params.l1 * np.sin(x[0, 0]),
+                   params.l1 * np.sin(x[0, 0]) + params.l2 * np.sin(x[1, 0])],
+                  [0,
+                   params.l1 * -np.cos(x[0, 0]),
+                   params.l1 * -np.cos(x[0, 0]) - params.l2 * np.cos(x[1, 0])],
+                  'o-', lw=2)
 
   background = fig.canvas.copy_from_bbox(ax.bbox)
 
-  for i in range(Tend-1):
-    x[:, i+1] = x[:, i] + ts * m.dx(x[:, i], u[:, i])
-    # line.set_data([0,
-    #                params.l1 * np.sin(x[0, i+1]),
-    #                params.l1 * np.sin(x[0, i+1]) + params.l2 * np.sin(x[1, i+1])],
-    #                [0,
-    #                params.l1 * -np.cos(x[0, i+1]),
-    #                params.l1 * -np.cos(x[0, i+1]) - params.l2 * np.cos(x[1, i+1])])
-    # fig.canvas.draw()
+  fig.canvas.draw()
 
+  print(time.time())
+  for i in range(Tend-1):
+    step_time = time.time()
+    x[:, i+1] = m.step(u[:, i])
+    line.set_data([0,
+                   params.l1 * np.sin(x[0, i+1]),
+                   params.l1 * np.sin(x[0, i+1]) + params.l2 * np.sin(x[1, i+1])],
+                   [0,
+                   params.l1 * -np.cos(x[0, i+1]),
+                   params.l1 * -np.cos(x[0, i+1]) - params.l2 * np.cos(x[1, i+1])])
+    #fig.canvas.draw()
+
+    fig.canvas.restore_region(background)
+    ax.draw_artist(line)
+    fig.canvas.blit(ax.bbox)
+
+    end_time = time.time()
+    time.sleep(ts - (end_time - step_time))
+
+  print(time.time())
   plt.close(fig)
 
   plt.subplot(3, 1, 1)
