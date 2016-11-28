@@ -41,8 +41,8 @@ class Mech_2_dof_arm():
       'a2': params.a2,
       'm2': params.m2,
       'g': params.g,
-      'vm1': 0.00005,
-      'vm2': 0.00055,
+      'vm1': 0.5,
+      'vm2': 0.55,
       'cm1': 0.01,
       'cm2': 0.05
     }
@@ -72,7 +72,6 @@ class Mech_2_dof_arm():
     u = np.array([[u[0]], [u[1]]])
 
     M = self.f_M_inv(th1, th2, dth1, dth2)
-
     V = self.f_V(th1, th2, dth1, dth2)
     G = self.f_G(th1, th2, dth1, dth2)
     F = self.f_F(th1, th2, dth1, dth2)
@@ -198,16 +197,11 @@ def __generate_symbolic_matrices__():
 
   M = sp.simplify(M)
 
-  rest = sp.Matrix([
-    [(M[0, 0] + M[0, 1]) - EL1],
-    [(M[1, 0] + M[1, 1]) - EL2]
-  ])
+  G_1 = sp.Add(*[argi for argi in EL1.args if argi.has(g)])
+  G_2 = sp.Add(*[argi for argi in EL2.args if argi.has(g)])
 
-  G_1 = sp.Add(*[argi for argi in rest[0].args if argi.has(g)])
-  G_2 = sp.Add(*[argi for argi in rest[1].args if argi.has(g)])
-
-  V_1 = G_1 + rest[0]
-  V_2 = G_2 + rest[1]
+  V_1 = sp.Add(*[argi for argi in EL1.args if not argi.has(g) and not argi.has(ddth1(t)) and not argi.has(ddth2(t))]) #G_1 - rest[0]
+  V_2 = sp.Add(*[argi for argi in EL2.args if not argi.has(g) and not argi.has(ddth1(t)) and not argi.has(ddth2(t))]) #G_2 - rest[1]
 
   G = sp.Matrix([G_1, G_2]).T
   V = sp.Matrix([V_1, V_2]).T
@@ -222,7 +216,29 @@ def __generate_symbolic_matrices__():
   }
 
   G = G.subs(subs)
-  V = -V.subs(subs)
+  V = V.subs(subs)
+  M = M.subs(subs)
+
+  ## Friction model
+  #vm1, vm2, cm1, cm2 = sp.symbols('vm1 vm2 cm1 cm2')
+  cm1, cm2 = sp.symbols('cm1 cm2')  # 0.01, 0.05
+  vm1, vm2 = sp.symbols('vm1 vm2')  # 0.00005, 0.00055
+  F = sp.Matrix([
+    [vm1 * dth1 + cm1 * sp.sign(dth1)],
+    [vm2 * dth2 + cm2 * sp.sign(dth2)]
+  ])
+
+  subs = {
+    th1(t): th1,
+    th2(t): th2,
+    dth2(t): dth2,
+    dth1(t): dth1,
+    ddth1(t): 1,
+    ddth2(t): 1,
+  }
+
+  G = G.subs(subs)
+  V = V.subs(subs)
   M = M.subs(subs)
 
 
@@ -245,11 +261,12 @@ if __name__ == '__main__':
 
 # Prepare for simluation
   ts = 0.01
-  Tend = int(600 / ts)
+  Tend = int(30 / ts)
   x = np.zeros((4, Tend))
   u = np.zeros((2, Tend))
-  u[0, 0:] = 1
-  u[1, 0:] = 0.5
+  u[0, 0:100] = 4
+  u[1, 0:] = 0
+  #x[:, 0] = [1, 1, 0, 0]
 
   m = Mech_2_dof_arm(ts=ts)
 
@@ -276,7 +293,7 @@ if __name__ == '__main__':
     #                params.l1 * -np.cos(x[0, i+1]) - params.l2 * np.cos(x[1, i+1])])
     # fig.canvas.draw()
 
-  # plt.close(fig)
+  plt.close(fig)
 
   plt.subplot(3, 1, 1)
   plt.plot(x[0,:])
