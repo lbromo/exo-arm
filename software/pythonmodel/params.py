@@ -21,7 +21,7 @@ I1 = np.matrix([
 
 
 # join 2 -- elbow to hand
-l2 = 89-3
+l2 = 89e-3
 a2 = 227e-3
 m2 = 547.77e-3
 

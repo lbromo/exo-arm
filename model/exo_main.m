@@ -31,18 +31,29 @@ t_span = [0 10];
 %% Discrete model
 
 Ts = 0.01;
-Tend = 10;
+Tend = 30 / Ts;
 xd = [0;0;0;0];
-u = [1; 0.5];
+u = zeros(2, Tend);
 
-for k = 1:Tend/Ts
-  if(mod(k,10) == 0)
-    params.arm.plot(xd(1:2,k)', 'fps', 1/(Ts*10))
-  end
+u(1, 1:100) = 4;
+u(2, 1:end) = 0;
 
-  if (k > 1/Ts)
-    u = [0; 0];
-  end
+%xd(:, 1) = [1; 1; 0; 0]
 
-  xd(:,k+1) = xd(:,k) + Ts*f(xd(:,k), u, params);
+params.vm = [0.5, 0.55]
+
+for k = 1:Tend
+  %if(mod(k,10) == 0)
+  %  params.arm.plot(xd(1:2,k)', 'fps', 1/(Ts*10))
+  %end
+
+  %if (k > 1/Ts)
+  %  u = [0; 0];
+  %end
+  xd(:,k+1) = xd(:,k) + Ts*f(xd(:,k), u(:,k), params);
 end
+
+subplot(3,1,1)
+plot(xd(1,:))
+subplot(3,1,2)
+plot(xd(2,:))
