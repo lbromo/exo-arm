@@ -83,7 +83,7 @@ def get_muscle_value(muscle, joint_angles, joint=None):
     muscle,
     lambda x: __raise__("No such muscle")).get(
       joint,
-      lambda x: __raise__("No such joint")
+      lambda x,y: __raise__("No such joint")
     )
 
   if(joint):
