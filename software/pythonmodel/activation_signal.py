@@ -35,13 +35,13 @@ def my_range(start, end, step):
 
 def act_sig(subject,e):
 	b1,b2,a,A,d = data(subject)
-	print(data(subject)	)
+        #print(data(subject)	)
 
 	tmp = a*e-b1*act_sig.u[-1]-b2*act_sig.u[-2]
 	act_sig.u.append(tmp)
 	alpha = (np.exp(A*act_sig.u[-1])-1)/(np.exp(A)-1)
 	#print(A-act_sig.u[-1])
-	print(A*act_sig.u[-1])
+        #print(A*act_sig.u[-1])
 	return alpha
 
 act_sig.u = [0, 0]
