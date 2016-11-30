@@ -1,4 +1,5 @@
 #! /usr/bin/env python3
+from __future__ import division
 import numpy as np
 
 import muscle_utils
@@ -41,7 +42,13 @@ class Muscle():
 
   def get_torque_estimate(self, angles, activation_level, joint):
     F = self.get_force_estimate(angles, activation_level)
-    moment_arm = muscle_utils.get_muscle_value(self.muscle_type, angles[2], joint) # HACK
+
+    # Which angle to forward?
+    if joint == muscle_utils.MUSCLE_JOINT.ELBOW:
+      moment_arm = muscle_utils.get_muscle_value(self.muscle_type, angles[2], joint) # HACK
+    elif joint == muscle_utils.MUSCLE_JOINT.SHOULDER:
+      moment_arm = muscle_utils.get_muscle_value(self.muscle_type, angles[3], joint) # HACK
+
     return moment_arm/1000 * F
 
   def __get_muscle_length__(self, angles):

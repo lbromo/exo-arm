@@ -253,7 +253,7 @@ class MyoRaw(object):
             ## 1000, EMG data becomes slower to respond to changes. In conclusion,
             ## 1000 is probably a good value.
             C = 1000
-            emg_hz = 50
+            emg_hz = 100
             ## strength of low-pass filtering of EMG data
             emg_smooth = 100
 
