@@ -1,5 +1,7 @@
 clear all; close all;
 
+	load par
+
 	names = [2:9];
 
 	SAMPLE_F = 100; % Hz
@@ -55,15 +57,9 @@ clear all; close all;
 		acc_m = thetadotdot(1:end-1)';
 	end
 			
+	par = final_pars;
 
 	Jm  = 181e-3; %kg m^3
-%	par = [cur_m -vel_m -sign(vel_m)]\[Jm * acc_m];
-%	kt    = par(1);
-%	b     = par(2);
-%	tau_e = par(3);
-
-% Extra nasty directional viscous friction!
-	par = [cur_m -(sign(vel_m)+1).*vel_m -sign(vel_m).*vel_m -sign(vel_m)]\[Jm * acc_m];;
 	kt    = par(1);
 	b     = par(2);
 	b_ad  = par(3);
@@ -113,17 +109,9 @@ clear all; close all;
 
 	MSE(i) = immse(x(2,:),thetadot');
 
-	pars{i} = par;
-
 end
 
-parmat = cell2mat(pars);
-final_pars = mean(parmat(:,2:end),2);
 
-figure(2);
-bar(parmat);
-%
 
-save par.mat final_pars
 
 

@@ -1,6 +1,6 @@
 clear all; close all;
 
-	name = 'long_vel';
+	name = 'long_step1';
 
 	[in m1 m2] = getParestData(name);
 
@@ -10,10 +10,10 @@ clear all; close all;
 	time_id = find(~cellfun(@isempty,strfind(m1.colheaders,'time')));
 
 	% Get all the vectors!
-	thetadot = m1.data(1000:end,vel_id);
-	time = m1.data(1000:end,time_id);
+	thetadot = m1.data(:,vel_id);
+	time = m1.data(:,time_id);
 	Ts = time(2)-time(1);
-	current = m1.data(1000:end,cur_id);
+	current = m1.data(:,cur_id);
 	current = current - mean(current);
 
 	% Differentiate speed to get acceleration
