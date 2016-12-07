@@ -85,6 +85,8 @@ class PSO(object):
 
 if __name__ == '__main__':
   import matplotlib.pyplot as plt
+
+  ## Define objective funcion
   objective = lambda x, meas, a, b: (((a*x + b) - meas)**2).mean()
 
   ## Generate test data
