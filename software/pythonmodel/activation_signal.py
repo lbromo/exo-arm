@@ -60,17 +60,3 @@ if __name__ == '__main__':
 	plt.plot(e)
 	plt.plot(alpha)
 	plt.show()
-
-#|C1|<1 and |C2|<1
-#"b1 b2" the recursive coefficients 
-#"a" the gain coefficient 
-#electromechanical delay "d": around 50 ms for bizeps
-#"e" is the input emg that has been filtered
-
-#used the article: An EMG-driven musculoskeletal model to estimate muscle forces and knee joint moments in vivo (desværre kun data til de nedre regioner:b)
-
-#data: subject	C1		C2		A
-#		1		-0.033	-0.019	-0.200
-#		2		0.091	-0.093	-1.975		
-#		3		-0.265	-0.182	-0.955
-#		4		-0.097	-0.313	-1.287
