@@ -42,8 +42,8 @@ class Mech_2_dof_arm():
       'a2': params.a2,
       'm2': params.m2,
       'g': params.g,
-      'vm1': 1,
-      'vm2': 1,
+      'vm1': 5,
+      'vm2': 0.75,
       'cm1': 0.01,
       'cm2': 0.05
     }
