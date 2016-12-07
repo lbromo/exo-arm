@@ -20,7 +20,7 @@ function plotParest(name, motor, fid)
 	grid on;
 	legend('Elbow', 'Shoulder')
 	title('PWM Input')
-	ylim([0 300])
+%	ylim([0 300])
 
 	ax(2) = subplot(2,3,2);
 	plot(m.data(:,1), m.data(:,2))

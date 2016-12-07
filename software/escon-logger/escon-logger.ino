@@ -1,5 +1,6 @@
 #define SAMPLE_F 100 // Hz
 #define SAMPLE_T_MS 1000 * 1/SAMPLE_F
+#define SAMPLE_T_S = 1/SAMPLE_F
 #define START_CHAR '$'
 #define SHOULDER 1
 #define ELBOW 2
@@ -23,6 +24,8 @@ int pin_pwm1 = 4;
 int pin_on2 = 7;
 int pin_dir2 = 8;
 int pin_pwm2 = 9;
+
+int ledpin = 13;
 
 bool led;
 
@@ -94,6 +97,8 @@ void sendMeas(int joint, unsigned long time, int ang, int vel, int cur){
 }
 
 void measure(){
+		digitalWrite(ledpin,LOW);
+
         int vel1, cur1, ang1;
         int vel2, cur2, ang2;
         unsigned long time;
@@ -182,6 +187,8 @@ int* read_msg(){
         while(Serial.available() < MSG_LEN) {
                 //Serial.println("waiting for rest of msg");
                 //delay(500);
+//        	    digitalWrite(ledpin,1);
+
         };
 
         // Read and convert all the shit!
@@ -219,6 +226,7 @@ int* read_msg(){
 
 void set_pwm(){
         //led = !led;
+		digitalWrite(ledpin,HIGH);
 
         int* data_arr;
         data_arr = read_msg();
@@ -230,6 +238,7 @@ void set_pwm(){
         digitalWrite(pin_dir2, data_arr[4]);
         analogWrite(pin_pwm2, data_arr[5]);
 
+        t2.enableIfNot();
 }
 
 void setup(){
@@ -251,9 +260,7 @@ void setup(){
         runner.addTask(t2);
 
         t1.enable();
-
-        t2.enable();
-}
+    }
 
 
 

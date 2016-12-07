@@ -2,16 +2,16 @@ clear all; close all;
 
 	load par
 
-	names = [2:9];
-
+%	names = [2:9];
+	names = linspace(10,100,10);
 	SAMPLE_F = 100; % Hz
-	PULSE_PERIOD = 20; % s
+	PULSE_PERIOD = 2; % s
 	PERIOD_SAMPLE = SAMPLE_F*PULSE_PERIOD;
 
 	for i = 1:length(names)
 
 %	name = sprintf('long_step%d%d.0',names(i),names(i));
-	name = sprintf('step_test_2_%d',names(i));
+	name = sprintf('SHOULDER_260_SINE_T2_%d',names(i));
 
 	[in m1 m2] = getParestData(name);
 
@@ -59,11 +59,14 @@ clear all; close all;
 			
 	par = final_pars;
 
-	Jm  = 181e-3; %kg m^3
+	JG2 = 0.282e-4;      % [kg*m2] Gear inertia
+	JM2 = 1210e-7;       % [kg*m2] Motor inertia (shoulder flex/ext)
+	JA2 = 4722727.19e-7; % [kg*m2]
+	Jm  = JG2+JM2+JA2;%181e-3; %kg m^3
 	kt    = par(1);
-	b     = par(2);
-	b_ad  = par(3);
-	tau_e = par(4);
+	b     = par(2)*.325;
+	b_ad  = par(3)*.325;
+	tau_e = par(4)*1.25;
 
 
 	
@@ -87,7 +90,7 @@ clear all; close all;
 	M = length(names);	
 	n = 2;
 	m = ceil(M/n);
-	ax(1) = subplot(m,n,i);
+	ax(i) = subplot(m,n,i);
 	time = time - time(1);
 
 	plot(time,thetadot,'b');

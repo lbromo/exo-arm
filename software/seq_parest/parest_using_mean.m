@@ -1,15 +1,15 @@
 clear all; close all;
 
-	names = [2:9];
+	names = [3:8];
 
 	SAMPLE_F = 100; % Hz
-	PULSE_PERIOD = 20; % s
+	PULSE_PERIOD = 10; % s
 	PERIOD_SAMPLE = SAMPLE_F*PULSE_PERIOD;
 
 	for i = 1:length(names)
 
 %	name = sprintf('long_step%d%d.0',names(i),names(i));
-	name = sprintf('step_test_2_%d',names(i));
+	name = sprintf('step_test_3_%d',names(i));
 
 	[in m1 m2] = getParestData(name);
 
@@ -78,7 +78,6 @@ clear all; close all;
 
 	for t = 1:N
 		dx1 = x(2,t);
-		scaling = 0.85;
 
 		tau_m = kt * current(t);
 		tau_f = ((sign(dx1)+1)*b + sign(dx1)*b_ad)*dx1 + sign(dx1) * tau_e;
@@ -94,6 +93,7 @@ clear all; close all;
 	ax(1) = subplot(m,n,i);
 	time = time - time(1);
 
+	
 	plot(time,thetadot,'b');
 	hold on;
 	grid on;
@@ -123,7 +123,7 @@ final_pars = mean(parmat(:,2:end),2);
 figure(2);
 bar(parmat);
 %
-
+MSE = sum(MSE);
 save par.mat final_pars
 
 
