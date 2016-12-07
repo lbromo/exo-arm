@@ -37,7 +37,7 @@ if __name__ == '__main__':
             emg_file_h = open(EMG_FILE, 'w')
             print("Rep " + str(sample_no+1) + ", move arm")
             meas_no = 0
-            while(meas_no<NO_OF_MEAS):
+            while(True):
                 myo.run(1)
             emg_file_h.close()        
     except (KeyboardInterrupt, SystemExit):
