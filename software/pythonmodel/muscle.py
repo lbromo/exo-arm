@@ -38,7 +38,13 @@ class Muscle():
     self.__prev_len__ = length
 
     # length - magic constant from utils (ask Morten why)
-    return self.__get_force_estimate__(length - 378.06, velocity, activation_level)
+    offset = 0
+    if self.muscle_type == muscle_utils.MUSCLE_NAME.BICEPS_BRACHII:
+      offset = 378.06
+    elif self.muscle_type == muscle_utils.MUSCLE_NAME.TRICEPS_BRACHII:
+      offset = 260.05
+
+    return self.__get_force_estimate__(length - offset, velocity, activation_level)
 
   def get_torque_estimate(self, angles, activation_level, joint):
     F = self.get_force_estimate(angles, activation_level)
@@ -47,7 +53,7 @@ class Muscle():
     if joint == muscle_utils.MUSCLE_JOINT.ELBOW:
       moment_arm = muscle_utils.get_muscle_value(self.muscle_type, angles[2], joint) # HACK
     elif joint == muscle_utils.MUSCLE_JOINT.SHOULDER:
-      moment_arm = muscle_utils.get_muscle_value(self.muscle_type, angles[3], joint) # HACK
+      moment_arm = muscle_utils.get_muscle_value(self.muscle_type, angles[1], joint) # HACK
 
     return moment_arm/1000 * F
 
