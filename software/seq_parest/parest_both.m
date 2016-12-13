@@ -131,16 +131,25 @@ acc_total = reshape(cell2mat(acc_mean),1,i*length(acc_mean{i}))';
 		Jm = JG3+JM3+JA3;
 	end
 % Extra nasty directional viscous friction!
-	par = [cur_total -(sign(vel_total)+1).*vel_total -sign(vel_total).*vel_total -sign(vel_total)]\[Jm * acc_total];
+%	par = [cur_total -(sign(vel_total)+1).*vel_total -sign(vel_total).*vel_total -sign(vel_total)]\[Jm * acc_total];
+	% USE THIS ONE
+	par = [cur_total -(sign(vel_total)-1).*sign(vel_total).*vel_total -sign(vel_total).*vel_total -sign(vel_total)]\[Jm * acc_total];
 %	par = [cur_total -vel_total -sign(vel_total)]\[Jm * acc_total];
+	if elbow == 0
+		scaling = [1 0.45 0.45 1.25]';
+	else
+		scaling = [1 0.45 0.45 1.15]';
+	end
+
+	par = par .* scaling;
 
 	kt    = par(1);
-%	b     = par(2)*.45;
-%	b_ad  = par(3)*.45;
-%	tau_e = par(4)*1.25;
 	b     = par(2);
 	b_ad  = par(3);
 	tau_e = par(4);
+%	b     = par(2);
+%	b_ad  = par(3);
+%	tau_e = par(end);
 % 8=====================================D
 % SIMULATE
 % 8=====================================D
@@ -154,7 +163,9 @@ acc_total = reshape(cell2mat(acc_mean),1,i*length(acc_mean{i}))';
 		dx1 = x(2,t);
 
 		tau_m = kt * cur_sig(t);
-		tau_f = ((sign(dx1)+1)*b + sign(dx1)*b_ad)*dx1 + sign(dx1) * tau_e;
+%		tau_f = ((sign(dx1)+1)*b + sign(dx1)*b_ad)*dx1 + sign(dx1) * tau_e;
+		% USE THIS ONE
+		tau_f = ((sign(dx1)-1)*sign(dx1)*b+sign(dx1)*b_ad)*dx1 + sign(dx1) * tau_e;		
 %		tau_f = dx1*b + sign(dx1) * tau_e;
 		dx2 = 1/Jm * (tau_m - tau_f);
 
@@ -192,7 +203,7 @@ acc_total = reshape(cell2mat(acc_mean),1,i*length(acc_mean{i}))';
 	ylabel('Velocity');
 	legend('Measured', 'Simulated')
 
-	linkaxes(ax, 'x');
+	%linkaxes(ax, 'x');
 
 	sq_vel{1} = time_sig(1:l_hack+offset);
 	sq_vel{2} = vel_sig(1:l_hack+offset);
