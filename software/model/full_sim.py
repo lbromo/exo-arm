@@ -18,13 +18,9 @@ from collections import deque
 emg = np.genfromtxt("lasse.log", delimiter=',')
 biceps_emg_max = max(emg[:, 4])
 biceps_emg_min = min(emg[:, 4])
-print(biceps_emg_max)
-print(biceps_emg_min)
 
 triceps_emg_max = max(emg[:, 8])
 triceps_emg_min = min(emg[:, 8])
-print(triceps_emg_max)
-print(triceps_emg_min)
 
 db = deque(maxlen=1000)
 dt = deque(maxlen=1000)
@@ -37,7 +33,7 @@ def update(emg, moving):
 
   biceps_a = activation_signal.act_sig(1, biceps_e)
   triceps_a = activation_signal.act_sig(1, triceps_e)
-  print(biceps_e, triceps_e)
+  #print(biceps_e, triceps_e)
   angles = [0, float(x[1, -1]), float(x[0, -1]), 0]
   biceps_tau = np.array([
     biceps.get_torque_estimate(angles, biceps_a, muscle_utils.MUSCLE_JOINT.SHOULDER),

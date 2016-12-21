@@ -15,15 +15,6 @@ class Mech_2_dof_arm():
       self,
       x0=np.array([[0], [0], [0], [0]]),
       ts=0.01,
-      I1=params.I1,
-      l1=params.l1,
-      a1=params.a1,
-      m1=params.m1,
-      I2=params.I1,
-      l2=params.l1,
-      a2=params.a2,
-      m2=params.m2,
-      g=params.g
   ):
     self.x = x0
     self.ts = ts
@@ -42,10 +33,12 @@ class Mech_2_dof_arm():
       'a2': params.a2,
       'm2': params.m2,
       'g': params.g,
-      'vm1': 5,
-      'vm2': 0.75,
-      'cm1': 0.01,
-      'cm2': 0.05
+      'vm1': 50 * params.vm1,
+      'vm2': 50 * params.vm2,
+      'vm1_scale': params.vm1_scale,
+      'vm2_scale': params.vm2_scale,
+      'cm1': params.cm1,
+      'cm2': params.cm2
     }
 
     symbolic_M, symbolic_G, symbolic_V, symbolic_F = self.__get_symbolic_matrices__()
@@ -67,6 +60,9 @@ class Mech_2_dof_arm():
     self.f_V = sp.lambdify(states, V, 'numpy')
     self.f_F = sp.lambdify(states, F, 'numpy')
 
+    self.vm1_scale = self.matrice_parameters['vm1_scale']
+    self.vm2_scale = self.matrice_parameters['vm2_scale']
+
   def step(self, u=np.array([0, 0])):
     th1, th2, dth1, dth2 = float(self.x[0]), float(self.x[1]), float(self.x[2]), float(self.x[3])
     dth = np.array([[dth1, dth2]])
@@ -76,6 +72,18 @@ class Mech_2_dof_arm():
     V = self.f_V(th1, th2, dth1, dth2)
     G = self.f_G(th1, th2, dth1, dth2)
     F = self.f_F(th1, th2, dth1, dth2)
+
+    if dth1 > 0:
+      F[0] = (1 + self.vm1_scale) * F[0]  # Should maybe be 1 - scale
+    else:
+      F[0] = (1 - self.vm1_scale) * F[0]  # Should maybe be 1 + scale
+
+    if dth2 > 0:
+      F[1] = (1 + self.vm2_scale) * F[1]  # Should maybe be 1 - scale
+    else:
+      F[1] = (1 - self.vm2_scale) * F[1]  # Should maybe be 1 + scale
+
+    print(F)
 
     ddth = M.dot(u - (V + G + F))
 
@@ -227,8 +235,8 @@ def __generate_symbolic_matrices__():
   cm1, cm2 = sp.symbols('cm1 cm2')  # 0.01, 0.05
   vm1, vm2 = sp.symbols('vm1 vm2')  # 0.00005, 0.00055
   F = sp.Matrix([
-    [vm1 * dth1], # + cm1 * sp.sign(dth1)],
-    [vm2 * dth2]  #+ cm2 * sp.sign(dth2)]
+    [vm1 * dth1],  # + cm1 * sp.sign(dth1)],
+    [vm2 * dth2]   # + cm2 * sp.sign(dth2)]
   ])
 
   subs = {
