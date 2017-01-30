@@ -39,5 +39,17 @@ I2 = np.matrix([
 ])
 
 
+# FRICTION
+vm1 = 3.69e-6 # 3.5099e-6 # NEJ - 1.0488
+vm2 = 3.71e-6 # 3.8198e-6
+
+vm1_scale = 0.0488
+vm2_scale = 0.0296
+
+
+cm1 = 1.36e-3
+cm2 = 1.97e-3
+
+
 # misc
 g = consts.g

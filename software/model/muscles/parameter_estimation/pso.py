@@ -87,23 +87,23 @@ if __name__ == '__main__':
   import matplotlib.pyplot as plt
 
   ## Define objective funcion
-  objective = lambda x, meas, a, b: (((a*x + b) - meas)**2).mean()
+  objective = lambda x, meas, a, b: (((a*x**2 + b*x**5) - meas)**2).mean()
 
   ## Generate test data
   x = np.linspace(-10,10,20)
-  y = 4*x + 42
+  y = 4*x**2 - 42*x**5
 
   ## initialize PSO
   pso = PSO(objective, dimensions=2, particles=50, w=1.8, phi_p=0.75, phi_g=1)
-  pso.add_limits([0, 25], [10, 75])
+  #pso.add_limits([0, 25], [10, 75])
 
   ## Optimize
   a, b, best_cost, particles, personal_best = pso.optimize(x, y, rho=0.01, max_iter=10000)
 
   ## Show results
-  y_est = a*x + b
+  y_est = a*x**2 + b*x**5
   plt.subplot(2,1,1)
-  plt.plot(x,y)
+  plt.plot(x, y)
   plt.plot(x, y_est, 'x')
   plt.title('Esimated results')
   plt.legend(['"Real" data', 'Estimated'])
