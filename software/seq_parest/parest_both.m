@@ -133,8 +133,12 @@ acc_total = reshape(cell2mat(acc_mean),1,i*length(acc_mean{i}))';
 % Extra nasty directional viscous friction!
 %	par = [cur_total -(sign(vel_total)+1).*vel_total -sign(vel_total).*vel_total -sign(vel_total)]\[Jm * acc_total];
 	% USE THIS ONE
-	par = [cur_total -(sign(vel_total)-1).*sign(vel_total).*vel_total -sign(vel_total).*vel_total -sign(vel_total)]\[Jm * acc_total];
+%	par = [cur_total -(sign(vel_total)-1).*sign(vel_total).*vel_total -sign(vel_total).*vel_total -sign(vel_total)]\[Jm * acc_total];
 %	par = [cur_total -vel_total -sign(vel_total)]\[Jm * acc_total];
+
+	% SLIGHTLY NICER
+	par = [cur_total -vel_total -sign(vel_total).*vel_total -sign(vel_total)]\[Jm*acc_total];
+
 	if elbow == 0
 		scaling = [1 0.45 0.45 1.25]';
 	else
@@ -164,9 +168,14 @@ acc_total = reshape(cell2mat(acc_mean),1,i*length(acc_mean{i}))';
 
 		tau_m = kt * cur_sig(t);
 %		tau_f = ((sign(dx1)+1)*b + sign(dx1)*b_ad)*dx1 + sign(dx1) * tau_e;
+		% SLIGHTLY NICER
+		tau_f = b * dx1 + sign(dx1)*b_ad*dx1 + sign(dx1) * tau_e;
 		% USE THIS ONE
-		tau_f = ((sign(dx1)-1)*sign(dx1)*b+sign(dx1)*b_ad)*dx1 + sign(dx1) * tau_e;		
+%		tau_f = ((sign(dx1)-1)*sign(dx1)*b+sign(dx1)*b_ad)*dx1 + sign(dx1) * tau_e;		
 %		tau_f = dx1*b + sign(dx1) * tau_e;
+		%if tau_m < tau_f
+		%	tau_f = tau_m;
+		%end
 		dx2 = 1/Jm * (tau_m - tau_f);
 
 		x(:,t+1) = x(:,t) + Ts * [dx1;dx2];
@@ -175,7 +184,7 @@ acc_total = reshape(cell2mat(acc_mean),1,i*length(acc_mean{i}))';
 % 8=====================================D
 % PLOT
 % 8=====================================D
-	figure;
+	%figure;
 	ax(1) = subplot(211);
 
 	if elbow == 0

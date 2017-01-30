@@ -21,6 +21,7 @@ Tsin = table(sin{1}', sin{2}', sin{3}', 'VariableNames', {'time'; 'meas'; 'sim'}
 fnsin = 'shoulder_dir_tuned_sin.csv';
 %writetable(Tsin, fnsin);
 
+figure;
 
 sq_name = 'ELBOW_1260_STEP_T2_';
 sin_name = 'ELBOW_260_SINE_T2_';
