@@ -261,7 +261,7 @@ if __name__ == '__main__':
   Tend = int(60 / ts)
   x = np.zeros((4, Tend))
   u = np.zeros((2, Tend))
-  u[1, 0:500] = 2
+  u[1, 0:10000] = 0.25
 
   m = Mech_2_dof_arm(ts=ts)
 
