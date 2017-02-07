@@ -56,4 +56,4 @@ Im_shoulder = 0.282e-4 + 1210e-7 # Grear inertia + motor inertaia [kg*m^2]
 Im_elbow    = 0.282e-4 + 0181e-7 # Grear inertia + motor inertaia [kg*m^2]
 
 # misc
-g = consts.g
+g = 9.81
