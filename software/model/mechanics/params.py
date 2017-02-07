@@ -40,8 +40,8 @@ I2 = np.matrix([
 
 
 # FRICTION
-vm1 = 0.00005 * 100 # 3.69e-6 # 3.5099e-6 # NEJ - 1.0488
-vm2 = 0.00055 * 100 # 3.71e-6 # 3.8198e-6
+vm1 = 3.69e-6 # 3.5099e-6 # NEJ - 1.0488
+vm2 = 3.71e-6 # 3.8198e-6
 
 vm1_scale = 0.0488
 vm2_scale = 0.0296
@@ -50,6 +50,10 @@ vm2_scale = 0.0296
 cm1 = 1.36e-3
 cm2 = 1.97e-3
 
+# Adding motor
+N = 50
+Im_elbow    = 0.282e-4 + 1210e-7 # Grear inertia + motor inertaia [kg*m^2]
+Im_shoulder = 0.282e-4 + 0181e-7 # Grear inertia + motor inertaia [kg*m^2]
 
 # misc
 g = consts.g

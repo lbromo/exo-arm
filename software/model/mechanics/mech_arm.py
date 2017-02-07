@@ -33,19 +33,30 @@ class Mech_2_dof_arm():
       'a2': params.a2,
       'm2': params.m2,
       'g': params.g,
-      'vm1': 50 * params.vm1,
-      'vm2': 50 * params.vm2,
+      'vm1': params.vm1,
+      'vm2': params.vm2,
       'vm1_scale': params.vm1_scale,
       'vm2_scale': params.vm2_scale,
       'cm1': params.cm1,
-      'cm2': params.cm2
+      'cm2': params.cm2,
+      'N': params.N,
+      'Im_s': params.Im_shoulder,
+      'Im_e': params.Im_elbow
+
     }
 
     symbolic_M, symbolic_G, symbolic_V, symbolic_F = self.__get_symbolic_matrices__()
+    N = self.matrice_parameters['N']
+
+    Im_s, Im_e = sp.symbols('Im_s Im_e')
+
+    Im = sp.Matrix([
+      [Im_s,    0],
+      [   0, Im_e]
+    ]).subs(self.matrice_parameters)
 
     # insert constant
     M = symbolic_M.subs(self.matrice_parameters)
-    M_inv = M.inv()
     G = symbolic_G.transpose().subs(self.matrice_parameters)
     V = symbolic_V.transpose().subs(self.matrice_parameters)
     F = symbolic_F.subs(self.matrice_parameters)
@@ -53,10 +64,10 @@ class Mech_2_dof_arm():
     ## Convert to functions in the states
     states = sp.symbols('th1 th2 dth1 dth2')
 
-    self.f_M_inv = sp.lambdify(states, M_inv)
+    self.f_M_inv = sp.lambdify(states, (Im * N**2 + M).inv())
     self.f_G = sp.lambdify(states, G, 'numpy')
     self.f_V = sp.lambdify(states, V, 'numpy')
-    self.f_F = sp.lambdify(states, F, 'numpy')
+    self.f_F = sp.lambdify(states, F * N**2, 'numpy')
 
     self.vm1_scale = self.matrice_parameters['vm1_scale']
     self.vm2_scale = self.matrice_parameters['vm2_scale']
@@ -247,10 +258,10 @@ if __name__ == '__main__':
 
 # Prepare for simluation
   ts = 0.001
-  Tend = int(10 / ts)
+  Tend = int(60 / ts)
   x = np.zeros((4, Tend))
   u = np.zeros((2, Tend))
-  u[0, 0:] = 2
+  u[1, 0:500] = 2
 
   m = Mech_2_dof_arm(ts=ts)
 
