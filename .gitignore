@@ -45,6 +45,7 @@
 matrices
 venv
 __pycache__
+*.pyc
 
 # Other stuff
 *.png
