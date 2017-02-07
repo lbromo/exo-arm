@@ -261,9 +261,10 @@ if __name__ == '__main__':
   Tend = int(60 / ts)
   x = np.zeros((4, Tend))
   u = np.zeros((2, Tend))
-  u[1, 0:10000] = 0.25
+  #u[1, 0:10000] = 0.25
+  x0=np.array([[1], [1], [0], [0]])
 
-  m = Mech_2_dof_arm(ts=ts)
+  m = Mech_2_dof_arm(x0=x0, ts=ts)
 
   fig, ax = plt.subplots(1, 1)
   ax.set_aspect('equal')
@@ -303,7 +304,7 @@ if __name__ == '__main__':
       ax.draw_artist(line)
       fig.canvas.blit(ax.bbox)
 
-      time.sleep(20*ts - (time.time() - step_time))
+      #time.sleep(20*ts - (time.time() - step_time))
 
   print(time.time())
   plt.close(fig)
