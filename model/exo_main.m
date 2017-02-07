@@ -1,7 +1,7 @@
 ParametersScript
 
 x0 = [
-      2
+      0
       0;
       0;
       0;
@@ -30,17 +30,17 @@ t_span = [0 10];
 
 %% Discrete model
 
-Ts = 0.01;
-Tend = 30 / Ts;
-xd = [0;0;0;0];
+Ts = 0.0001;
+Tend = 60 / Ts;
+xd = [0;1;0;0];
 u = zeros(2, Tend);
 
-u(1, 1:100) = 4;
+u(1, 1:100) = 0;
 u(2, 1:end) = 0;
 
 %xd(:, 1) = [1; 1; 0; 0]
 
-params.vm = [0.5, 0.55]
+%params.vm = [0.5, 0.55]
 
 for k = 1:Tend
   %if(mod(k,10) == 0)
