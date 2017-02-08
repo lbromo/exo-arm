@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/env python2
 from __future__ import division
 import numpy as np
 
@@ -38,24 +38,24 @@ class Muscle():
     self.__prev_len__ = length
 
     # length - magic constant from utils (ask Morten why)
-    offset = 0
-    if self.muscle_type == muscle_utils.MUSCLE_NAME.BICEPS_BRACHII:
-      offset = 378.06
-    elif self.muscle_type == muscle_utils.MUSCLE_NAME.TRICEPS_BRACHII:
-      offset = 260.05
-
-    return self.__get_force_estimate__(length - offset, velocity, activation_level)
+    #offset = 0
+    #if self.muscle_type == muscle_utils.MUSCLE_NAME.BICEPS_BRACHII: #offset er bare startstedet for polynomie cst(0 deg i joint)  
+    #  offset = 378.06
+    #elif self.muscle_type == muscle_utils.MUSCLE_NAME.TRICEPS_BRACHII:
+    #  offset = 260.05
+    # return self.__get_force_estimate__(length - offset, velocity, activation_level)
+    return self.__get_force_estimate__(length, velocity, activation_level)
 
   def get_torque_estimate(self, angles, activation_level, joint):
     F = self.get_force_estimate(angles, activation_level)
 
     # Which angle to forward?
-    if joint == muscle_utils.MUSCLE_JOINT.ELBOW:
-      moment_arm = muscle_utils.get_muscle_value(self.muscle_type, angles[2], joint) # HACK
-    elif joint == muscle_utils.MUSCLE_JOINT.SHOULDER:
-      moment_arm = muscle_utils.get_muscle_value(self.muscle_type, angles[1], joint) # HACK
+    #if joint == muscle_utils.MUSCLE_JOINT.ELBOW:
+    #  moment_arm = muscle_utils.get_muscle_value(self.muscle_type, angles, joint) 
+    #elif joint == muscle_utils.MUSCLE_JOINT.SHOULDER:
+    moment_arm = muscle_utils.get_muscle_value(self.muscle_type, angles, joint) 
 
-    return moment_arm/1000 * F
+    return (moment_arm/1000) * F  # /1000 to convert from mm to m 
 
   def __get_muscle_length__(self, angles):
     return muscle_utils.get_muscle_value(self.muscle_type, angles)
@@ -88,12 +88,13 @@ if __name__ == '__main__':
 
   F, tau = ([], [])
   m = Muscle()
+  #m2 = Muscle(muscle_type=muscle_utils.MUSCLE_NAME.BRACHIALIS, max_length=4000)
   activation_level = 1
 
   length = []
 
-  for a in range(0,140):
-    angs = [0,0,a,0]
+  for a in range(0,200):
+    angs = [a,0]
     length.append(m.__get_muscle_length__(angs))
     F.append(m.get_force_estimate(angs, activation_level))
     tau.append(m.get_torque_estimate(angs, activation_level, muscle_utils.MUSCLE_JOINT.ELBOW))
