@@ -45,6 +45,9 @@ class ActivationSignal():
         self.__filter__(meas)
         return get_activation_level()
 
+    def get_activation_level(self):
+        return (np.exp(self.A*self.u[-1]) - 1) / (np.exp(self.A) - 1)
+
     def __filter__(self, e):
         self.x_hp.append(e)
         y_hp_new = iir_filter(self.b_hp, self.a_hp, self.x_hp, self.y_hp)
@@ -65,10 +68,6 @@ class ActivationSignal():
         self.u.append(u_new)
 
         return y_hp_new, y_lp_new, u_new
-
-
-    def get_activation_level(self):
-        return (np.exp(self.A*self.u[-1]) - 1) / (np.exp(self.A) - 1)
 
 
 if __name__ == '__main__':
