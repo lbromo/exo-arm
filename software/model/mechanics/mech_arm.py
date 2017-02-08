@@ -48,7 +48,7 @@ class Mech_2_dof_arm():
     symbolic_M, symbolic_G, symbolic_V, symbolic_F = self.__get_symbolic_matrices__()
     N = self.matrice_parameters['N']
 
-    Im_s, Im_e = sp.symbols('Im_s Im_e')
+    Im_s, Im_e= sp.symbols('Im_s Im_e')
 
     Im = sp.Matrix([
       [Im_s,    0],
@@ -64,7 +64,9 @@ class Mech_2_dof_arm():
     ## Convert to functions in the states
     states = sp.symbols('th1 th2 dth1 dth2')
 
-    self.f_M_inv = sp.lambdify(states, (Im * N**2 + M).inv())
+    tmp = M + Im * N**2
+    f_M = sp.lambdify(states, tmp)
+    self.f_M_inv = sp.lambdify(states, tmp.inv(method='LU')) # Matlab uses LU
     self.f_G = sp.lambdify(states, G, 'numpy')
     self.f_V = sp.lambdify(states, V, 'numpy')
     self.f_F = sp.lambdify(states, F * N**2, 'numpy')
@@ -81,18 +83,6 @@ class Mech_2_dof_arm():
     V = self.f_V(th1, th2, dth1, dth2)
     G = self.f_G(th1, th2, dth1, dth2)
     F = self.f_F(th1, th2, dth1, dth2)
-
-    # if dth1 > 0:
-    #   F[0] = (1 + self.vm1_scale) * F[0]  # Should maybe be 1 - scale
-    # else:
-    #   F[0] = (1 - self.vm1_scale) * F[0]  # Should maybe be 1 + scale
-
-    # if dth2 > 0:
-    #   F[1] = (1 + self.vm2_scale) * F[1]  # Should maybe be 1 - scale
-    # else:
-    #   F[1] = (1 - self.vm2_scale) * F[1]  # Should maybe be 1 + scale
-
-    # print(F)
 
     ddth = M.dot(u - (V + G + F))
 
@@ -258,17 +248,19 @@ if __name__ == '__main__':
 
 # Prepare for simluation
   ts = 0.001
-  Tend = int(60 / ts)
+  tend = 20
+  Tend = int(20 / ts)
+  t = np.linspace(0, tend, Tend)
   x = np.zeros((4, Tend))
   u = np.zeros((2, Tend))
-  u[1, 0:10000] = 0.25
+  #u[1, 1/ts:2/ts] = 0.5
+  x0=np.array([[1], [1], [0], [0]])
 
-  m = Mech_2_dof_arm(ts=ts)
+  m = Mech_2_dof_arm(x0=x0, ts=ts)
 
   fig, ax = plt.subplots(1, 1)
-  ax.set_aspect('equal')
   ax.set_xlim(-0.6, 0.6)
-  ax.set_ylim(-0.6, 0.6)
+  ax.set_ylim(-0.6, 0.1)
   ax.hold(True)
 
   plt.show(False)
@@ -303,19 +295,17 @@ if __name__ == '__main__':
       ax.draw_artist(line)
       fig.canvas.blit(ax.bbox)
 
-      time.sleep(20*ts - (time.time() - step_time))
+      #time.sleep(20*ts - (time.time() - step_time))
 
   print(time.time())
   plt.close(fig)
 
-  plt.subplot(3, 1, 1)
-  plt.plot(x[0,:])
+  plt.subplot(2, 1, 1)
+  plt.plot(t, x[0,:])
+  plt.plot(t, x[1,:])
 
-  plt.subplot(3, 1, 2)
-  plt.plot(x[1,:])
-
-  plt.subplot(3, 1, 3)
-  plt.plot(u[0,:])
-  plt.plot(u[1,:])
+  plt.subplot(2, 1, 2)
+  plt.plot(t, u[0,:])
+  plt.plot(t, u[1,:])
 
   plt.show()
