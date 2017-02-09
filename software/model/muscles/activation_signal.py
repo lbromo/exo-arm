@@ -43,7 +43,7 @@ class ActivationSignal():
 
     def new_measurement(self, meas):
         self.__filter__(meas)
-        return get_activation_level()
+        return self.get_activation_level()
 
     def get_activation_level(self):
         return (np.exp(self.A*self.u[-1]) - 1) / (np.exp(self.A) - 1)

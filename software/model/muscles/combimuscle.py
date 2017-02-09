@@ -46,24 +46,27 @@ m4 = Muscle(
             phi_m=0.05,
             phi_v=0.19)	
 
+def get_comb_tau(angs, activation_level, joint):
 
+        tau1 = m1.get_torque_estimate(angs, activation_level[0], joint)
+        tau2 = m2.get_torque_estimate(angs, activation_level[1], joint)
+        tau3 = m3.get_torque_estimate(angs, activation_level[2], joint)
+        tau4 = m4.get_torque_estimate(angs, activation_level[3], joint)
+        tautot_elbow = tau1 +  tau2 + tau3 + tau4
+        return tautot_elbow 
 
 if __name__ == '__main__':
-    tautot_elbow, ang_vec = ([], [])
+    tau, ang_vec = ([], [])
 
-    activation_level = 1
+    activation_level = [1, 1, 1, 0.5]
 
     for a in range(0,100):
         angs = [a,0]
-        tau1 = m1.get_torque_estimate(angs, activation_level, muscle_utils.MUSCLE_JOINT.ELBOW)
-        tau2 = m2.get_torque_estimate(angs, activation_level, muscle_utils.MUSCLE_JOINT.ELBOW)
-        tau3 = m3.get_torque_estimate(angs, activation_level, muscle_utils.MUSCLE_JOINT.ELBOW)
-        tau4 = m4.get_torque_estimate(angs, .5, muscle_utils.MUSCLE_JOINT.ELBOW)
+        tau.append(get_comb_tau(angs, activation_level, muscle_utils.MUSCLE_JOINT.ELBOW))
         ang_vec.append(a)
-        tautot_elbow.append(tau1 +  tau2 + tau3 + tau4)
 
     plt.figure(1)
-    plt.plot(ang_vec, tautot_elbow, 'x')
+    plt.plot(ang_vec, tau, 'x')
     plt.grid()
     plt.title('torque - angle relationship')
     plt.xlabel('angle [deg]')
