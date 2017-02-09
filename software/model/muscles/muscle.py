@@ -42,13 +42,9 @@ class Muscle():
   def get_torque_estimate(self, angles, activation_level, joint):
     F = self.get_force_estimate(angles, activation_level)
 
-    # Which angle to forward?
-    #if joint == muscle_utils.MUSCLE_JOINT.ELBOW:
-    #  moment_arm = muscle_utils.get_muscle_value(self.muscle_type, angles, joint) 
-    #elif joint == muscle_utils.MUSCLE_JOINT.SHOULDER:
-    moment_arm = muscle_utils.get_muscle_value(self.muscle_type, angles, joint) 
+    moment_arm = muscle_utils.get_muscle_value(self.muscle_type, angles, joint)
 
-    return (moment_arm/1000) * F  # /1000 to convert from mm to m 
+    return (moment_arm/1000) * F  # /1000 to convert from mm to m
 
   def __get_muscle_length__(self, angles):
     return muscle_utils.get_muscle_value(self.muscle_type, angles)
