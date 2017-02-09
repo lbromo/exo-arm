@@ -110,7 +110,7 @@ if __name__ == '__main__':
 
   length = []
 
-  for a in range(0,200):
+  for a in range(0,140):
     angs = [a,0]
     length.append(m.__get_muscle_length__(angs))
     F.append(m.get_force_estimate(angs, activation_level))
