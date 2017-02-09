@@ -8,6 +8,7 @@ import muscle_utils
 class Muscle():
 
   def __init__(self,
+               activation_signal,
                muscle_type=muscle_utils.MUSCLE_NAME.BICEPS_BRACHII,
                max_length=404.6,
                optimal_fiber_length=130.7,
@@ -20,6 +21,7 @@ class Muscle():
                phi_v=0.5,
                ts=0.01
   ):
+    self._activation_signal = activation_signal
     self.muscle_type = muscle_type
     self.Lmax = max_length
     self.Lce0 = optimal_fiber_length
@@ -34,13 +36,14 @@ class Muscle():
     self.__prev_dLce__ = None
 
 
-  def get_force_estimate(self, angles, activation_level):
+  def get_force_estimate(self, angles):
     length = self.__get_muscle_length__(angles)
+    activation_level = self._activation_signal.get_activation_level()
 
     return self.__get_force_estimate__(length, activation_level)
 
-  def get_torque_estimate(self, angles, activation_level, joint):
-    F = self.get_force_estimate(angles, activation_level)
+  def get_torque_estimate(self, angles, joint):
+    F = self.get_force_estimate(angles)
 
     moment_arm = muscle_utils.get_muscle_value(self.muscle_type, angles, joint)
 
@@ -102,19 +105,19 @@ class Muscle():
 
 if __name__ == '__main__':
   import matplotlib.pyplot as plt
+  from activation_signal import MockActicationSignal
 
-  F, tau = ([], [])
-  m = Muscle()
-  #m2 = Muscle(muscle_type=muscle_utils.MUSCLE_NAME.BRACHIALIS, max_length=4000)
   activation_level = 1
+  activation_signal = MockActicationSignal(activation_level)
 
-  length = []
+  m = Muscle(activation_signal)
 
+  F, tau, length = [], [], []
   for a in range(0,140):
     angs = [a,0]
     length.append(m.__get_muscle_length__(angs))
-    F.append(m.get_force_estimate(angs, activation_level))
-    tau.append(m.get_torque_estimate(angs, activation_level, muscle_utils.MUSCLE_JOINT.ELBOW))
+    F.append(m.get_force_estimate(angs))
+    tau.append(m.get_torque_estimate(angs, muscle_utils.MUSCLE_JOINT.ELBOW))
 
   plt.figure(1)
 

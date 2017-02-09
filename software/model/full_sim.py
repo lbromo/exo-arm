@@ -9,49 +9,31 @@ import activation_signal
 import muscle
 import muscle_utils
 import params
+import emg
 import time
 import matplotlib.pyplot as plt
 import myo_raw as myo
 import numpy as np
 from collections import deque
 
-emg = np.genfromtxt("lasse.log", delimiter=',')
-biceps_emg_max = max(emg[:, 4])
-biceps_emg_min = min(emg[:, 4])
+x = []
 
-triceps_emg_max = max(emg[:, 8])
-triceps_emg_min = min(emg[:, 8])
-
-db = deque(maxlen=1000)
-dt = deque(maxlen=1000)
-n = 0
-
-def update(emg, moving):
+def update(emg_meas, moving):
   global x, n
-  biceps_e = (emg[3] - biceps_emg_min)/(biceps_emg_max - biceps_emg_min)
-  triceps_e = (emg[7] - triceps_emg_min)/(triceps_emg_max - triceps_emg_min)
+  _emg.on_emg_measurement(emg_meas)
 
-  biceps_a = activation_signal.act_sig(1, biceps_e)
-  triceps_a = activation_signal.act_sig(1, triceps_e)
-  #print(biceps_e, triceps_e)
-  angles = [0, float(x[1, -1]), float(x[0, -1]), 0]
+  angles = [float(x[1, -1]), float(x[0, -1])]
   biceps_tau = np.array([
-    biceps.get_torque_estimate(angles, biceps_a, muscle_utils.MUSCLE_JOINT.SHOULDER),
-    biceps.get_torque_estimate(angles, biceps_a, muscle_utils.MUSCLE_JOINT.ELBOW)
+    biceps.get_torque_estimate(angles, muscle_utils.MUSCLE_JOINT.SHOULDER),
+    biceps.get_torque_estimate(angles, muscle_utils.MUSCLE_JOINT.ELBOW)
   ])
   triceps_tau = np.array([
-    triceps.get_torque_estimate(angles, triceps_a, muscle_utils.MUSCLE_JOINT.SHOULDER),
-    triceps.get_torque_estimate(angles, triceps_a, muscle_utils.MUSCLE_JOINT.ELBOW)
+    triceps.get_torque_estimate(angles, muscle_utils.MUSCLE_JOINT.SHOULDER),
+    triceps.get_torque_estimate(angles, muscle_utils.MUSCLE_JOINT.ELBOW)
   ])
   tot = biceps_tau + triceps_tau
-  #tot[0] = 0
-  #print((biceps_tau, triceps_tau, tot))
-  #print(tot)
+
   x_new = np.reshape(arm.step(tot), (4,1))
-
-  #x_new[0] = 0
-  #x_new[2] = 0
-
   x = np.append(x, x_new, axis=1)
 
   ## Plot stuff we dont care about
@@ -74,15 +56,27 @@ x = np.array([[0], [0], [0], [0]])  # initial conditions
 arm = mech_arm.Mech_2_dof_arm(x0=x, ts=ts)
 
 # Setup mucles
-biceps = muscle.Muscle(muscle_utils.MUSCLE_NAME.BICEPS_BRACHII)
+_emg = emg.EMG()
+biceps_act_sig = activation_signal.ActivationSignal(C1=-0.033, C2=-0.019, A=-0.200, d=0.05, pod=emg.EMGPOD.BICEPS_BRACHII)
+triceps_act_sig = activation_signal.ActivationSignal(C1=-0.033, C2=-0.019, A=-0.200, d=0.05, pod=emg.EMGPOD.TRICEPS_BRACHII)
+
+_emg.register_observer(biceps_act_sig)
+_emg.register_observer(triceps_act_sig)
+
+biceps = muscle.Muscle(
+  biceps_act_sig,
+  muscle_utils.MUSCLE_NAME.BICEPS_BRACHII)
+
 triceps = muscle.Muscle(
+  biceps_act_sig,
   muscle_type=muscle_utils.MUSCLE_NAME.TRICEPS_BRACHII, # Should be changed to muscle_name
   max_length=402.9,
   optimal_fiber_length=152.4,
   tensor_slack_length=190.5,
   max_force=1000,
   alpha=0.66,
-  spe=10,
+  Spe=10,
+  Sse=2.3,
   phi_m=0.5,
   phi_v=1
 )
