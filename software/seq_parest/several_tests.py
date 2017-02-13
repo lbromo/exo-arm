@@ -28,6 +28,16 @@ SEQ_LEN = T_END_S * pe.SAMPLE_F_HZ
 SER_PORT = "/dev/ttyACM0"
 BAUD = 115200
 
+
+def cur_pwm(cur,motorid)
+	if motorid == 1:
+		max_cur=44
+	elif motorid == 2:
+		max_cur=55
+	slope=(pe.PWM_MAX-pe.PWM_MIN)/max_cur
+	pwm=cur*slope
+	return (pwm+pe.PWM_MIN)
+
 def makeStep(frq, amp, t_end):
         # Signal Vectors
     seq_len = int(t_end * pe.SAMPLE_F_HZ)
