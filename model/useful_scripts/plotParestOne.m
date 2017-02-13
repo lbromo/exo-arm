@@ -1,4 +1,4 @@
-function plotParest(name, motor, fid)
+function plotParestOne(name, motor, fid)
 
 	if ~exist('fid')
 		fid = 1;

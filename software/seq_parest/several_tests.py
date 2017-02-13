@@ -19,9 +19,9 @@ PULSE_PERIOD_ELBOW_S =10
 PULSE_PERIOD_SHOULDER_S = 4
 
 T_END_S = 4
-NAME = "ELBOW_BJARKE_STEP"
+NAME = "TEST_FEB"
 #AMPS = np.linspace(10,100,10)
-AMPS = [60]
+AMPS = [40]
 
 SEQ_LEN = T_END_S * pe.SAMPLE_F_HZ
 
@@ -57,6 +57,29 @@ def makeSine(frq, amp, t_end):
         dir_v[i] = pe.clamp(dir_v[i], pe.ARM_DOWN,pe.ARM_UP)
     return (t, sig_motor, dir_v)
 
+def randStep(max_frq, amp, t_end):
+    seq_len = int(t_end * pe.SAMPLE_F_HZ)
+    t = np.linspace(0,t_end,seq_len)
+    max_per = 1/max_frq
+    sig = []
+
+    while len(sig) < seq_len:
+        T = max_per*scipy.rand()
+        frq = 1/T
+        tnow = np.linspace(0,T,np.floor(T/pe.SAMPLE_PERIOD_S))
+        sig.append(amp * np.sign(np.sin(2 * np.pi * frq * tnow)))
+
+    sig = pe.flat(sig)
+    sig_motor = sig[:len(t)]        
+
+    sig_motor, dir_v = pe.parseSignal(sig_motor)
+    
+    for i in range(0,seq_len):
+        sig_motor[i] = pe.clamp(np.abs(sig_motor[i]),pe.PWM_MIN,pe.PWM_MAX)    
+        dir_v[i] = pe.clamp(dir_v[i], pe.ARM_DOWN,pe.ARM_UP)
+    return (t, sig_motor, dir_v)
+
+
 if __name__ == "__main__":
  #   q = Queue()
  #   p = Process(target=pPlot, args=(q,))
@@ -73,7 +96,7 @@ if __name__ == "__main__":
 
 #    amps = np.linspace(20,30,11);
     amps = AMPS
-    TEST_LEN = len(amps);
+    TEST_LEN = len(amps)
 
     # Main loop!
     try:
@@ -90,11 +113,11 @@ if __name__ == "__main__":
             motor2_file_h = open((MOTOR2_FILE), 'w')
             input_file_h = open((INPUT_FILE), 'w')
 
-            motor1_file_h.write("time,angle,velocity,current \n")
+            motor1_file_h.write("time,angle,velocity,current\n")
             motor2_file_h.write("time,angle,velocity,current\n")
             input_file_h.write("on1,dir1,pwm1,on2,dir2,pwm2\n")
 
-            t, sig_motor1, dir1 = makeStep(1/PULSE_PERIOD_ELBOW_S, amps[idx], T_END_S)
+            t, sig_motor1, dir1 = randStep(1/pe.ELBOW_PULSE_PERIOD_MAX_S, amps[idx], T_END_S)
             sig_motor2  = np.ones(SEQ_LEN)
             dir2 = np.ones(SEQ_LEN)
             on1 = 1
@@ -128,5 +151,8 @@ if __name__ == "__main__":
     except:
         out = pe.parseMsg(0, 0, pe.PWM_MIN, 0, 0, pe.PWM_MIN)
         ser.write(out)
+        print('Fail')
         exit()
     # p.join()
+    plt.plot(t,sig_motor1)
+    plt.show()

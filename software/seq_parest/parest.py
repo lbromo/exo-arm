@@ -20,6 +20,9 @@ SAMPLE_PERIOD_S = 1/SAMPLE_F_HZ
 PWM_MAX = 230
 PWM_MIN = 25
 
+ELBOW_PULSE_PERIOD_MAX_S = 2
+SHOULDER_PULSE_PERIOD_MAX_S = 2
+
 ARM_UP = 1
 ARM_DOWN = 0
 
@@ -85,3 +88,6 @@ def parseSignal(inputsignal):
     dirsig = np.sign(inputsignal)
     inputsignal = np.abs(inputsignal) + PWM_MIN
     return (inputsignal, dirsig)
+
+def flat(sig):
+    return [item for sublist in sig for item in sublist]
