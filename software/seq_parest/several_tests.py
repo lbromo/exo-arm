@@ -21,7 +21,7 @@ PULSE_PERIOD_SHOULDER_S = 4
 T_END_S = 4
 NAME = "TEST_FEB"
 #AMPS = np.linspace(10,100,10)
-AMPS = [40]
+AMPS = np.array([0.1])
 
 SEQ_LEN = T_END_S * pe.SAMPLE_F_HZ
 
@@ -29,14 +29,14 @@ SER_PORT = "/dev/ttyACM0"
 BAUD = 115200
 
 
-def cur_pwm(cur,motorid)
-	if motorid == 1:
-		max_cur=44
-	elif motorid == 2:
-		max_cur=55
-	slope=(pe.PWM_MAX-pe.PWM_MIN)/max_cur
-	pwm=cur*slope
-	return (pwm+pe.PWM_MIN)
+def cur_pwm(cur,motorid):
+    if motorid == 1:
+       max_cur=0.5
+    elif motorid == 2:
+       max_cur=1
+    slope=(pe.PWM_MAX-pe.PWM_MIN)/max_cur
+    pwm=cur*slope+pe.PWM_MIN
+    return pwm
 
 def makeStep(frq, amp, t_end):
         # Signal Vectors
@@ -89,6 +89,21 @@ def randStep(max_frq, amp, t_end):
         dir_v[i] = pe.clamp(dir_v[i], pe.ARM_DOWN,pe.ARM_UP)
     return (t, sig_motor, dir_v)
 
+def sineSweep(min_frq, max_frq, amp, t_end):
+    seq_len = int(t_end * pe.SAMPLE_F_HZ)
+    t = np.linspace(0,t_end,seq_len)
+
+    f = np.array(np.linspace(min_frq, max_frq, seq_len))
+    
+    sig_motor = amp * np.sin(2*np.pi*f*np.array(t))
+
+    sig_motor, dir_v = pe.parseSignal(sig_motor)
+
+    for i in range(0,seq_len):
+        sig_motor[i] = pe.clamp(np.abs(sig_motor[i]),pe.PWM_MIN,pe.PWM_MAX)    
+        dir_v[i] = pe.clamp(dir_v[i], pe.ARM_DOWN,pe.ARM_UP)
+    return (t, sig_motor, dir_v)
+
 
 if __name__ == "__main__":
  #   q = Queue()
@@ -105,7 +120,7 @@ if __name__ == "__main__":
     ser.write(b'$00' + pe.intTo3Bytes(pe.PWM_MIN) + b'00' + pe.intTo3Bytes(pe.PWM_MIN))
 
 #    amps = np.linspace(20,30,11);
-    amps = AMPS
+    amps = cur_pwm(AMPS,1)
     TEST_LEN = len(amps)
 
     # Main loop!
@@ -127,7 +142,7 @@ if __name__ == "__main__":
             motor2_file_h.write("time,angle,velocity,current\n")
             input_file_h.write("on1,dir1,pwm1,on2,dir2,pwm2\n")
 
-            t, sig_motor1, dir1 = randStep(1/pe.ELBOW_PULSE_PERIOD_MAX_S, amps[idx], T_END_S)
+            t, sig_motor1, dir1 = sineSweep(1/pe.ELBOW_PULSE_PERIOD_MAX_S, 5, amps[idx], T_END_S)
             sig_motor2  = np.ones(SEQ_LEN)
             dir2 = np.ones(SEQ_LEN)
             on1 = 1
@@ -164,5 +179,3 @@ if __name__ == "__main__":
         print('Fail')
         exit()
     # p.join()
-    plt.plot(t,sig_motor1)
-    plt.show()
