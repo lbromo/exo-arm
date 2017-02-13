@@ -56,10 +56,16 @@ I2 = [I2_xx, I2_xy, I2_yz
 
 Izz1=I1(3,3);Izz2=I2(3,3);
 
+%% Motor Inertia
+In1 = 0.282e-4 + 1210e-7; % shoudler gear annd motor inertia
+In2 = 0.282e-4 + 181e-7;  % elbow gear annd motor inertia
 
+%% Gear Ratio
+
+N=50;
 %% Frictions 
-cm=[0.01 0.05]; 
-vm= [0.00005 0.00055]; 
+cm=[0 0];%[0.01 0.05]; 
+vm= [3.69e-6 3.71e-6]%[0.00005 0.00055];
 
 % %% Save all variables for use in other scripts
 % save('ModelParams',...
@@ -81,6 +87,9 @@ params.I2 = I2;
 params.g = g;
 params.cm = cm;
 params.vm = vm;
+params.In1 = In1;
+params.In2 = In2;
+params.N = N;
 
 %% Robotics Toolbox Implementation
 %L(1) = Link('d', d1,	'a', a1,   'alpha', alpha1);

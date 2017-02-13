@@ -33,21 +33,30 @@ class Mech_2_dof_arm():
       'a2': params.a2,
       'm2': params.m2,
       'g': params.g,
-      'vm1': 50 * params.vm1,
-      'vm2': 50 * params.vm2,
+      'vm1': params.vm1,
+      'vm2': params.vm2,
       'vm1_scale': params.vm1_scale,
       'vm2_scale': params.vm2_scale,
       'cm1': params.cm1,
-      'cm2': params.cm2
+      'cm2': params.cm2,
+      'N': params.N,
+      'Im_s': params.Im_shoulder,
+      'Im_e': params.Im_elbow
+
     }
 
     symbolic_M, symbolic_G, symbolic_V, symbolic_F = self.__get_symbolic_matrices__()
+    N = self.matrice_parameters['N']
+
+    Im_s, Im_e= sp.symbols('Im_s Im_e')
+
+    Im = sp.Matrix([
+      [Im_s,    0],
+      [   0, Im_e]
+    ]).subs(self.matrice_parameters)
 
     # insert constant
     M = symbolic_M.subs(self.matrice_parameters)
-    #print(M.subs('th2', 0))
-    #raw_input()
-    M_inv = M.inv()
     G = symbolic_G.transpose().subs(self.matrice_parameters)
     V = symbolic_V.transpose().subs(self.matrice_parameters)
     F = symbolic_F.subs(self.matrice_parameters)
@@ -55,10 +64,12 @@ class Mech_2_dof_arm():
     ## Convert to functions in the states
     states = sp.symbols('th1 th2 dth1 dth2')
 
-    self.f_M_inv = sp.lambdify(states, M_inv)
+    tmp = M + Im * N**2
+    f_M = sp.lambdify(states, tmp)
+    self.f_M_inv = sp.lambdify(states, tmp.inv(method='LU')) # Matlab uses LU
     self.f_G = sp.lambdify(states, G, 'numpy')
     self.f_V = sp.lambdify(states, V, 'numpy')
-    self.f_F = sp.lambdify(states, F, 'numpy')
+    self.f_F = sp.lambdify(states, F * N**2, 'numpy')
 
     self.vm1_scale = self.matrice_parameters['vm1_scale']
     self.vm2_scale = self.matrice_parameters['vm2_scale']
@@ -73,18 +84,6 @@ class Mech_2_dof_arm():
     G = self.f_G(th1, th2, dth1, dth2)
     F = self.f_F(th1, th2, dth1, dth2)
 
-    if dth1 > 0:
-      F[0] = (1 + self.vm1_scale) * F[0]  # Should maybe be 1 - scale
-    else:
-      F[0] = (1 - self.vm1_scale) * F[0]  # Should maybe be 1 + scale
-
-    if dth2 > 0:
-      F[1] = (1 + self.vm2_scale) * F[1]  # Should maybe be 1 - scale
-    else:
-      F[1] = (1 - self.vm2_scale) * F[1]  # Should maybe be 1 + scale
-
-    print(F)
-
     ddth = M.dot(u - (V + G + F))
 
     xdot = np.concatenate([dth.flatten(), ddth.flatten()])
@@ -96,15 +95,15 @@ class Mech_2_dof_arm():
   def __get_symbolic_matrices__(self):
     try:
       with open(Mech_2_dof_arm.CLOUDPICKLE_FILE, 'rb') as f:
-        M_inv, G, V, F = cloudpickle.load(f)
+        M, G, V, F = cloudpickle.load(f)
     except Exception as e:
       print(e)
-      M_inv, G, V, F = __generate_symbolic_matrices__()
+      M, G, V, F = __generate_symbolic_matrices__()
       with open(Mech_2_dof_arm.CLOUDPICKLE_FILE, 'wb') as f:
-        cloudpickle.dump((M_inv, G, V, F), f)
+        cloudpickle.dump((M, G, V, F), f)
 
 
-    return M_inv, G, V, F
+    return M, G, V, F
 
 def __generate_symbolic_matrices__():
   t = sp.Symbol('t')
@@ -168,8 +167,8 @@ def __generate_symbolic_matrices__():
   w1_0 = w1
   w2_0 = w1_0 + T01[0:3, 0:3]*w2
 
-  I1_0 = I1
-  I2_0 = T01[0:3, 0:3] * I2 * T01[0:3, 0:3].T
+  I1_0 = T01[0:3, 0:3] * I1 * T01[0:3, 0:3].T
+  I2_0 = T01[0:3, 0:3] * T12[0:3, 0:3] * I2 * (T01[0:3, 0:3] * T12[0:3, 0:3]).T
 
   k1  = 0.5 * m1 * Vc1.T * Vc1 + 0.5 * w1_0.T * I1_0 * w1_0
   k2  = 0.5 * m2 * Vc2.T * Vc2 + 0.5 * w2_0.T * I2_0 * w2_0
@@ -239,19 +238,6 @@ def __generate_symbolic_matrices__():
     [vm2 * dth2]   # + cm2 * sp.sign(dth2)]
   ])
 
-  subs = {
-    th1(t): th1,
-    th2(t): th2,
-    dth2(t): dth2,
-    dth1(t): dth1,
-    ddth1(t): 1,
-    ddth2(t): 1,
-  }
-
-  G = G.subs(subs)
-  V = V.subs(subs)
-  M = M.subs(subs)
-
   return M, G, V, F
 
 
@@ -261,20 +247,20 @@ if __name__ == '__main__':
   import matplotlib.pyplot as plt
 
 # Prepare for simluation
-  ts = 0.01
-  Tend = int(10 / ts)
+  ts = 0.001
+  tend = 20
+  Tend = int(20 / ts)
+  t = np.linspace(0, tend, Tend)
   x = np.zeros((4, Tend))
   u = np.zeros((2, Tend))
-  u[0, 0:100] = 4
-  u[1, 0:100] = 2
-  u[1,100:] = 0.75
+  #u[1, 1/ts:2/ts] = 0.5
+  x0=np.array([[1], [1], [0], [0]])
 
-  m = Mech_2_dof_arm(ts=ts)
+  m = Mech_2_dof_arm(x0=x0, ts=ts)
 
   fig, ax = plt.subplots(1, 1)
-  ax.set_aspect('equal')
-  ax.set_xlim(-0.35, 0.35)
-  ax.set_ylim(-0.35, 0.35)
+  ax.set_xlim(-0.6, 0.6)
+  ax.set_ylim(-0.6, 0.1)
   ax.hold(True)
 
   plt.show(False)
@@ -291,36 +277,35 @@ if __name__ == '__main__':
   background = fig.canvas.copy_from_bbox(ax.bbox)
 
   fig.canvas.draw()
-
+ 
   print(time.time())
   for i in range(Tend-1):
-    step_time = time.time()
     x[:, i+1] = m.step(u[:, i])
-    line.set_data([0,
-                   params.l1 * np.sin(x[0, i+1]),
-                   params.l1 * np.sin(x[0, i+1]) + params.l2 * np.sin(x[1, i+1])],
-                   [0,
-                   params.l1 * -np.cos(x[0, i+1]),
-                   params.l1 * -np.cos(x[0, i+1]) - params.l2 * np.cos(x[1, i+1])])
-    #fig.canvas.draw()
+    if i % 20 == 0:
+      step_time = time.time()
+      line.set_data([0,
+                     params.a1 * np.sin(x[0, i+1]),
+                     params.a1 * np.sin(x[0, i+1]) + params.a2 * np.sin(x[0, i+1] + x[1, i+1])],
+                    [0,
+                     -params.a1 * np.cos(x[0, i+1]),
+                     -params.a1 * np.cos(x[0, i+1]) - params.a2 * np.cos(x[0, i+1] + x[1, i+1])])
+      #fig.canvas.draw()
 
-    fig.canvas.restore_region(background)
-    ax.draw_artist(line)
-    fig.canvas.blit(ax.bbox)
+      fig.canvas.restore_region(background)
+      ax.draw_artist(line)
+      fig.canvas.blit(ax.bbox)
 
-    end_time = time.time()
-    time.sleep(ts - (end_time - step_time))
+      #time.sleep(20*ts - (time.time() - step_time))
 
   print(time.time())
   plt.close(fig)
 
-  plt.subplot(3, 1, 1)
-  plt.plot(x[0,:])
+  plt.subplot(2, 1, 1)
+  plt.plot(t, x[0,:])
+  plt.plot(t, x[1,:])
 
-  plt.subplot(3, 1, 2)
-  plt.plot(x[1,:])
-
-  plt.subplot(3, 1, 3)
-  plt.plot(u[0,:])
+  plt.subplot(2, 1, 2)
+  plt.plot(t, u[0,:])
+  plt.plot(t, u[1,:])
 
   plt.show()
