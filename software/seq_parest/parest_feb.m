@@ -36,6 +36,7 @@ time = m1.data(1:end-1,time_id);
 
 Ts = time(2)-time(1);
 acc = diff(vel,1,1)./Ts;
+acc = smooth(smooth(acc));
 
 cur  = m1.data(1:end-1,cur_id);
 vel  = vel(1:end-1);
@@ -49,16 +50,16 @@ if joint == 2
     JG2 = 0.282e-4;      % [kg*m2] Gear inertia
     JM2 = 1210e-7;       % [kg*m2] Motor inertia (shoulder flex/ext)
     JA2 = 539919.92e-9; %4722727.19e-9; % [kg*m2]
-    Jm  = JG2+JM2+JA2;%181e-3; 
+    Jm  = (JG2+JM2) * 50^2 + JA2;%181e-3; 
 elseif joint == 1
     JG3 = 0.282e-4;      % [kg*m2] Gear inertia
     JM3 = 181e-7;        % [kg*m2] Motor inertia (elbow flex/ext)
     JA3 = 1562955.32e-9; % [kg*m2]
-    Jm = JG3+JM3+JA3;
+    Jm = (JG3+JM3)*50^2+JA3;
 end
 
 vs = 10;
-sigmoidpar = 100;
+sigmoidpar = 1;
 
 par = [cur -vel -sigmoid(vel,sigmoidpar) -sigmoid(vel,sigmoidpar).*exp(-abs(vel./vs))] \ [Jm*acc];
 %par = [cur -vel -sigmoid(vel,sigmoidpar)] \ [Jm*acc];
@@ -83,8 +84,12 @@ x(:,1) = x0;
 for t = 1:N
     dx1 = x(2,t);
     tau_m = kt * cur(t);
-    tau_f(t) = b * dx1 + tau_c * sigmoid(dx1,sigmoidpar) + tau_s * sigmoid(dx1,sigmoidpar)*exp(-abs(dx1/vs));
-%    tau_f = b * dx1 + tau_c * sigmoid(dx1,sigmoidpar);
+    fv = b * dx1;
+    fc = tau_c * sigmoid(dx1,sigmoidpar);
+    fs = tau_s * sigmoid(dx1,sigmoidpar)*exp(-abs(dx1/vs));
+
+    tau_f(t) = fv + fc + fs;
+
     dx2 = 1/Jm * (tau_m - tau_f(t));
     x(:,t+1) = x(:,t) + Ts * [dx1;dx2];
 end
@@ -94,8 +99,8 @@ end
 % 8=====================================D
 
 plot(time,vel,time,x(2,1:end-1));
-grid on;
 ylabel('Velocity');
+grid on;
 legend('Measured', 'Simulated')
 
 disp('MSE:')
