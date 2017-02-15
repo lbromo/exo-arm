@@ -1,0 +1,71 @@
+# Parest Test 17.feb 14
+
+## Shoulder
+	Coloumb friction = 1 A
+	Offset = coloumb friction
+
+	Random square pulse test 
+	Name: rs_60_0.3
+	Max period = 2s
+	Amplitude = 0.3 A + offset
+
+	Name: rs_60_0.1
+	Max period = 2s
+	Amplitude = 0.1 A + offset
+
+	Name: rs_60_0.5
+	Max period = 2s
+	Amplitude = 0.5 A + offset
+
+
+	Sine sweep
+	Name: sw_60_0.3
+	Max period: 50s
+	Min period: 0.2s
+	Amplitude = 0.3 + offset			
+
+	Sine sweep
+	Name: sw_60_0.1
+	Max period: 50s
+	Min period: 0.2s
+	Amplitude = 0.1 + offset
+
+	Sine sweep
+	Name: sw_60_0.5
+	Max period: 4s
+	Min period: 0.2s
+	Amplitude = 0.5 + offset
+
+## Elbow
+	Coloumb friction = 0.4A
+	Offset = coloumb friction
+
+	Random square pulse test
+	Name: rs_60_0.1
+	Max period = 1s
+	Amplitude = 0.1 A + offset
+
+	Name: rs_60_0.2
+	Max period = 1s
+	Amplitude = 0.2 A + offset
+
+	Name: rs_60_0.15
+	Max period = 1s
+	Amplitude = 0.15 A + offset
+
+	Sine sweep
+	Name: sw_60_0.1
+	Max period: 10s
+	Min period: 0.2s
+	Amplitude = 0.1 + offset
+
+	Name: sw_60_0.3
+	Max period: 10s
+	Min period: 0.2s
+	Amplitude = 0.3 + offset	
+	OBS Går imod ende stop		
+
+	Name: sw_60_0.2
+	Max period: 10s
+	Min period: 0.2s
+	Amplitude = 0.2 + offset

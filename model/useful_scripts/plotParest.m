@@ -1,12 +1,22 @@
-function plotParest(name, fid)
+function plotParest(name, joint, fid)
 
 	if ~exist('fid')
 		fid = 1;
 	end
 
-	fm1 = strcat('logs/motor1_',name,'.log');
-	fm2 = strcat('logs/motor2_',name,'.log');
-	fin = strcat('logs/input_',name,'.log');
+	if joint == 0
+		fm1 = strcat('logs/motor1_',name,'.log');
+		fm2 = strcat('logs/motor2_',name,'.log');
+		fin = strcat('logs/input_',name,'.log');
+	elseif joint == 1
+		fm1 = strcat('logs/elbow/motor1_',name,'.log');
+		fm2 = strcat('logs/elbow/motor2_',name,'.log');
+		fin = strcat('logs/elbow/input_',name,'.log');
+	elseif joint == 2		
+		fm1 = strcat('logs/shoulder/motor1_',name,'.log');
+		fm2 = strcat('logs/shoulder/motor2_',name,'.log');
+		fin = strcat('logs/shoulder/input_',name,'.log');
+	end
 
 	m1 = importdata(fm1);
 	m2 = importdata(fm2);

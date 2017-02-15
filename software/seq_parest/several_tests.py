@@ -15,28 +15,23 @@ from multiprocessing import Process, Queue
 import matplotlib.pyplot as plt
 import collections
 
+ELBOW = 1
+SHOULDER = 2
+
 PULSE_PERIOD_ELBOW_S =10
 PULSE_PERIOD_SHOULDER_S = 4
 
-T_END_S = 4
-NAME = "TEST_FEB"
+T_END_S = 0.1
+NAME = "col_0.5"
 #AMPS = np.linspace(10,100,10)
-AMPS = np.array([0.1])
+AMPS = np.array([0.5])
 
 SEQ_LEN = T_END_S * pe.SAMPLE_F_HZ
 
-SER_PORT = "/dev/ttyACM0"
+SER_PORT = "/dev/ttyMCC"
 BAUD = 115200
 
 
-def cur_pwm(cur,motorid):
-    if motorid == 1:
-       max_cur=0.5
-    elif motorid == 2:
-       max_cur=1
-    slope=(pe.PWM_MAX-pe.PWM_MIN)/max_cur
-    pwm=cur*slope+pe.PWM_MIN
-    return pwm
 
 def makeStep(frq, amp, t_end):
         # Signal Vectors
@@ -72,18 +67,14 @@ def randStep(max_frq, amp, t_end):
     t = np.linspace(0,t_end,seq_len)
     max_per = 1/max_frq
     sig = []
-
     while len(sig) < seq_len:
         T = max_per*scipy.rand()
         frq = 1/T
         tnow = np.linspace(0,T,np.floor(T/pe.SAMPLE_PERIOD_S))
         sig.append(amp * np.sign(np.sin(2 * np.pi * frq * tnow)))
-
     sig = pe.flat(sig)
     sig_motor = sig[:len(t)]        
-
     sig_motor, dir_v = pe.parseSignal(sig_motor)
-    
     for i in range(0,seq_len):
         sig_motor[i] = pe.clamp(np.abs(sig_motor[i]),pe.PWM_MIN,pe.PWM_MAX)    
         dir_v[i] = pe.clamp(dir_v[i], pe.ARM_DOWN,pe.ARM_UP)
@@ -94,8 +85,9 @@ def sineSweep(min_frq, max_frq, amp, t_end):
     t = np.linspace(0,t_end,seq_len)
 
     f = np.array(np.linspace(min_frq, max_frq, seq_len))
-    
+
     sig_motor = amp * np.sin(2*np.pi*f*np.array(t))
+    sig_motor = sig_motor[::-1]
 
     sig_motor, dir_v = pe.parseSignal(sig_motor)
 
@@ -115,19 +107,19 @@ if __name__ == "__main__":
     if not ser.isOpen():
         ser.open()
     
+    print(NAME)
     time.sleep(2)
 
     ser.write(b'$00' + pe.intTo3Bytes(pe.PWM_MIN) + b'00' + pe.intTo3Bytes(pe.PWM_MIN))
 
 #    amps = np.linspace(20,30,11);
-    amps = cur_pwm(AMPS,1)
+    amps = pe.cur_pwm(AMPS,ELBOW)
     TEST_LEN = len(amps)
 
     # Main loop!
     try:
         for idx in range(0,TEST_LEN):
-            name = NAME+ str(int(amps[idx]))
-
+            name = NAME#+ str(int(amps[idx]))
         # File initialization
 
             INPUT_FILE = "./logs/input_" + name + ".log"
@@ -142,7 +134,8 @@ if __name__ == "__main__":
             motor2_file_h.write("time,angle,velocity,current\n")
             input_file_h.write("on1,dir1,pwm1,on2,dir2,pwm2\n")
 
-            t, sig_motor1, dir1 = sineSweep(1/pe.ELBOW_PULSE_PERIOD_MAX_S, 5, amps[idx], T_END_S)
+            t, sig_motor1, dir1 = randStep(1/pe.ELBOW_PULSE_PERIOD_MAX_S, amps[idx], T_END_S)
+            #t, sig_motor1, dir1 = sineSweep(1/pe.ELBOW_PULSE_PERIOD_MAX_S, 5, amps[idx], T_END_S)
             sig_motor2  = np.ones(SEQ_LEN)
             dir2 = np.ones(SEQ_LEN)
             on1 = 1
@@ -152,12 +145,13 @@ if __name__ == "__main__":
             print('Starting loop')
 
             if ser.isOpen():
-                for i in range(0, SEQ_LEN-1):
+                for i in range(0, int(SEQ_LEN-1)):
                     starttime = time.time()
+                    #sig_motor1[i] = 25
                     out = pe.parseMsg(on1, dir1[i], sig_motor1[i], on2, dir2[i], sig_motor2[i])
-
+                    print(out)
                     # Writing on serial
-                    ser.write(out)
+                    print(ser.write(out))
 
                     # Logging
                     input_file_h.write(str(on1) + ',' + str(dir1[i]) + ',' + str(round(sig_motor1[i])).zfill(3) + ',' + str(on2) + ',' + str(int(dir2[i])) + ',' + str(round(sig_motor2[i])).zfill(3) + '\n')
@@ -171,11 +165,13 @@ if __name__ == "__main__":
                     # Only wait if we made it in time 
                     if time_to_sleep > 0:
                         time.sleep(time_to_sleep)
+                    else:
+                        print("Missed it")
         ser.write(b'$00' + pe.intTo3Bytes(pe.PWM_MIN) + b'00' + pe.intTo3Bytes(pe.PWM_MIN))
         print('done')
     except:
         out = pe.parseMsg(0, 0, pe.PWM_MIN, 0, 0, pe.PWM_MIN)
         ser.write(out)
-        print('Fail')
+        print(sys.exc_info()[0])
         exit()
     # p.join()
