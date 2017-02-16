@@ -20,12 +20,21 @@ SAMPLE_PERIOD_S = 1/SAMPLE_F_HZ
 PWM_MAX = 230
 PWM_MIN = 25
 
-ELBOW_PULSE_PERIOD_MAX_S = 2
-SHOULDER_PULSE_PERIOD_MAX_S = 2
+ELBOW_PULSE_PERIOD_MAX_S = 1
+SHOULDER_PULSE_PERIOD_MAX_S = 1
 
 ARM_UP = 1
 ARM_DOWN = 0
 
+
+def cur_pwm(cur,motorid):
+    if motorid == 1:
+        max_cur=1
+    elif motorid == 2:
+        max_cur=3
+    slope=(PWM_MAX-PWM_MIN)/max_cur
+    pwm=cur*slope
+    return pwm
 
 def decodeMsg(msg):
     msgstr = str(msg)
@@ -53,7 +62,7 @@ def convertToVel_Elbow(velNoUnit):
     return velRadS
 
 def convertToCurrent_Shoulder(curNoUnit):
-    curA = 0.014663 * (curNoUnit - 511.5)
+    curA = 0.005865 * (curNoUnit - 511.5)
     return curA
 
 def convertToVel_Shoulder(velNoUnit):
