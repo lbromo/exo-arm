@@ -14,9 +14,9 @@ for t = 1:N
     tau_m = kt * cur(t);
     fv = b * dx1;
     fc = tau_c * sigmoid(dx1,sigmoidpar);
-    fs = tau_s * sigmoid(dx1,sigmoidpar)*exp(-abs(dx1/vs));
+%    fs = tau_s * sigmoid(dx1,sigmoidpar)*exp(-abs(dx1/vs));
 
-    tau_f(t) = fv + fc + fs;
+    tau_f(t) = fv + fc;
 
     % if (abs(dx1) < 1) && (abs(tau_m) < (abs(fc)+abs(fs)))
     %     tau_f(t) = tau_m;

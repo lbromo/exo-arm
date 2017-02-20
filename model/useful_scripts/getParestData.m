@@ -13,9 +13,9 @@ function [in m1 m2] = getParestData(name, where)
 		fm2 = strcat('logs/elbow/motor2_',name,'.log');
 		fin = strcat('logs/elbow/input_',name,'.log');
 	elseif where == 2
-		fm1 = strcat('logs/elbow/motor1_',name,'.log');
-		fm2 = strcat('logs/elbow/motor2_',name,'.log');
-		fin = strcat('logs/elbow/input_',name,'.log');
+		fm1 = strcat('logs/shoulder/motor1_',name,'.log');
+		fm2 = strcat('logs/shoulder/motor2_',name,'.log');
+		fin = strcat('logs/shoulder/input_',name,'.log');
 	elseif where == 3
 		fm1 = strcat('logs/both/motor1_',name,'.log');
 		fm2 = strcat('logs/both/motor2_',name,'.log');
