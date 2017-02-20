@@ -69,3 +69,11 @@
 	Max period: 10s
 	Min period: 0.2s
 	Amplitude = 0.2 + offset
+
+
+## Test with both
+Names:
+
+both_sine
+both_sine2
+both

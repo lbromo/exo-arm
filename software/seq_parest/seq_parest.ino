@@ -27,7 +27,7 @@ int pin_pwm2 = 9;
 
 void setup(){
 
-        analogReference(EXTERNAL);
+        //analogReference(EXTERNAL);
 
         Serial.begin(115200);
 
@@ -44,8 +44,9 @@ void setup(){
         pinMode(13,OUTPUT);
         pinMode(12,OUTPUT);
 
-        analogWrite(pin_pwm1, 10);
-        analogWrite(pin_pwm2, 10);
+        digitalWrite(13, led);
+        analogWrite(pin_pwm1, 25);
+        analogWrite(pin_pwm2, 25);
 
 }
 
@@ -90,18 +91,9 @@ int getVel(int joint){
 
 void sendMeas(int joint, unsigned long time, int ang, int vel, int cur){
 
-        //Serial.println("HERE IS A MESSAGE FOR LOGGING:");
-        Serial.println(START_CHAR);
-        Serial.print(',');
-        Serial.print(joint);
-        Serial.print(',');
-        Serial.print(time);
-        Serial.print(',');
-        Serial.print(ang);
-        Serial.print(',');
-        Serial.print(vel);
-        Serial.print(',');
-        Serial.println(cur);
+        char msg[50];
+        sprintf(msg, "%c,%d,%d,%d,%d,%d",START_CHAR,joint,time,ang,vel,cur);
+        Serial.println(msg);
 
 }
 
