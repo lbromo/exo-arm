@@ -1,4 +1,4 @@
-clear all; close all; 
+clear all; %close all; 
 
 % 8=====================================D
 % GET ALL THE FILES
@@ -8,7 +8,7 @@ ELBOW = 1;
 SHOULDER = 2;
 
 Ts = 0.01;
-joint = SHOULDER;
+joint = ELBOW;
 
 if joint == 1 % Elbow
 	names = {'rs_60_0.1', 'rs_60_0.2', 'rs_60_0.3', 'e_sin_no_0.6', 'e_sin_no_0.7'};
@@ -140,10 +140,9 @@ param.tau_c = tau_c;
 param.sigmoidpar = sigmoidpar;
 
 if joint == 1
-	elbow = param;
+	elbow = param
 	save param_e elbow
 elseif joint == 2
 	shoulder = param
 	save param_s shoulder
 end
-		
