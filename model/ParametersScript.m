@@ -10,11 +10,15 @@
 
 disp('Parametersscript')
 
+
+%% Gear Ratio
+
+N=50;
 %% Constants
 g   = 9.81;     % [m/s^2] Gravitational acceleration
 Ts	= 0.004;	% [s] Sampling period
-kt1  = 0.1;     % motor constant shoulder/m1
-kt2  = 0.1;     % motor constant elbow/m2
+kt1  = 0.0708;%176.9956/N;%101.961/N;%247.4564/N; %300/N; %187.6525/N;     % motor constant shoulder/m1
+kt2  = 0.0764; %190.8920/N;%135.4855/N;%242.2123/N;  %279.4054/N; %193.5055/N;     % motor constant elbow/m2
 %% Constants - Link 1:
 d1  = 0;        % [m] Distance from {0} to {1} along z0
 a1  = 330e-3;        % [m] Distance from {0} to {1} along x0
@@ -61,12 +65,10 @@ Izz1=I1(3,3);Izz2=I2(3,3);
 In1 = 0.282e-4 + 1210e-7; % shoudler gear and motor inertia
 In2 = 0.282e-4 + 181e-7;  % elbow gear and motor inertia
 
-%% Gear Ratio
-
-N=50;
 %% Frictions 
-cm=[0 0];%[0.01 0.05]; 
-vm= [3.69e-6 3.71e-6]%[0.00005 0.00055];
+cm=[0.0660 0.0359];%[165.0942/(N^2) 89.7613/(N^2)];%[31.519/(N^2) 18.6925/(N^2)];%[224.8743/(N^2) 95.9248/(N^2)];%[283.27/(N^2) 110.16/(N^2)];%[119.9795/(N^2) 51.5666/(N^2)];
+vm= [1.9469e-4 4.4047e-5]; %[0.4867/(N^2) 0.1101/(N^2)];% [2.0377/(N^2) 1.0787/(N^2)];%[0.7988/(N^2) 0.274/(N^2)];%[0.9872/(N^2) 0.4129/(N^2)]; [1.2548/(N^2) 0.5650/(N^2)];
+sigmoidpar=[0.1383 0.0889];
 
 % %% Save all variables for use in other scripts
 % save('ModelParams',...
@@ -93,6 +95,7 @@ params.In2 = In2;
 params.N = N;
 params.kt1 = kt1;
 params.kt2 = kt2;
+params.sigmoidpar=sigmoidpar;
 %% Robotics Toolbox Implementation
 %L(1) = Link('d', d1,	'a', a1,   'alpha', alpha1);
 %L(2) = Link('d', d2,	'a', a2,   'alpha', alpha2);

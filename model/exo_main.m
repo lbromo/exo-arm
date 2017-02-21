@@ -13,8 +13,8 @@ abe = 3;
 % -----------------------------------------
 ParametersScript 
 
-m1 = importdata('both/motor1_both_sine.log'); %time,angle,velocity,current
-m2 = importdata('both/motor2_both_sine.log'); %time,angle,velocity,current
+m2 = importdata('both/motor1_both_sine.log'); %time,angle,velocity,current
+m1 = importdata('both/motor2_both_sine.log'); %time,angle,velocity,current
 in = importdata('both/input_both_sine.log'); %on1,dir1,pwm1,on2,dir2,pwm2
 
 %m1 and m2
@@ -25,11 +25,11 @@ cur_id = find(~cellfun(@isempty,strfind(m1.colheaders,'current')));
 
 time = (m1.data(:,time_id)- m1.data(1,time_id))./1000; %to start from 0 and in ms
 angle_m1  = (m1.data(:,ang_id)).*0.01745329252; %from angle to rad
-vel_m1  = (m1.data(:,vel_id)).*0.01745329252; %from angle/s to rad/s
-cur_m1 = m1.data(:,cur_id);
-angle_m2  = (m2.data(:,ang_id)).*0.01745329252; %from angle to rad
-vel_m2  = (m2.data(:,vel_id)).*0.01745329252; %from angle/s to rad/s
-cur_m2 = m2.data(:,cur_id);
+vel_m1  = (m1.data(:,vel_id))/N; %from before to after gear
+cur_m1 = m1.data(:,cur_id).*params.kt1*N; %to get torque input and after gears
+angle_m2  = (m2.data(:,ang_id)).*0.01745329252; %from angle to rad 
+vel_m2  = (m2.data(:,vel_id))/N; %from before to after gear
+cur_m2 = m2.data(:,cur_id).*params.kt2*N; %to get torque input and after gears
 
 %in  
 on1_id = find(~cellfun(@isempty,strfind(in.colheaders,'on1')));
@@ -88,19 +88,26 @@ end
 %  test of method
 % -----------------------------------------------
 if abe == 2
-Ts = 0.001;
-Tend = 20 / Ts;
+%Ts = 0.01;
+%Tend = 20 / Ts;
 xd = [0;0;0;0];
-u = zeros(2, Tend);
 
-u(1, 1000:2000) = 0;
+Ts = zeros(1, length(time(1:end-10)));
+for a = 1:length(time(1:end-10))
+    Ts(a)=time(a+1)-time(a);
+end
+u= zeros(2,length(time(1:end-10)))
+%u = zeros(2, Tend);
+
+u(1, 200:400) = 0.1;
 u(2, 1:end) = 0;
 
 %xd(:, 1) = [1; 1; 0; 0]
 
 %params.vm = [0.5, 0.55]
 
-for k = 1:Tend
+%for k = 1:Tend
+for k = 1:length(time(1:end-10))
   %if(mod(k,10) == 0)
   %  params.arm.plot(xd(1:2,k)', 'fps', 1/(Ts*10))
   %end
@@ -108,16 +115,16 @@ for k = 1:Tend
   %if (k > 1/Ts)
   %  u = [0; 0];
   %end
-  xd(:,k+1) = xd(:,k) + Ts*f(xd(:,k), u(:,k), params);
+  xd(:,k+1) = xd(:,k) + Ts(k)*f(xd(:,k), u(:,k), params);
 end
 
-time=[0:Ts:20];
+%time=[0:Ts:20];
 subplot(2,1,1)
-plot(time,xd(1,:))
+plot(time(1:end-10),xd(1,1:end-1),'g')
 hold on
-plot(time,xd(2,:))
+plot(time(1:end-10),xd(2,1:end-1),'r')
 subplot(2,1,2)
-plot(u(1,:))
+plot(time(1:end-10),u(1,:))
 end
 %% 
 % ----------------------------------------------
@@ -127,10 +134,10 @@ end
 if abe == 3
 
 xd = [angle_m1(1);angle_m2(1);vel_m1(1);vel_m2(1)]; %angle start
-
+acc=zeros(2, length(time(1:end-10)));
 u = zeros(2, length(time(1:end-10))); %to be sure that the lengths of the vectors are the same "length(time(1:end-10))" are used everywhere
-u(1, 1:end) = cur_m1(1:length(time(1:end-10))).*params.kt1; %to get torque input
-u(2, 1:end) = cur_m2(1:length(time(1:end-10))).*params.kt2;
+u(1, 1:end) = cur_m1(1:length(time(1:end-10)));
+u(2, 1:end) = cur_m2(1:length(time(1:end-10)));
 
 Ts = zeros(1, length(time(1:end-10)));
 for a = 1:length(time(1:end-10))
@@ -138,19 +145,20 @@ for a = 1:length(time(1:end-10))
 end
 
 for k = 1:length(time(1:end-10))
-  xd(:,k+1) = xd(:,k) + Ts(k)*f(xd(:,k), u(:,k), params);
+  xd(:,k+1) = xd(:,k) + Ts(k)*f(xd(:,k), u(:,k), params, acc(:,k));
+  acc(:,k+1)=(xd(3:4,k+1) - xd(3:4,k))/Ts(k);
 end
 %simulated
 subplot(3,2,1)
 plot(time(1:end-10),xd(1,1:end-1),'g') %angle plot m1
 hold on
 plot(time(1:end-10),xd(2,1:end-1),'r') %angle plot m2
-title('simulated angles')  
+title('simulated rad')  
 subplot(3,2,3)
 plot(time(1:end-10),xd(3,1:end-1),'g') %vel plot m1
 hold on
 plot(time(1:end-10),xd(4,1:end-1),'r') %vel plot m2
-title('simulated velocities')
+title('simulated rad/s')
 subplot(3,2,5)
 plot(time(1:end-10),u(1,:),'g') %in plot m1
 hold on
@@ -162,12 +170,12 @@ subplot(3,2,2)
 plot(time(1:end-10),angle_m1(1:length(time(1:end-10))),'g') %angle plot m1
 hold on
 plot(time(1:end-10),angle_m2(1:length(time(1:end-10))),'r') %angle plot m2
-title('measured angles')
+title('measured rad')
 subplot(3,2,4)
 plot(time(1:end-10),vel_m1(1:length(time(1:end-10))),'g') %vel plot m1
 hold on
 plot(time(1:end-10),vel_m2(1:length(time(1:end-10))),'r') %vel plot m2
-title('measured velocities')
+title('measured rad/s')
 end
 
 
