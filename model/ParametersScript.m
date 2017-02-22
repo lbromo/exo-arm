@@ -46,18 +46,18 @@ I1_xz = 2358470.81e-9
 
 I2_xx = 81789.271e-9
 I2_yy = 1069200.617e-9
-I2_zz = 1118883.857e-9
+I2_zz = 1118883.857e-9 
 I2_xy = 0.001e-9
 I2_yz = 0
 I2_xz = -26501.404e-9
 
-I1 = [I1_xx, I1_xy, I1_yz
+I1 = [I1_xx, I1_xy, I1_xz
       I1_xy, I1_yy, I1_yz
-      I1_xz, I1_xy, I1_zz]
+      I1_xz, I1_yz, I1_zz]
 
-I2 = [I2_xx, I2_xy, I2_yz
+I2 = [I2_xx, I2_xy, I2_xz
       I2_xy, I2_yy, I2_yz
-      I2_xz, I2_xy, I2_zz]
+      I2_xz, I2_yz, I2_zz]
 
 Izz1=I1(3,3);Izz2=I2(3,3);
 
