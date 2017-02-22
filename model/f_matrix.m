@@ -6,5 +6,8 @@ Fmatrix = [...
 	vm(2)*dth(2) + cm(2)*(2./(1+exp(-sigmoidpar(2) * dth(2)))-1)...+cm(2)*sign(dth(2));...
 ];
 
-
+%plot([-100:1:100],vm(2)*[-100:1:100] +cm(2)*(2./(1+exp(-sigmoidpar(2) * [-100:1:100]))-1))
+%grid on
+%Fmatrix(1)=Fmatrix(1)*0.4;
+%Fmatrix(2)=Fmatrix(2)*0.25;
 F = Fmatrix*(N^2);

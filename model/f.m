@@ -1,7 +1,7 @@
 function [xdot] = f(x, u, params, acc)
   theta = x(1:2);
   thetadot = x(3:4);
-
+                                          
   Minv=minv_matrix(theta, params.l1, params.l2, params.m1, params.m2, params.a1, params.a2, params.I1, params.I2, params.In1, params.In2, params.N);
   M=m_matrix(theta, params.l1, params.l2, params.m1, params.m2, params.a1, params.a2, params.I1, params.I2, params.In1, params.In2, params.N);
   V=v_matrix(theta,thetadot, params.l2, params.m2, params.a1, params.a2);

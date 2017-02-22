@@ -13,9 +13,9 @@ abe = 3;
 % -----------------------------------------
 ParametersScript 
 
-m2 = importdata('both/motor1_both_sine.log'); %time,angle,velocity,current
-m1 = importdata('both/motor2_both_sine.log'); %time,angle,velocity,current
-in = importdata('both/input_both_sine.log'); %on1,dir1,pwm1,on2,dir2,pwm2
+m2 = importdata('both/motor1_both_sine2.log'); %time,angle,velocity,current
+m1 = importdata('both/motor2_both_sine2.log'); %time,angle,velocity,current
+in = importdata('both/input_both_sine2.log'); %on1,dir1,pwm1,on2,dir2,pwm2
 
 %m1 and m2
 time_id = find(~cellfun(@isempty,strfind(m1.colheaders,'time')));
