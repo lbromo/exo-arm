@@ -1,3 +1,5 @@
+close all; clear all;
+
 m2 = importdata('both/motor1_both_sine.log'); %time,angle,velocity,current
 m1 = importdata('both/motor2_both_sine.log'); %time,angle,velocity,current
 in = importdata('both/input_both_sine.log'); %on1,dir1,pwm1,on2,dir2,pwm2
@@ -6,35 +8,33 @@ Ts = 0.01;
 
 p1 = getSignal(m1, 'angle');
 p2 = getSignal(m2, 'angle');
-t1 = Ts:Ts:length(p1)*Ts;
-t2 = Ts:Ts:length(p2)*Ts;
+t = Ts:Ts:length(p1)*Ts;
 
-bits = @(ang) (ang-204)/-0.296;
+bits = @(ang) (ang-204)./-0.296;
 
-p1_b10 = bits(p1);
-p2_b10 = bits(p2);
+Vto10bit = @(num) num*2^10/3.3;
 
-p1_5v = p1_b10 * (5/2^10);
-p2_5v = p2_b10 * (5/2^10);
+p_b10 = bits([p1 p2(1:length(p1))]);
 
-p1_muh = p1_5v * 0.5 * 2^12/3.3;
-p2_muh = p2_5v * 0.5 * 2^12/3.3;
+p_5v = p_b10 * (5/2^10);
 
-a1_muh = (1495 - p1_muh) * 2 * pi / 2500;
-a2_muh = (1308 - p2_muh) * 2 * pi / 2472;
+p_muh = p_5v * 2.6/5 * 2^12/3.3;
 
-% a1_us = p1 * 2*pi/360;
-% a2_us = p2 * 2*pi/360;
+a1_muh = (1308 - p_muh(:,1)) * 2 * pi ./ 2472;
+a2_muh = (1495 - p_muh(:,2)) * 2 * pi ./ 2500;
 
-off1 = a1_us(1) - a1_muh(1);
-off2 = a2_us(1) - a2_muh(1);
+p_off_1 = 1308 * 3.3/2.6 / 2^2;
+p_a1 	= 2472 * 3.3/2.6 / 2^2;
 
-a1_us = (1.2 *2^10/3.3 - p1_b10) * 2* pi / (2^10 * 2/3.3);
-a2_us = (1.05*2^10/3.3 - p2_b10) * 2* pi / (2^10 * 2.24/3.3);
+p_off_2 = 1495 * 3.3/2.6 / 2^2;
+p_a2	= 2500 * 3.3/2.6 / 2^2;
+
+a_us1 = (p_off_1 - p_b10(:,1)) * 2 * pi ./ p_a1;
+a_us2 = (p_off_2 - p_b10(:,2)) * 2 * pi ./ p_a2;
 
 subplot(211);
-plot(t1,a1_muh,t1,a1_us);
+plot(t,a1_muh,t,a_us1,'-.');
 grid on;
 subplot(212);
-plot(t2,a2_muh,t2,a2_us);
+plot(t,a2_muh,t,a_us2,'-.');
 grid on;
