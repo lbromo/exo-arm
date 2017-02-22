@@ -62,7 +62,7 @@ I2 = [I2_xx, I2_xy, I2_xz
 Izz1=I1(3,3);Izz2=I2(3,3);
 
 %% Motor Inertia
-In1 = 0.282e-4 + 1210e-7; % shoudler gear and motor inertia
+In1 = 0.282e-4 + 1210e-7; % shoulder gear and motor inertia
 In2 = 0.282e-4 + 181e-7;  % elbow gear and motor inertia
 
 %% Frictions 

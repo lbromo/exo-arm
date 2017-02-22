@@ -67,7 +67,7 @@ def convertToCurrent_Shoulder(curNoUnit):
 
 def convertToVel_Shoulder(velNoUnit):
     velRpm = 5.865 * (velNoUnit) - 3000
-    velRadS = velRpm * 6 * (2*np.pi/360)
+    velRadS = velRpm * (2*np.pi/60)
     return velRadS
 
 def log1msg(ser, motor1_file_h, motor2_file_h):

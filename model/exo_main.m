@@ -39,12 +39,13 @@ on2_id = find(~cellfun(@isempty,strfind(in.colheaders,'on2')));
 dir2_id = find(~cellfun(@isempty,strfind(in.colheaders,'dir2')));
 pwm2_id = find(~cellfun(@isempty,strfind(in.colheaders,'pwm2')));
 
-on_m1 = in.data(:,on1_id);
-dir_m1  = in.data(:,dir1_id);
-pwm_m1  = in.data(:,pwm1_id);
-on_m2 = in.data(:,on2_id);
-dir_m2  = in.data(:,dir2_id);
-pwm_m2  = in.data(:,pwm2_id);
+% Switch because morten is dumb
+on_m2 = in.data(:,on1_id);
+dir_m2  = in.data(:,dir1_id);
+pwm_m2  = in.data(:,pwm1_id);
+on_m1 = in.data(:,on2_id);
+dir_m1  = in.data(:,dir2_id);
+pwm_m1  = in.data(:,pwm2_id);
 
 %% 
 % ----------------------------------------------
@@ -148,22 +149,30 @@ for k = 1:length(time(1:end-10))
   xd(:,k+1) = xd(:,k) + Ts(k)*f(xd(:,k), u(:,k), params, acc(:,k));
   acc(:,k+1)=(xd(3:4,k+1) - xd(3:4,k))/Ts(k);
 end
+
+ 
 %simulated
 subplot(3,2,1)
 plot(time(1:end-10),xd(1,1:end-1),'g') %angle plot m1
 hold on
 plot(time(1:end-10),xd(2,1:end-1),'r') %angle plot m2
 title('simulated rad')  
+grid on;
+
 subplot(3,2,3)
 plot(time(1:end-10),xd(3,1:end-1),'g') %vel plot m1
 hold on
 plot(time(1:end-10),xd(4,1:end-1),'r') %vel plot m2
 title('simulated rad/s')
+ylim([-3 3])
+grid on;
+
 subplot(3,2,5)
 plot(time(1:end-10),u(1,:),'g') %in plot m1
 hold on
 plot(time(1:end-10),u(2,:),'r') %in plot m2
 title('inputs')
+grid on;
 
 %measured
 subplot(3,2,2)
@@ -171,11 +180,16 @@ plot(time(1:end-10),angle_m1(1:length(time(1:end-10))),'g') %angle plot m1
 hold on
 plot(time(1:end-10),angle_m2(1:length(time(1:end-10))),'r') %angle plot m2
 title('measured rad')
+grid on;
+
 subplot(3,2,4)
 plot(time(1:end-10),vel_m1(1:length(time(1:end-10))),'g') %vel plot m1
 hold on
 plot(time(1:end-10),vel_m2(1:length(time(1:end-10))),'r') %vel plot m2
 title('measured rad/s')
+ylim([-3 3])
+grid on;
+
 end
 
 
