@@ -43,14 +43,19 @@ def decodeMsg(msg):
     splittedData = datastr.split(',')
     dataints = (int(splittedData[0]), int(splittedData[1]), int(splittedData[2]), int(splittedData[3]))
     if motorid == 1:
-        dataUnits = (dataints[0], convertToAngle(dataints[1]), convertToVel_Elbow(dataints[2]), convertToCurrent_Elbow(dataints[3]))
+        dataUnits = (dataints[0], convertToAngle_Elbow(dataints[1]), convertToVel_Elbow(dataints[2]), convertToCurrent_Elbow(dataints[3]))
     elif motorid == 2:
-        dataUnits = (dataints[0], convertToAngle(dataints[1]), convertToVel_Shoulder(dataints[2]), convertToCurrent_Shoulder(dataints[3]))
+        dataUnits = (dataints[0], convertToAngle_Shoulder(dataints[1]), convertToVel_Shoulder(dataints[2]), convertToCurrent_Shoulder(dataints[3]))
     return (motorid, dataUnits)
 
-def convertToAngle(angNoUnit):
-    angDeg = -0.296 * angNoUnit + 204
+def convertToAngle_Elbow(angNoUnit):
+    angRad = ( 474.3750 - angNoUnit) * 2 * np.pi / 793.2692;
     return angDeg
+
+def convertToAngle_Shoulder(angNoUnit):
+    angRad = ( 415.0385 - angNoUnit) * 2 * np.pi / 784.3846;
+    return angDeg
+
 
 def convertToCurrent_Elbow(curNoUnit):
     curA = 0.005865* (curNoUnit - 509) # 509 because FUCK LOGIC
