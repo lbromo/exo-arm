@@ -18,13 +18,13 @@ import collections
 ELBOW = 1
 SHOULDER = 2
 
-PULSE_PERIOD_ELBOW_S =10
-PULSE_PERIOD_SHOULDER_S = 4
+PULSE_PERIOD_ELBOW_S = 2
+PULSE_PERIOD_SHOULDER_S = 3
 
-T_END_S = 15
-NAME = "both_sine2"
+T_END_S = 30
+NAME = "both_new"
 #AMPS = np.linspace(10,100,10)
-AMPS = np.array([0.8, 2.5])
+AMPS = np.array([0.7, 2])
 
 SEQ_LEN = T_END_S * pe.SAMPLE_F_HZ
 
@@ -126,9 +126,9 @@ if __name__ == "__main__":
         name = NAME#+ str(int(amps[idx]))
     # File initialization
 
-        INPUT_FILE = "./logs/input_" + name + ".log"
-        MOTOR1_FILE = "./logs/motor1_" + name + ".log"
-        MOTOR2_FILE = "./logs/motor2_" + name + ".log"
+        INPUT_FILE = "./logs/both/input_" + name + ".log"
+        MOTOR1_FILE = "./logs/both/motor1_" + name + ".log"
+        MOTOR2_FILE = "./logs/both/motor2_" + name + ".log"
 
         motor1_file_h = open((MOTOR1_FILE), 'w')
         motor2_file_h = open((MOTOR2_FILE), 'w')
@@ -139,8 +139,8 @@ if __name__ == "__main__":
         input_file_h.write("on1,dir1,pwm1,on2,dir2,pwm2\n")
         #t, sig_motor1, dir1 = randStep(1/pe.SHOULDER_PULSE_PERIOD_MAX_S, amps[idx], T_END_S)
         #t, sig_motor1, dir1 = sineSweep(1/pe.SHOULDER_PULSE_PERIOD_MAX_S, 5, amps[idx], T_END_S)
-        t, sig_motor2, dir2 = makeSine(1/pe.SHOULDER_PULSE_PERIOD_MAX_S, amps[SHOULDER-1], T_END_S)
-        t, sig_motor1, dir1 = makeSine(1/pe.ELBOW_PULSE_PERIOD_MAX_S, amps[ELBOW-1], T_END_S)
+        t, sig_motor2, dir2 = makeSine(1/PULSE_PERIOD_SHOULDER_S, amps[SHOULDER-1], T_END_S)
+        t, sig_motor1, dir1 = makeSine(1/PULSE_PERIOD_ELBOW_S, amps[ELBOW-1], T_END_S)
         for idx in range(0, len(sig_motor1)):
             if dir2[idx] == 0:
                 sig_motor2[idx] = sig_motor2[idx]*0.3
@@ -164,9 +164,10 @@ if __name__ == "__main__":
                 # Logging
                 input_file_h.write(str(on1) + ',' + str(dir1[i]) + ',' + str(round(sig_motor1[i])).zfill(3) + ',' + str(on2) + ',' + str(int(dir2[i])) + ',' + str(round(sig_motor2[i])).zfill(3) + '\n')
 #                print("Ctrl:" + str(out))
+                
                 pe.log1msg(ser,motor1_file_h,motor2_file_h)
                 pe.log1msg(ser,motor1_file_h,motor2_file_h)
-
+                
                 # Wait for next sample period
                 time_to_sleep = starttime+pe.SAMPLE_PERIOD_S-time.time()
 #                print(time_to_sleep)

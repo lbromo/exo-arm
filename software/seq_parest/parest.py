@@ -41,7 +41,8 @@ def decodeMsg(msg):
     motorid = int(msgstr[MOTORIDINDEX])
     datastr = msgstr[MSGSTARTINDEX:msgstr.find('\\')]
     splittedData = datastr.split(',')
-    dataints = (int(splittedData[0]), int(splittedData[1]), int(splittedData[2]), int(splittedData[3]))
+    dataints = (int(splittedData[0]), int(splittedData[1]), int(splittedData[2]), int(splittedData[3])) 
+    #print(dataints[1])
     if motorid == 1:
         dataUnits = (dataints[0], convertToAngle_Elbow(dataints[1]), convertToVel_Elbow(dataints[2]), convertToCurrent_Elbow(dataints[3]))
     elif motorid == 2:
@@ -49,12 +50,12 @@ def decodeMsg(msg):
     return (motorid, dataUnits)
 
 def convertToAngle_Elbow(angNoUnit):
-    angRad = ( 474.3750 - angNoUnit) * 2 * np.pi / 793.2692;
-    return angDeg
+    angRad = ( 694 - angNoUnit) * 2 * np.pi / 1304.1;
+    return angRad
 
 def convertToAngle_Shoulder(angNoUnit):
-    angRad = ( 415.0385 - angNoUnit) * 2 * np.pi / 784.3846;
-    return angDeg
+    angRad = ( 616 - angNoUnit) * 2 * np.pi / 1232;
+    return angRad
 
 
 def convertToCurrent_Elbow(curNoUnit):
@@ -86,8 +87,13 @@ def log1msg(ser, motor1_file_h, motor2_file_h):
             #print("Received msg: " + str(data_w_units))
             if motor == 1:
                 motor1_file_h.write(','.join([str(x) for x in data_w_units]) + "\n")
+                # print("motor1")
+                # print(data_w_units[1])
             elif motor == 2:
                 motor2_file_h.write(','.join([str(x) for x in data_w_units]) + "\n")
+                # print("motor2")
+                # print(data_w_units[1])
+
 
 def clamp(n, minn, maxn):
     return max(min(maxn, n), minn)
