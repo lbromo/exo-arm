@@ -56,7 +56,11 @@ class Muscle():
     a = activation_level
 
     bisect_func = lambda dLce, dLpe, a, self: self.__Fse__(dLce, dLpe, a) - self.__Fce__(dLce, dLpe, a)
-    dLce = scipy.optimize.bisect(bisect_func, -self.Lmax, self.Lmax, args=(dLpe, a, self), xtol=1e-1) # 0.1 mm tolerence is more then enougth
+    try:
+      dLce = scipy.optimize.bisect(bisect_func, -2*self.Lmax, 2*self.Lmax, args=(dLpe, a, self), xtol=1e-1) # 0.1 mm tolerence is more then enougth
+    except:
+      print('Bisection error with length:', self.Lmax)
+      dLce = dLpe
 
     Ftot = self.__Fpe__(dLpe) + self.__Fce__(dLce, dLpe, a)
 
