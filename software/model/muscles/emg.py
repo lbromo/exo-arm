@@ -14,6 +14,9 @@ class EMG():
     def register_observer(self, observer):
         self._observers.append(observer)
 
+    def unregister_observer(self, observer):
+        self._observers.remove(observer)
+
     def notify_observers(self, *args, **kwargs):
         for observer in self._observers:
             observer.notify(self, *args, **kwargs)
