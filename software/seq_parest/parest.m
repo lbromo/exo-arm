@@ -71,6 +71,7 @@ fct = @(par,xdata) par(1) * xdata + par(2) * sigmoid(xdata,par(3));
 
 [par,resnorm,residual,exitflag,output] = lsqcurvefit(fct,par0,v,c,[0 0 0]);
 
+
 % 8=====================================D
 % ESTIMATE Kt
 % 8=====================================D

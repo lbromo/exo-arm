@@ -1,4 +1,4 @@
-function [tau_f x] = test_pars_feb(name,joint, par)
+function [tau_f x vel time] = test_pars_feb(name,joint, par)
 
 % 8=====================================D
 % LOAD DATA
