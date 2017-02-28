@@ -16,6 +16,10 @@ function plotParest(name, joint, fid)
 		fm1 = strcat('logs/shoulder/motor1_',name,'.log');
 		fm2 = strcat('logs/shoulder/motor2_',name,'.log');
 		fin = strcat('logs/shoulder/input_',name,'.log');
+	elseif joint == 3
+		fm1 = strcat('logs/both/motor1_',name,'.log');
+		fm2 = strcat('logs/both/motor2_',name,'.log');
+		fin = strcat('logs/both/input_',name,'.log');
 	end
 
 	m1 = importdata(fm1);
@@ -43,7 +47,7 @@ function plotParest(name, joint, fid)
 	grid on;
 	legend('Elbow', 'Shoulder')
 	title('Angle')
-	ylim([0 360])
+	ylim([0 6.5])
 
 	ax(3) = subplot(2,3,3);
 	plot(m1.data(:,1), m1.data(:,3))
