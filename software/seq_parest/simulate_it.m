@@ -15,8 +15,8 @@ for t = 2:N
     fc = tau_c * sigmoid(dx1,sigmoidpar);
     tau_f(t) = fv+fc;
     
-    % if (abs(dx1) < 0.005 && abs(tau_m)<tau_c)
-    %     dx1
+    % if (abs(dx1) < 10 && abs(tau_m)<tau_c)
+    %     dx1;
     %     fv = 0;
     %     fc = tau_m;
     % end

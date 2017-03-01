@@ -21,10 +21,10 @@ SHOULDER = 2
 PULSE_PERIOD_ELBOW_S = 1
 PULSE_PERIOD_SHOULDER_S = 4
 
-T_END_S = 60
-NAME = "both_new_5"
+T_END_S = 30
+NAME = "both_march_3"
 #AMPS = np.linspace(10,100,10)
-AMPS = np.array([0.7, 2.0])
+AMPS = np.array([0.7, 1.7])
 
 SEQ_LEN = T_END_S * pe.SAMPLE_F_HZ
 
@@ -143,9 +143,9 @@ if __name__ == "__main__":
         t, sig_motor1, dir1 = makeSine(1/PULSE_PERIOD_ELBOW_S, amps[ELBOW-1], T_END_S)
         for idx in range(0, len(sig_motor1)):
             if dir2[idx] == 0:
-                sig_motor2[idx] = sig_motor2[idx]*0.4
+                sig_motor2[idx] = (sig_motor2[idx]-pe.PWM_MIN)*0.4 + pe.PWM_MIN
             if dir1[idx] == 0: 
-                sig_motor1[idx] = sig_motor1[idx]*0.95
+                sig_motor1[idx] = (sig_motor1[idx]-pe.PWM_MIN)*0.95+ pe.PWM_MIN
     #    sig_motor2  = np.ones(SEQ_LEN)
     #    dir2 = np.ones(SEQ_LEN)
         on1 = 1
