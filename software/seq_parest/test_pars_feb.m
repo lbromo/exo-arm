@@ -1,4 +1,4 @@
-function [tau_f x] = test_pars_feb(name,joint, par)
+function [tau_f x vel time] = test_pars_feb(name,joint, par)
 
 % 8=====================================D
 % LOAD DATA
@@ -44,6 +44,11 @@ simulate_it
 % 8=====================================D
 
 plot(time,vel,time,x(2,1:end-1));
+if joint == 1
+	title('Elbow');
+elseif joint == 2
+	title('Shoulder');
+end
 
 ylabel('Velocity');
 grid on;

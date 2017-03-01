@@ -1,4 +1,4 @@
-clear all; %close all; 
+clear all; close all; 
 
 % 8=====================================D
 % GET ALL THE FILES
@@ -31,11 +31,13 @@ end
 vel  = [];
 cur  = [];
 pos  = [];
+offset = 0;
 
 for n = 1:length(names)
 	vel = cat(1,vel,getSignal(m1(n),'velocity'));
 	cur = cat(1,cur,getSignal(m1(n),'current'));
 	pos = cat(1,pos,getSignal(m1(n),'angle'));
+	
 	if n == 3
 		sq_end = length(vel);
 	end
@@ -63,15 +65,12 @@ c = cur(idx);
 % ESTIMATE FRICTION
 % 8=====================================D
 
-
 par0 = [1 1 1];
-
-xdata = v;
-ydata = c;
 
 fct = @(par,xdata) par(1) * xdata + par(2) * sigmoid(xdata,par(3));
 
-[par,resnorm,residual,exitflag,output] = lsqcurvefit(fct,par0,xdata,ydata,[0 0 0]);
+[par,resnorm,residual,exitflag,output] = lsqcurvefit(fct,par0,v,c,[0 0 0]);
+
 
 % 8=====================================D
 % ESTIMATE Kt
@@ -81,7 +80,15 @@ cur_f = fct(par,vel);
 
 pars;
 
-p = [cur -cur_f] \ [Jm*acc];
+% p = [cur -cur_f] \ [Jm*acc];
+
+f2 = @(par,xdata) par(1) * xdata(:,1) - par(2) * xdata(:,2);
+%f2 = @(par,xdata) par * (xdata(:,1) -  xdata(:,2));
+
+ydata = Jm * acc;
+xdata = [cur, cur_f];
+
+[p,resnorm,residual,exitflag,output] = lsqcurvefit(f2,[1 1],xdata,ydata,[0 0]);
 
 
 b 	  = par(1) * p(2);
