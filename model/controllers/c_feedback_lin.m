@@ -1,7 +1,7 @@
 function u = c_feedback_lin(x,params,upre, xpre)
 
-	p = 0.3;
-	pd = 1;
+	p = 30;
+	pd = 0;
 	kp = [p 0  pd 0;...
 		  0  p 0 pd];
 	% i = 10;
@@ -20,6 +20,6 @@ function u = c_feedback_lin(x,params,upre, xpre)
 	% c(1) = e(1) - x(3);
 	% c(2) = e(2) - x(4);
 
-	u = B(x,params) * (kp * e) + n(x,params);
+	u = B(x,params) * (kp * e) - n(x,params);
 
 end
