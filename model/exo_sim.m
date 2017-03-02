@@ -13,9 +13,9 @@ function [exo] = exo_sim(controller, x0)
 	tau = u;
 
 
-	for k = 1:S-1
+	for k = 2:S-1
 		
-		u(:,k) = controller(x(:,k),params);
+		u(:,k) = controller(x(:,k),params,u(:,k-1),x(:,k-1));
 
 		u(1,k) = saturate(u(1,k),-3,3);
 		u(2,k) = saturate(u(2,k),-1,1);
