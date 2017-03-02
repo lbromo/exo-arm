@@ -1,86 +1,27 @@
 % -----------------------------------------
 % DYNAMIC MECHANICAL MODEL 
 % -----------------------------------------
-% choose  abe = 1 to run ODE SOLVER
+% choose  abe = 1 to run ODE SOLVER (does  not work rigth now)
 %         abe = 2 to run FORWARD EULER METHOD - test of method 
 %         abe = 3 to run FORWARD EULER METHOD - for verification of model 
-
+%                       - monkey1 = 1 or 0    parameter estimate or not
+%                       - monkey2 = 1 or 0    save data in csv file or not
 clear all;
-clc;
+close all;
 abe = 3;
-% -----------------------------------------
-% LOAD DATA AND PARAMETERS
-% -----------------------------------------
-ParametersScript 
-
-m2 = importdata('both/motor1_both_sine2.log'); %time,angle,velocity,current
-m1 = importdata('both/motor2_both_sine2.log'); %time,angle,velocity,current
-in = importdata('both/input_both_sine2.log'); %on1,dir1,pwm1,on2,dir2,pwm2
-
-%m1 and m2
-time_id = find(~cellfun(@isempty,strfind(m1.colheaders,'time')));
-ang_id = find(~cellfun(@isempty,strfind(m1.colheaders,'angle')));
-vel_id = find(~cellfun(@isempty,strfind(m1.colheaders,'velocity')));
-cur_id = find(~cellfun(@isempty,strfind(m1.colheaders,'current')));
-
-time = (m1.data(:,time_id)- m1.data(1,time_id))./1000; %to start from 0 and in ms
-angle_m1  = (m1.data(:,ang_id)).*0.01745329252; %from angle to rad
-vel_m1  = (m1.data(:,vel_id))/N; %from before to after gear
-cur_m1 = m1.data(:,cur_id).*params.kt1*N; %to get torque input and after gears
-angle_m2  = (m2.data(:,ang_id)).*0.01745329252; %from angle to rad 
-vel_m2  = (m2.data(:,vel_id))/N; %from before to after gear
-cur_m2 = m2.data(:,cur_id).*params.kt2*N; %to get torque input and after gears
-
-%in  
-on1_id = find(~cellfun(@isempty,strfind(in.colheaders,'on1')));
-dir1_id = find(~cellfun(@isempty,strfind(in.colheaders,'dir1')));
-pwm1_id = find(~cellfun(@isempty,strfind(in.colheaders,'pwm1')));
-on2_id = find(~cellfun(@isempty,strfind(in.colheaders,'on2')));
-dir2_id = find(~cellfun(@isempty,strfind(in.colheaders,'dir2')));
-pwm2_id = find(~cellfun(@isempty,strfind(in.colheaders,'pwm2')));
-
-% Switch because morten is dumb
-on_m2 = in.data(:,on1_id);
-dir_m2  = in.data(:,dir1_id);
-pwm_m2  = in.data(:,pwm1_id);
-on_m1 = in.data(:,on2_id);
-dir_m1  = in.data(:,dir2_id);
-pwm_m1  = in.data(:,pwm2_id);
-
+monkey1=1; 
+monkey2 =0;
+ParametersScript  %model parameters
+load_data   %data for verification
+addpath('useful_scripts')
+addpath('old_scripts')
+addpath('system_matrices')
 %% 
 % ----------------------------------------------
 %  ODE SOLVER
 % -----------------------------------------------
-
 if abe == 1
-x0 = [
-      1
-      1;
-      0;
-      0;
-];
-
-u = [
-       0;
-       0
-];
-
-t_span = [0 5];
-
- [t,x] = ode113(@exo_dynamic_model, t_span, x0, [], u, params);
-
-
-%So we have way to many samples, and no "specific" sampling time..
-%We "create" one by taking unique time samples with a 0.01 spacing
-[C,ia,ic] = uniquetol(t, 0.001);
-
-theta1 = x(ia,1);
-theta2 = x(ia,2);
-
-theta = [theta1 theta2];
-
-params.arm.plot(theta, 'fps', length(theta)/t_span(end), 'loop');
-
+ode_solver_mech_model
 end
 
 %% 
@@ -89,43 +30,7 @@ end
 %  test of method
 % -----------------------------------------------
 if abe == 2
-%Ts = 0.01;
-%Tend = 20 / Ts;
-xd = [0;0;0;0];
-
-Ts = zeros(1, length(time(1:end-10)));
-for a = 1:length(time(1:end-10))
-    Ts(a)=time(a+1)-time(a);
-end
-u= zeros(2,length(time(1:end-10)))
-%u = zeros(2, Tend);
-
-u(1, 200:400) = 0.1;
-u(2, 1:end) = 0;
-
-%xd(:, 1) = [1; 1; 0; 0]
-
-%params.vm = [0.5, 0.55]
-
-%for k = 1:Tend
-for k = 1:length(time(1:end-10))
-  %if(mod(k,10) == 0)
-  %  params.arm.plot(xd(1:2,k)', 'fps', 1/(Ts*10))
-  %end
-
-  %if (k > 1/Ts)
-  %  u = [0; 0];
-  %end
-  xd(:,k+1) = xd(:,k) + Ts(k)*f(xd(:,k), u(:,k), params);
-end
-
-%time=[0:Ts:20];
-subplot(2,1,1)
-plot(time(1:end-10),xd(1,1:end-1),'g')
-hold on
-plot(time(1:end-10),xd(2,1:end-1),'r')
-subplot(2,1,2)
-plot(time(1:end-10),u(1,:))
+forward_euler_test
 end
 %% 
 % ----------------------------------------------
@@ -133,65 +38,81 @@ end
 %  for verification of model
 % -----------------------------------------------
 if abe == 3
-
-xd = [angle_m1(1);angle_m2(1);vel_m1(1);vel_m2(1)]; %angle start
-acc=zeros(2, length(time(1:end-10)));
-u = zeros(2, length(time(1:end-10))); %to be sure that the lengths of the vectors are the same "length(time(1:end-10))" are used everywhere
-u(1, 1:end) = cur_m1(1:length(time(1:end-10)));
-u(2, 1:end) = cur_m2(1:length(time(1:end-10)));
-
-Ts = zeros(1, length(time(1:end-10)));
-for a = 1:length(time(1:end-10))
-    Ts(a)=time(a+1)-time(a);
+global x0;
+xd = [angle_m1(1);angle_m2(1);vel_m1(1);vel_m2(1)]; %angle and vel init
+x0=xd;
+u = zeros(2, length(time)); %to be sure that the lengths of the vectors are the same "length(time(1:end-10))" are used everywhere
+u(1, 1:end) = cur_in_m1;%(1:length(time(1:end-10)));
+u(2, 1:end) = cur_in_m2;%(1:length(time(1:end-10)));
+%--------------------------------------------------------------------
+%parameter estimate or not
+if monkey1 == 1
+ par_to_get=[params.cm params.vm params.sigmoidpar params.hast];% params.cm params.vm  params.sigmoidpar params.hast
+ ydata=[vel_m1 vel_m2]'; 
+ [X, resnorm] = lsqcurvefit(@parest_forward, par_to_get, u, ydata, [0 0 0 0 0 0 0 0])
+ params.cm=X(1:2);
+ params.vm=X(3:4);
+params.sigmoidpar=X(5:6);
+params.hast=X(7:8);
+end
+%--------------------------------------------------------------------
+for k = 1:length(time(1:end-1))  %forward euler
+  xd(:,k+1) = xd(:,k) + Ts(k)*f(xd(:,k), u(:,k), params);
 end
 
-for k = 1:length(time(1:end-10))
-  xd(:,k+1) = xd(:,k) + Ts(k)*f(xd(:,k), u(:,k), params, acc(:,k));
-  acc(:,k+1)=(xd(3:4,k+1) - xd(3:4,k))/Ts(k);
-end
+residual_error=sum(([xd(3,:) xd(4,:)] -[vel_m1; vel_m2]').^2) %squared 2 norm error
 
- 
-%simulated
-subplot(3,2,1)
-plot(time(1:end-10),xd(1,1:end-1),'g') %angle plot m1
+figure(1)
+subplot(3,1,1)
+plot(time,xd(1,:),'--g') %angle plot m1 sim
 hold on
-plot(time(1:end-10),xd(2,1:end-1),'r') %angle plot m2
-title('simulated rad')  
-grid on;
-
-subplot(3,2,3)
-plot(time(1:end-10),xd(3,1:end-1),'g') %vel plot m1
-hold on
-plot(time(1:end-10),xd(4,1:end-1),'r') %vel plot m2
-title('simulated rad/s')
+plot(time,xd(2,:),'--r') %angle plot m2 sim
+plot(time,angle_m1,'g') %angle plot m1 meas
+plot(time,angle_m2,'r') %angle plot m2 meas
+title('simulated and measured rad')  
 ylim([-3 3])
 grid on;
+xlabel('time');
+ylabel('rad');
+%xlim([0, 2])
 
-subplot(3,2,5)
-plot(time(1:end-10),u(1,:),'g') %in plot m1
+subplot(3,1,2)
+plot(time,xd(3,:),'--g') %vel plot m1 sim
 hold on
-plot(time(1:end-10),u(2,:),'r') %in plot m2
+plot(time,xd(4,:),'--r') %vel plot m2 sim
+plot(time,vel_m1,'g') %vel plot m1 meas 
+plot(time,vel_m2,'r') %vel plot m2 meas
+title('simulated and measured rad/s')
+ylim([-3 3])
+grid on;
+xlabel('time');
+ylabel('rad/s'); 
+%xlim([0, 2])
+
+subplot(3,1,3)
+plot(time,u(1,:),'g') %in plot m1
+hold on
+plot(time,u(2,:),'r') %in plot m2
 title('inputs')
 grid on;
+xlabel('time');
+ylabel('Nm');
+%xlim([0, 2])
 
-%measured
-subplot(3,2,2)
-plot(time(1:end-10),angle_m1(1:length(time(1:end-10))),'g') %angle plot m1
-hold on
-plot(time(1:end-10),angle_m2(1:length(time(1:end-10))),'r') %angle plot m2
-title('measured rad')
-grid on;
-
-subplot(3,2,4)
-plot(time(1:end-10),vel_m1(1:length(time(1:end-10))),'g') %vel plot m1
-hold on
-plot(time(1:end-10),vel_m2(1:length(time(1:end-10))),'r') %vel plot m2
-title('measured rad/s')
-ylim([-3 3])
-grid on;
-
+figure(2)
+subplot(1,2,1)
+plot(time,pwm_m1)
+hold on 
+plot(time,pwm_m2)
+subplot(1,2,2)
+plot(time,cur_in_m1)
+hold on 
+plot(time,cur_in_m2)
+% ----------------------------------------------
+%  Save data in csv file or not
+% ----------------------------------------------
+if monkey2 == 1
+    T=table(time, u(1,:)',u(2,:)', xd(1,:)', xd(2,:)', xd(3,:)', xd(4,:)', angle_m1, angle_m2, vel_m1, vel_m2, 'VariableNames',{'time','in_m1','in_m2','si_angm1','si_angm2','si_velm1','si_velm2','me_angm1','me_angm2','me_velm1','me_velm2'});
+    writetable(T,'/home/bjarkenrp/Documents/exo-rapport/contents/mech_verification/figs/sim_and_meas_mechmodel_sin4.csv');
 end
-
-
-
-
+end

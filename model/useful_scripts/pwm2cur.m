@@ -9,6 +9,6 @@ function cur = pwm2cur(pwm, dir, joint, offset)
 	if joint == 1 % elbow
 		cur = (pwm)./(205/1) + sign(dir-0.5).*offset;
 	elseif joint == 2 % shoulder
-		cur = (pwm)./(205/3) + sign(dir-0.5).*offset;;
+		cur = (pwm)./(205/3) + sign(dir-0.5).*offset;
 	end
 end
