@@ -10,13 +10,17 @@
 
 disp('Parametersscript')
 
+%% Sample Rate
+Ts = 0.001; % [s]
+n_s = 4; % Number of states
+n_i = 2; % Number of inputs
 
 %% Gear Ratio
 
 N=50;
 %% Constants
 g   = 9.81;     % [m/s^2] Gravitational acceleration
-Ts	= 0.004;	% [s] Sampling period
+% Ts	= 0.004;	% [s] Sampling period
 kt1  = 0.0708;%176.9956/N;%101.961/N;%247.4564/N; %300/N; %187.6525/N;     % motor constant shoulder/m1
 kt2  = 0.0764; %190.8920/N;%135.4855/N;%242.2123/N;  %279.4054/N; %193.5055/N;     % motor constant elbow/m2
 %% Constants - Link 1:
@@ -37,27 +41,27 @@ m2  = 307.424e-3;	% [kg] Mass of link 2
 %% Inertias
 %[I1, I2] = InertiaCalculations([a1 a2],[m1 m2]);
 
-I1_xx = 1237092.59e-9
-I1_yy = 21058153.33e-9
-I1_zz = 20909842.62e-9
-I1_xy = -5512.53e-9
-I1_yz =  584.44e-9
-I1_xz = 2358470.81e-9
+I1_xx = 1237092.59e-9	;
+I1_yy = 21058153.33e-9	;
+I1_zz = 20909842.62e-9	;
+I1_xy = -5512.53e-9	;
+I1_yz =  584.44e-9	;
+I1_xz = 2358470.81e-9	;
 
-I2_xx = 81789.271e-9
-I2_yy = 1069200.617e-9
-I2_zz = 1118883.857e-9 
-I2_xy = 0.001e-9
-I2_yz = 0
-I2_xz = -26501.404e-9
+I2_xx = 81789.271e-9	;
+I2_yy = 1069200.617e-9	;
+I2_zz = 1118883.857e-9	; 
+I2_xy = 0.001e-9	;
+I2_yz = 0			;
+I2_xz = -26501.404e-9	;
 
 I1 = [I1_xx, I1_xy, I1_xz
       I1_xy, I1_yy, I1_yz
-      I1_xz, I1_yz, I1_zz]
+      I1_xz, I1_yz, I1_zz];
 
 I2 = [I2_xx, I2_xy, I2_xz
       I2_xy, I2_yy, I2_yz
-      I2_xz, I2_yz, I2_zz]
+      I2_xz, I2_yz, I2_zz];
 
 Izz1=I1(3,3);Izz2=I2(3,3);
 
