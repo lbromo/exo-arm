@@ -12,17 +12,17 @@ function exoPlot(exo,fid)
 	ax(1) = subplot(311); 
 	plot(t,x(1,:),t,x(2,:)); grid on;
 	title('Joint Angles')
-	legend('Shoulder','Elbow','Location','northwest');
+	legend('Shoulder','Elbow','Location','bestoutside');
 
 	ax(2) = subplot(312); 
 	plot(t,x(3,:),t,x(4,:)); grid on;
 	title('Joint Velocities')
-	legend('Shoulder','Elbow','Location','northeast');
+	legend('Shoulder','Elbow','Location','bestoutside');
 
 	ax(3) = subplot(313); 
 	plot(t,u(1,:),t,u(2,:)); grid on
-	title('Input Current')
-	legend('Shoulder','Elbow','Location','northeast');
+	title('Input Torque')
+	legend('Shoulder','Elbow','Location','bestoutside');
 
 	linkaxes(ax, 'x');
 
