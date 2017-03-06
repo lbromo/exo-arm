@@ -6,7 +6,7 @@ function u = c_feedback_lin(x,params,upre, xpre,ref)
 		  0  p 0 pd];
 
 	K = kp.*[params.kt1 params.kt2]'*params.N;
-
+	
 	x = x + 0.1 * rand(4,1);
 	
 	e = ref-x;

@@ -138,8 +138,9 @@ elseif 	joint == 2
 	title(ax(1),'Shoulder');
 end
 
-disp('MSE:')
-disp(immse(x(2,2:end)',vel))
+disp('NRMSE:')
+%disp(exo_mse(x(2,2:end),vel))
+disp(goodnessOfFit(x(2,2:end)',vel,'NRMSE'));
 
 param.kt = kt;
 param.b =b;
