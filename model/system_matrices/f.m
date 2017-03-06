@@ -23,16 +23,16 @@ torquesum=abs(u-G);  %when vel=0 M=0 and V=0
 % 	end
 % end
 % 
-if (abs(F(1)) < abs(torquesum(1))) 
-	if (abs(thetadot(1)) <  0.0155) 
- 		F(1) = (params.cm(1) + params.hast(1))*sign(torquesum(1));
-	end
-end
-if (abs(F(2)) < abs(torquesum(2)))
-	if (abs(thetadot(2)) <  0.0155)
- 		F(2) = (params.cm(2) + params.hast(2))*sign(torquesum(2));
-	end
-end
+% if (abs(F(1)) < abs(torquesum(1))) 
+% 	if (abs(thetadot(1)) <  0.0155) 
+%  		F(1) = (params.cm(1) + params.hast(1))*sign(torquesum(1));
+% 	end
+% end
+% if (abs(F(2)) < abs(torquesum(2)))
+% 	if (abs(thetadot(2)) <  0.0155)
+%  		F(2) = (params.cm(2) + params.hast(2))*sign(torquesum(2));
+% 	end
+% end
 
   thetadotdot = Minv*(u-(V+G+F));
 

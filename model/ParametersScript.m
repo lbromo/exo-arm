@@ -11,9 +11,13 @@
 disp('Parametersscript')
 
 %% Sample Rate
-Ts = 0.001; % [s]
+Ts = 0.01; % [s]
 n_s = 4; % Number of states
 n_i = 2; % Number of inputs
+
+%% Current lim
+maxC1 = 3;
+maxC2 = 1;
 
 %% Gear Ratio
 
