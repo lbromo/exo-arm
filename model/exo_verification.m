@@ -62,7 +62,7 @@ for k = 1:length(time(1:end-1))  %forward euler
 end
 
 residual_error=sum(([xd(3,:) xd(4,:)] -[vel_m1; vel_m2]').^2) %squared 2 norm error
-mse = exo_mse([xd(3,:) xd(4,:)], [vel_m1; vel_m2])
+mse = goodnessOfFit([xd(3,:) xd(4,:)]', [vel_m1; vel_m2], 'NRMSE')
 figure(1)
 subplot(3,1,1)
 plot(time,xd(1,:),'--g') %angle plot m1 sim
