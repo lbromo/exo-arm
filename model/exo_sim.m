@@ -4,6 +4,7 @@ function [exo] = exo_sim(controller, x0)
 % INITIALIZE
 % 8=====================================D
 	ParametersScript;
+	
 	T_end = 120; % [s]
 	S = T_end/Ts; % Samples total
 
