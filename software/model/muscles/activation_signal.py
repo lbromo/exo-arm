@@ -59,7 +59,11 @@ class ActivationSignal():
         return self.get_activation_level()
 
     def get_activation_level(self):
-        return (np.exp(self._A*self._u[-1]) - 1) / (np.exp(self._A) - 1)
+        tmp = (np.exp(self._A*self._u[-1]) - 1) / (np.exp(self._A) - 1)
+        #print('u[-1]:', self._u[-1])
+        #print('A:', self._A)
+        #print('Activation level:', tmp)
+        return tmp
 
     def __filter__(self, e):
         self._x_hp.append(e)

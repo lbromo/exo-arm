@@ -54,15 +54,23 @@ class Muscle():
 
   def __get_force_estimate__(self, dLpe, activation_level):
     a = activation_level
+    error = False
 
     bisect_func = lambda dLce, dLpe, a, self: self.__Fse__(dLce, dLpe, a) - self.__Fce__(dLce, dLpe, a)
     try:
       dLce = scipy.optimize.bisect(bisect_func, -2*self.Lmax, 2*self.Lmax, args=(dLpe, a, self), xtol=1e-1) # 0.1 mm tolerence is more then enougth
     except:
       print('Bisection error with length:', self.Lmax)
-      dLce = dLpe
+      error = True
 
     Ftot = self.__Fpe__(dLpe) + self.__Fce__(dLce, dLpe, a)
+
+    if error:
+      print('#'*10)
+      print('dLce:', dLce)
+      print('a:', a)
+      print('Fpe:', self.__Fpe__(dLpe))
+      print('Fce:', self.__Fce__(dLce, dLpe, a))
 
     return Ftot
 

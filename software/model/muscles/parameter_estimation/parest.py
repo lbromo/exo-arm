@@ -10,37 +10,55 @@ import activation_signal
 import muscle
 import muscle_utils
 
-import os
-import pwd
-import muscle_utils
-user = pwd.getpwuid( os.getuid() )[0]
+import mre7
+import mre8
+import mrf1
 
-kinkom=np.genfromtxt(
-    "/home/{}/Dropbox/exo-arm/logs/kincom_logs/morten/MRF1_clean".format(
-        user
-    )
-    , delimiter=',')
+ts = 0.01
+padding = int(10/ts)
 
-angle=abs(kinkom[100:-20,1])
-force = kinkom[100:-20,-1]
-
-emg_meas=np.genfromtxt(
-    "/home/{}/Dropbox/exo-arm/logs/emg_logs/mr_morten/mr_morten_flex_isokinetic_3rep/emg-1485951230.csv".format(
-        user
-    ),
-    delimiter=',')
-
-emg_cleaned = emg_meas[300:-300,1:]
-
-emg_resampled = scipy.signal.resample(emg_cleaned, len(angle))
-
-test = [i for i in range(1,len(angle)) if angle[i] - angle[i-1] > 0 and angle[i] > 5]
-angles_in = angle[test][520:]
-emg_in = emg_resampled[test][520:]
-force_out = force[test][520:]
+angles_in = [mre7.angles_in,
+             [0]*padding,
+             mre8.angles_in,
+             [0]*padding,
+             mrf1.angles_in
+]
 
 
-NR_MUSCLES = 3
+torque_out = [mre7.torque_out,
+              [0]*padding,
+              mre8.torque_out,
+              [0]*padding,
+              mrf1.torque_out
+]
+
+emg0_training = [mre7.emg0_training,
+                 np.zeros((padding, 8)),
+                 mre8.emg0_training,
+                 np.zeros((padding, 8)),
+                 mrf1.emg0_training
+]
+emg1_training = [mre7.emg1_training,
+                 np.zeros((padding, 8)),
+                 mre8.emg1_training,
+                 np.zeros((padding, 8)),
+                 mrf1.emg1_training
+]
+
+emg0_in = [mre7.emg0_in,
+           np.zeros((padding, 8)),
+           mre8.emg0_in,
+           np.zeros((padding, 8)),
+           mrf1.emg0_in
+]
+emg1_in = [mre7.emg1_in,
+           np.zeros((padding, 8)),
+           mre8.emg1_in,
+           np.zeros((padding, 8)),
+           mrf1.emg1_in
+]
+
+NR_MUSCLES = 4
 
 class FlexProblem(problem.base):
 
@@ -50,15 +68,17 @@ class FlexProblem(problem.base):
 
         self.joint = muscle_utils.MUSCLE_JOINT.ELBOW
 
-        self.emg = emg.EMG()
+        self.emg0 = emg.EMG()
+        self.emg1 = emg.EMG()
 
-        self.emg_measurements = emg_in
+        self.emg0_training = emg0_training
+        self.emg1_training = emg1_training
+
+        self.emg0_meas = emg0_in
+        self.emg1_meas = emg1_in
+
         self.angles = angles_in
-        self.y = force_out
-
-        #lb = ([-1, -1, 0.01, 0.01] + [-1000000] * 9) * NR_MUSCLES
-        #ub = ([ 1,  1,    1, 0.10] + [ 1000000] * 9) * NR_MUSCLES
-        #self.set_bounds(lb, ub)
+        self.y = [t for run in torque_out for t in run]
 
         self.set_bounds(
             [-1, -1, 0.01, 0.01,  200, 100, 100,   500, 0.5,  1,  1, 0.1, 0.1]*NR_MUSCLES,
@@ -73,13 +93,13 @@ class FlexProblem(problem.base):
             emg.EMGPOD.TRICEPS_BRACHII,
             emg.EMGPOD.BICEPS_BRACHII,
             emg.EMGPOD.BRACHIALIS,
-            # emg.EMGPOD.BRACHIORADIALIS
+            emg.EMGPOD.BRACHIORADIALIS
         ]
         muscle_names = [
             muscle_utils.MUSCLE_NAME.TRICEPS_BRACHII,
             muscle_utils.MUSCLE_NAME.BICEPS_BRACHII,
             muscle_utils.MUSCLE_NAME.BRACHIALIS,
-            # muscle_utils.MUSCLE_NAME.BRACHIORADIALIS
+            muscle_utils.MUSCLE_NAME.BRACHIORADIALIS
         ]
 
         muscles = []
@@ -113,30 +133,50 @@ class FlexProblem(problem.base):
     def simulate(self, muscles):
         # Prepare for EMG measurements
         for m in muscles:
-            self.emg.register_observer(m._activation_signal)
+            if not m.muscle_type == muscle_utils.MUSCLE_NAME.BRACHIORADIALIS:
+                self.emg0.register_observer(m._activation_signal)
+            else:
+                self.emg1.register_observer(m._activation_signal)
 
-        # Output lists
-        torque, actvation, taus = [], [[], [], []], [[], [], []]
+        torque, actvation, taus = [], [[], [], [], []], [[], [], [], []]
+        for angle_in, emg0_in, emg1_in, torque_out, emg0_init, emg1_init in zip(
+                self.angles,
+                self.emg0_meas,
+                self.emg1_meas,
+                self.y,
+                self.emg0_training,
+                self.emg1_training
+        ):
+            # init filters
+            for e in emg0_init:
+                self.emg0.on_emg_measurement(e)
 
-        for i in range(len(self.emg_measurements)):
-            e = self.emg_measurements[i]
-            a = [self.angles[i], 0]
-            self.emg.on_emg_measurement(e)
-            tau = 0
-            for m, i in zip(muscles, range(len(muscles))):
-                actvation[i].append(m._activation_signal.get_activation_level())
+            for e in emg1_init:
+                self.emg1.on_emg_measurement(e)
 
-                tmp_tau = m.get_torque_estimate(a, self.joint)
-                if m.muscle_type == muscle_utils.MUSCLE_NAME.TRICEPS_BRACHII and tmp_tau > 0:
-                    tmp_tau = -tmp_tau
-                taus[i].append(tmp_tau)
-                tau = tau + tmp_tau
+            for i in range(len(emg0_in)):
+                e0 = emg0_in[i]
+                e1 = emg1_in[i]
+                a = [angle_in[i], 0]
+                self.emg0.on_emg_measurement(e0)
+                self.emg1.on_emg_measurement(e1)
+                tau = 0
+                for m, i in zip(muscles, range(len(muscles))):
+                    actvation[i].append(m._activation_signal.get_activation_level())
 
-            torque.append(tau)
+                    tmp_tau = m.get_torque_estimate(a, self.joint)
+                    if m.muscle_type == muscle_utils.MUSCLE_NAME.TRICEPS_BRACHII and tmp_tau > 0:
+                        tmp_tau = -tmp_tau
+                    taus[i].append(tmp_tau)
+                    tau = tau + tmp_tau
+
+                torque.append(tau)
 
         for m in muscles:
-            self.emg.unregister_observer(m._activation_signal)
-
+            if not m.muscle_type == muscle_utils.MUSCLE_NAME.BRACHIORADIALIS:
+                self.emg0.unregister_observer(m._activation_signal)
+            else:
+                self.emg1.unregister_observer(m._activation_signal)
 
         return torque, actvation, taus
 
@@ -145,41 +185,48 @@ class FlexProblem(problem.base):
         est, _, _ = self.simulate(muscles)
 
         est = np.array(est)
-        mse = sum( (self.y[75:-10] - est[75:-10])**2 )
+        mse = sum( (est - self.y )**2 ) / len(self.y)
+        # Normalized root-mean-square deviation
+        nrmse = np.sqrt(mse) / (max(self.y) - min(self.y))
+
+        print('MSE:', mse)
 
         return (mse,)
 
-    # def _compute_constraints_impl(self, x):
-    #     n = 13
-    #     muscles_sets = [x[i:i+n] for i in range(0, len(x), n)]
+    def _compute_constraints_impl(self, x):
+        n = 13
+        muscles_sets = [x[i:i+n] for i in range(0, len(x), n)]
 
-    #     i = 0
-    #     out = [0] * 2 * NR_MUSCLES
-    #     for xm in muscles_sets:
-    #         out[i] = 0 if xm[0] * xm[1] < 0 else 1
-    #         i = i + 1
-    #         out[i] = 0 if xm[4] > (xm[5] + xm[6]) else 1
-    #         i = i +1
+        i = 0
+        out = [0] * 2 * NR_MUSCLES
+        for xm in muscles_sets:
+            out[i] = 0 if xm[0] * xm[1] or (xm[0] < 0 and xm[1] < 0) else 1
+            i = i + 1
+            out[i] = 0 if xm[4] > (xm[5] + xm[6]) else 1
+            i = i +1
 
-    #     return tuple(out)
+        return tuple(out)
 
 
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
+
     prob = FlexProblem()
 
-    algo = algorithm.pso(gen=5000)  # 500 generations of bee_colony algorithm
+    algo = algorithm.pso(gen=500)  # 500 generations of bee_colony algorithm
     #isl = island(algo, prob, 500)  # Instantiate population with 20 individuals
     #isl.evolve(1)  # Evolve the island once
     #isl.join()
 
-    archi = archipelago(algo, prob, 4, 1000)
-    archi.evolve(100)
+    archi = archipelago(algo,prob,10,50,topology = topology.ageing_clustered_ba(a=25))
+
+    #And we start the evolution loops (each evolve will advance each island 10 generation)
+    archi.evolve(10)
     archi.join()
-    print(archi)
 
     val, idx = min((val, idx) for (idx, val) in enumerate([isl.population.champion.f for isl in archi]))
+    print([isl.population.champion.f for isl in archi])
     print('Best fitness:', val)
 
     best = [isl.population.champion.x for isl in archi][idx]
@@ -200,26 +247,39 @@ if __name__ == '__main__':
     muslces = prob.set_up_muscles(best)
     t, a, ts = prob.simulate(muslces)
 
+    angles = [a for run in angles_in for a in run]
+    torque = [t for run in torque_out for t in run]
+
     plt.subplot(2,2,1);
-    plt.plot(angles_in[75:-10], t[75:-10], '*')
-    plt.plot(angles_in[75:-10], force_out[75:-10], '*')
-    plt.legend(['Simulated', 'Measuremed'])
-    plt.xlabel('Angle')
-    plt.ylabel('Torque')
+    plt.plot(angles, torque, 'x', linewidth=0.5)
+    plt.plot(angles, t, 'x', linewidth=0.5)
+    plt.legend(['Measuremed', 'Simulated'])
+    plt.xlabel('Angle [deg]')
+    plt.ylabel('Torque [Nm]')
+    plt.title('Torque over angle')
 
     plt.subplot(2,2,2);
-    plt.plot(t[75:-10], '*')
-    plt.plot(force_out[75:-10], '*')
-    plt.legend(['Simulated', 'Measuremed'])
+    plt.plot(torque)
+    plt.plot(t)
+    plt.legend(['Measuremed', 'Simulated'])
+    plt.xlabel('Sample')
+    plt.ylabel('Torque [Nm]')
+    plt.title('Torque over time (samples)')
 
     plt.subplot(2,2,3);
     for sig in a:
-        plt.plot(sig[75:-10])
-    plt.legend(['8', '4', '4'])
+        plt.plot(sig)
+    plt.legend(['TRICEPS_BRACHII', 'BICEPS_BRACHII', 'BRACHIALIS', 'BRACHIORADIALIS'])
+    plt.xlabel('Sample')
+    plt.ylabel('Activation [pct]')
+    plt.title('Activation signals')
 
     plt.subplot(2,2,4);
     for sig in ts:
-        plt.plot(sig[75:-10])
-    plt.legend(['TRICEPS_BRACHII', 'BICEPS_BRACHII', 'BRACHIALIS'])
+        plt.plot(sig)
+    plt.legend(['TRICEPS_BRACHII', 'BICEPS_BRACHII', 'BRACHIALIS', 'BRACHIORADIALIS'])
+    plt.xlabel('Sample')
+    plt.ylabel('Torque')
+    plt.title('Torque contributions')
 
-    plt.show()
+    #plt.show()
