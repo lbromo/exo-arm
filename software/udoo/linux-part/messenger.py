@@ -1,21 +1,34 @@
 import serial
 import time
+import numpy as np
 
-SER_PORT = "/dev/ttyMCC"
-BAUD = 115200
+SER_PORT = "/dev/ttyACM0"
+BAUD = 230400
 
 READY = b'&'
+START_CHAR = '$'
 START = str('b\'$\\r\\n\'')
+REF_CHAR = b'R'
+
+REF = np.array([np.pi/2, np.pi/2,0,0])
 
 def log1msg(ser):
     if ser.isOpen():
         initmsg = ser.readline()
-        print(initmsg)
+        if not len(initmsg):
+            return
 
-        if str(initmsg) == START:
-            msg = ser.readline()
-            motor, data_w_units = decodeMsg(msg)
-            print("Received msg: " + str(data_w_units))
+        #print(initmsg)
+        initmsg = initmsg.decode()
+
+        if initmsg[0] == START_CHAR:
+            msg = initmsg[2:]
+            # print(msg)
+            data_w_units = msg.strip().split(',')
+            print(str(data_w_units))
+
+def intTo3Bytes(intvar):
+    return str.encode(str(intvar).zfill(3))
 
 if __name__ == "__main__":
     ser = serial.Serial(SER_PORT, BAUD, timeout=2)
@@ -25,9 +38,11 @@ if __name__ == "__main__":
         print("Serial Open")
 
     for idx in range(0,100000):
+        ref_msg = REF_CHAR + (intTo3Bytes(int(REF[0])*100)) + (intTo3Bytes(int(REF[1])*100)) +(intTo3Bytes(int(REF[2])*100)) +(intTo3Bytes(int(REF[3])*100))
+        ser.write(ref_msg)
         ser.write(READY)
         log1msg(ser)
         log1msg(ser)
-        #time.sleep(0.01)
+        time.sleep(0.01)
 
 
