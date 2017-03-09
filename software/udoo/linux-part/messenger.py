@@ -2,7 +2,6 @@ import serial
 import time
 import numpy as np
 
-SER_PORT = "/dev/ttyACM0"
 BAUD = 230400
 
 READY = b'&'
@@ -31,6 +30,28 @@ def intTo3Bytes(intvar):
     return str.encode(str(intvar).zfill(3))
 
 if __name__ == "__main__":
+    import sys
+    if len(sys.argv) > 1:
+        SER_PORT = sys.argv[1]
+    else:
+        SER_PORT = "/dev/ttyACM0"
+
+    if len(sys.argv) == 4:
+        ref_s = float(sys.argv[2])
+        ref_e = float(sys.argv[3])
+    else:
+        ref_s = 90
+        ref_e = 90
+
+    REF = np.array([
+        np.radians(ref_s),
+        np.radians(ref_e),
+        0,
+        0
+    ])
+
+    print('Goding to: ('+ str(REF[0]) +',', str(REF[1]) + ')')
+
     ser = serial.Serial(SER_PORT, BAUD, timeout=2)
 
     if not ser.isOpen():
