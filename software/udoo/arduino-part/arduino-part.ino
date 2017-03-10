@@ -21,7 +21,7 @@ int ref[4] = {0,0,0,0};
 
 
 bool led = false;
-bool on = true;
+bool on = false;
 
 // Analog inputs
 int pin_cur2 = A0;
@@ -62,6 +62,8 @@ void setup(){
     pinMode(13,OUTPUT);
     pinMode(12,OUTPUT);
 
+    analogReadResolution(12);
+
     analogWrite(pin_pwm_shoulder, 25);
     analogWrite(pin_pwm_elbow, 25);
 
@@ -87,30 +89,36 @@ float getPos(int joint){
     if (joint == SHOULDER){
         //return analogRead(pin_pos1);        
         // return (616 - analogRead(pin_pos1)) * 2 * PI / 1232;
-        return analogRead(pin_pos1)*-0.00839998 + 3.536339; // * 2*PI / 1023;
+        // return analogRead(pin_pos1)*-0.00839998 + 3.536339; // * 2*PI / 1023;
+        return analogRead(pin_pos1) * -0.001681795 + 3.1331837;
     }
     else if (joint == ELBOW){
         //return analogRead(pin_pos2); 
         // return (694 - analogRead(pin_pos2)) * 2 * PI / 1304.1;
-        return analogRead(pin_pos2)*-0.00665592 + 3.46773; // * 2*PI / 1023;
+        // return analogRead(pin_pos2)*-0.00665592 + 3.46773; // * 2*PI / 1023;
+        return analogRead(pin_pos2) * -0.00165696 + 3.4945247;
     }
     else{
-        return -1;
+        return 0;
     }
 }
 
 float getCur(int joint){
 
     if (joint == SHOULDER){
-        return analogRead(pin_cur1) * 0.00146484375 - 3
+        // return analogRead(pin_cur1);
+        // return analogRead(pin_cur1) * 0.00146484375 - 3;
         // return analogRead(pin_cur1);
         // return 0.005865 * (analogRead(pin_cur1) - 511.5);
+        return (analogRead(pin_cur1) - 2144) * 0.0014652;
 
     }
     else if (joint == ELBOW){
-        return analogRead(pin_cur2) * 0.0048828125 - 1;
+        // return analogRead(pin_cur2);
+        // return analogRead(pin_cur2) * 0.0048828125 - 1;
         // return analogRead(pin_cur2);        
         // return 0.005865 * (analogRead(pin_cur2) - 509);
+        return (analogRead(pin_cur2) - 2144) * 0.0004884;
     }
     else{
         return -1;
@@ -120,14 +128,14 @@ float getCur(int joint){
 float getVel(int joint){
 
     if (joint == SHOULDER){
-        return analogRead(pin_vel1) * 0.1533980787886 - 100*PI;
         // return analogRead(pin_vel1);
-        // return 5.865 * (analogRead(pin_vel1)-511.5) * (2*PI/60);
+        // return (float) analogRead(pin_vel1) * 0.1533980787886 - 329;
+        return (analogRead(pin_vel1) - 2144) * 0.1533980787886;
     }
     else if (joint == ELBOW){
-        return analogRead(pin_vel2) * 0.1533980787886 - 100*PI;
         // return analogRead(pin_vel2);
-        // return 5.865 * (analogRead(pin_vel2)-511.5) * (2*PI/60);
+        // return (float) analogRead(pin_vel2) * 0.1533980787886 - 329;
+        return (analogRead(pin_vel2) - 2144) * 0.1533980787886;
     }
     else{
         return -1;
@@ -247,8 +255,8 @@ void controller(){
 
     y_v[0] = getPos(SHOULDER);
     y_v[1] = getPos(ELBOW);
-    y_v[2] = 0; //getVel(SHOULDER);
-    y_v[3] = 0; //getVel(ELBOW);
+    y_v[2] = getVel(SHOULDER);
+    y_v[3] = getVel(ELBOW);
 
     Matrix.Subtract(r_v,y_v,4,1,e_v);
 
