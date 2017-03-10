@@ -87,15 +87,9 @@ void B(float ths,float the,float dths,float dthe){
 float getPos(int joint){
 
     if (joint == SHOULDER){
-        //return analogRead(pin_pos1);        
-        // return (616 - analogRead(pin_pos1)) * 2 * PI / 1232;
-        // return analogRead(pin_pos1)*-0.00839998 + 3.536339; // * 2*PI / 1023;
         return analogRead(pin_pos1) * -0.001681795 + 3.1331837;
     }
     else if (joint == ELBOW){
-        //return analogRead(pin_pos2); 
-        // return (694 - analogRead(pin_pos2)) * 2 * PI / 1304.1;
-        // return analogRead(pin_pos2)*-0.00665592 + 3.46773; // * 2*PI / 1023;
         return analogRead(pin_pos2) * -0.00165696 + 3.4945247;
     }
     else{
@@ -105,20 +99,17 @@ float getPos(int joint){
 
 float getCur(int joint){
 
-    if (joint == SHOULDER){
-        // return analogRead(pin_cur1);
-        // return analogRead(pin_cur1) * 0.00146484375 - 3;
-        // return analogRead(pin_cur1);
-        // return 0.005865 * (analogRead(pin_cur1) - 511.5);
-        return (analogRead(pin_cur1) - 2144) * 0.0014652;
+    int reading;
 
+    if (joint == SHOULDER){
+        // return (analogRead(pin_cur1) * 0.0014652 - 3.1414);
+        reading = analogRead(pin_cur1);
+        return ((reading-2144) * 0.0014652);
     }
     else if (joint == ELBOW){
-        // return analogRead(pin_cur2);
-        // return analogRead(pin_cur2) * 0.0048828125 - 1;
-        // return analogRead(pin_cur2);        
-        // return 0.005865 * (analogRead(pin_cur2) - 509);
-        return (analogRead(pin_cur2) - 2144) * 0.0004884;
+        // return (analogRead(pin_cur2) * 0.0004884 - 1.0471);
+        reading = analogRead(pin_cur2);
+        return ((reading-2144) * 0.0004884);
     }
     else{
         return -1;
@@ -126,16 +117,17 @@ float getCur(int joint){
 }
 
 float getVel(int joint){
+int reading; 
 
     if (joint == SHOULDER){
-        // return analogRead(pin_vel1);
-        // return (float) analogRead(pin_vel1) * 0.1533980787886 - 329;
-        return (analogRead(pin_vel1) - 2144) * 0.1533980787886;
+        // return (analogRead(pin_vel1) * 0.153398 - 328.8852);
+        reading = analogRead(pin_vel1);
+        return ((reading-2144) * 0.153398);
     }
     else if (joint == ELBOW){
-        // return analogRead(pin_vel2);
-        // return (float) analogRead(pin_vel2) * 0.1533980787886 - 329;
-        return (analogRead(pin_vel2) - 2144) * 0.1533980787886;
+        // return (analogRead(pin_vel2) * 0.153398 - 328.8852);
+        reading = analogRead(pin_vel2);
+        return ((reading-2144) * 0.153398);
     }
     else{
         return -1;
@@ -145,6 +137,7 @@ float getVel(int joint){
 void sendMeas(int joint, unsigned long time, int pos, int vel, int cur){
 
     char msg[50];
+
     sprintf(msg, "%c,%d,%lu,%d,%d,%d",START_CHAR,joint,time,pos,vel,cur);
     Serial.println(msg);
 }
@@ -154,8 +147,8 @@ void measure(){
     unsigned long time;
     time = millis();
 
-    sendMeas(SHOULDER, time, (int)(100*getPos(SHOULDER)), (int)(100*getVel(SHOULDER)), (int)(100*getCur(SHOULDER)));
-    sendMeas(ELBOW, time, (int)(100*getPos(ELBOW)), (int)(100*getVel(ELBOW)), (int)(100*getCur(ELBOW)));
+    sendMeas(SHOULDER, time,    (int)(100*getPos(SHOULDER)),    (int)(getVel(SHOULDER)),    (int)(100*getCur(SHOULDER)));
+    sendMeas(ELBOW, time,       (int)(100*getPos(ELBOW)),       (int)(getVel(ELBOW)),       (int)(100*getCur(ELBOW)));
 
 }
 

@@ -64,6 +64,6 @@ if __name__ == "__main__":
         ser.write(READY)
         log1msg(ser)
         log1msg(ser)
-        time.sleep(0.01)
+        time.sleep(0.1)
 
 
