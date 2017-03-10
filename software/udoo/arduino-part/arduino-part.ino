@@ -35,7 +35,7 @@ int pin_pos1 = A5;
 // Outputs
 int pin_on_shoulder = 2;
 int pin_dir_shoulder = 3;
-int pin_pwm_shoulder = 5; // 4 for UDOO
+int pin_pwm_shoulder = 4; 
 int pin_on_elbow = 7;
 int pin_dir_elbow = 8;
 int pin_pwm_elbow = 9;
