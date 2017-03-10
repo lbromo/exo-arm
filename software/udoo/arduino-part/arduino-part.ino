@@ -102,12 +102,15 @@ float getPos(int joint){
 float getCur(int joint){
 
     if (joint == SHOULDER){
+        return analogRead(pin_cur1) * 0.00146484375 - 3
         // return analogRead(pin_cur1);
-        return 0.005865 * (analogRead(pin_cur1) - 511.5);
+        // return 0.005865 * (analogRead(pin_cur1) - 511.5);
+
     }
     else if (joint == ELBOW){
+        return analogRead(pin_cur2) * 0.0048828125 - 1;
         // return analogRead(pin_cur2);        
-        return 0.005865 * (analogRead(pin_cur2) - 509);
+        // return 0.005865 * (analogRead(pin_cur2) - 509);
     }
     else{
         return -1;
@@ -117,12 +120,14 @@ float getCur(int joint){
 float getVel(int joint){
 
     if (joint == SHOULDER){
+        return analogRead(pin_vel1) * 0.1533980787886 - 100*PI;
         // return analogRead(pin_vel1);
-        return 5.865 * (analogRead(pin_vel1)-511.5) * (2*PI/60);
+        // return 5.865 * (analogRead(pin_vel1)-511.5) * (2*PI/60);
     }
     else if (joint == ELBOW){
+        return analogRead(pin_vel2) * 0.1533980787886 - 100*PI;
         // return analogRead(pin_vel2);
-        return 5.865 * (analogRead(pin_vel2)-511.5) * (2*PI/60);
+        // return 5.865 * (analogRead(pin_vel2)-511.5) * (2*PI/60);
     }
     else{
         return -1;
