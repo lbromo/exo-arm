@@ -35,7 +35,7 @@ int pin_pos1 = A5;
 // Outputs
 int pin_on_shoulder = 2;
 int pin_dir_shoulder = 3;
-int pin_pwm_shoulder = 4; 
+int pin_pwm_shoulder = 4; // 5 for normal Arduino
 int pin_on_elbow = 7;
 int pin_dir_elbow = 8;
 int pin_pwm_elbow = 9;
@@ -87,12 +87,12 @@ float getPos(int joint){
     if (joint == SHOULDER){
         //return analogRead(pin_pos1);        
         // return (616 - analogRead(pin_pos1)) * 2 * PI / 1232;
-        return analogRead(pin_pos1) * 2*PI / 1023;
+        return analogRead(pin_pos1)*-0.00839998 + 3.536339; // * 2*PI / 1023;
     }
     else if (joint == ELBOW){
         //return analogRead(pin_pos2); 
         // return (694 - analogRead(pin_pos2)) * 2 * PI / 1304.1;
-        return analogRead(pin_pos2) * 2*PI / 1023;
+        return analogRead(pin_pos2)*-0.00665592 + 3.46773; // * 2*PI / 1023;
     }
     else{
         return -1;
