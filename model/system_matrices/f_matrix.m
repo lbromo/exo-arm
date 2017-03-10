@@ -1,4 +1,4 @@
-function F = fcn(dth, vm, cm, N, sigmoidpar)
+function F = fcn(dth, vm, cm, N, sigmoidpar, u)
 
 
 Fmatrix = [...
@@ -10,4 +10,4 @@ Fmatrix = [...
 %grid on
 %Fmatrix(1)=Fmatrix(1)*0.4;
 %Fmatrix(2)=Fmatrix(2)*0.25;
-F = Fmatrix*(N^2);
+F = Fmatrix * (N^2);

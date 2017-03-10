@@ -17,12 +17,12 @@ function [exo] = exo_sim(controller, x0)
 % 8=====================================D
 % REFERENCE
 % 8=====================================D
-	ref1 = [pi/2 pi*3/4 0 0]' * ones(1,30/Ts);
+	ref1 = [pi/2 pi*3/4 0 0]' * ones(1,T_end/Ts);
 	ref2 = [0.5  1 0 0]' * ones(1,30/Ts);
 	ref3 = [pi 0.25*pi 0 0]' * ones(1,30/Ts);
 	ref4 = [2  1 0 0]' * ones(1,30/Ts);
 	
-	ref = [ref1 ref2 ref3 ref4];
+	ref = [ref1]; % ref2 ref3 ref4];
 
 % 8=====================================D
 % SIMULATE
@@ -34,7 +34,7 @@ function [exo] = exo_sim(controller, x0)
 		% Limit input signal to valid current range
 		u(1,k) = saturate(u(1,k),cur2torque(-maxC1,1,params),cur2torque(maxC1,1,params));
 		u(2,k) = saturate(u(2,k),cur2torque(-maxC2,2,params),cur2torque(maxC2,2,params));
-
+		
 		% Forward euler
 	 	x(:,k+1) = x(:,k) + Ts*f(x(:,k), u(:,k), params);
 	end

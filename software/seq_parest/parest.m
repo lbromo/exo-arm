@@ -90,9 +90,9 @@ xdata = [cur, cur_f];
 
 [p,resnorm,residual,exitflag,output] = lsqcurvefit(f2,[1 1],xdata,ydata,[0 0]);
 
-
-b 	  = par(1) * p(2);
-tau_c = par(2) * p(2);
+kf = p(2);
+b 	  = par(1) * kf;
+tau_c = par(2) * kf;
 sigmoidpar = par(3);
 kt = p(1);
 
@@ -107,7 +107,7 @@ ax(1) = subplot(311);
 
 t = min(v):0.1:max(v);
 tauf = fct([b tau_c sigmoidpar],t);
-plot(v,c*p(2),'.',t,tauf);
+plot(v,c*kf,'.',t,tauf);
 xlabel('Velocity');
 ylabel('Friction Torque');
 grid on;
@@ -138,19 +138,19 @@ elseif 	joint == 2
 	title(ax(1),'Shoulder');
 end
 
-disp('NRMSE:')
+disp('N*MSE:')
 %disp(exo_mse(x(2,2:end),vel))
-disp(goodnessOfFit(x(2,2:end)',vel,'NRMSE'));
+disp(goodnessOfFit(x(2,2:end)',vel,'NMSE'));
 
-param.kt = kt;
-param.b =b;
-param.tau_c = tau_c;
-param.sigmoidpar = sigmoidpar;
+% param.kt = kt;
+% param.b =b;
+% param.tau_c = tau_c;
+% param.sigmoidpar = sigmoidpar;
 
-if joint == 1
-	elbow = param
-	save param_e elbow
-elseif joint == 2
-	shoulder = param
-	save param_s shoulder
-end
+% if joint == 1
+% 	elbow = param
+% 	save param_e elbow
+% elseif joint == 2
+% 	shoulder = param
+% 	save param_s shoulder
+% end

@@ -12,15 +12,14 @@ for t = 2:N
     dx1 = x(2,t);
     tau_m = kt * cur(t);
     fv = b * dx1;
-    fc = tau_c * sigmoid(dx1,sigmoidpar);
+    % if dx1 == 0
+    %     fc = min([tau_m tau_c*(-sign(tau_m))]);
+    % else
+    %     fc = tau_c * sign(dx1);
+    % end
+    fc = tau_c * sigmoid(dx1, sigmoidpar);
     tau_f(t) = fv+fc;
     
-    % if (abs(dx1) < 10 && abs(tau_m)<tau_c)
-    %     dx1;
-    %     fv = 0;
-    %     fc = tau_m;
-    % end
-
     dx2 = 1/Jm * (tau_m - tau_f(t));
     x(:,t+1) = x(:,t) + Ts * [dx1;dx2];
 end

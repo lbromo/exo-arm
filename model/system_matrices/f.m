@@ -8,19 +8,20 @@ function [xdot] = f(x, u, params)
   G=g_matrix(theta, params.g, params.l1, params.l2, params.m1, params.m2, params.a1 ,params.a2);
   F=f_matrix(thetadot, params.vm, params.cm, params.N, params.sigmoidpar);
 
-torquesum=abs(u-G);  %when vel=0 M=0 and V=0
+torquesum=u-G-V;  %when vel=0 M=0 and V=0
   
-
+% if (thetadot(1) == 0)
+%   F(1) = nmin([torquesum(1), -sign(torques(1))*params.cm(1)]);
+% end
+% if (thetadot(2) == 0)
+%   F(2) = nmin([torquesum(2), -sign(torques(2))*params.cm(2)]);
+% end
 
 % if (abs(F(1)) > abs(torquesum(1))) 
-% 	if (abs(thetadot(1)) <  0.0155) 
-%  		F(1) = (torquesum(1));
-% 	end
+% 	F(1) = (torquesum(1));
 % end
 % if (abs(F(2)) > abs(torquesum(2)))
-% 	if (abs(thetadot(2)) <  0.0155)
-%  		F(2) = (torquesum(2));
-% 	end
+% 	F(2) = (torquesum(2));
 % end
 % 
 % if (abs(F(1)) < abs(torquesum(1))) 
@@ -34,7 +35,7 @@ torquesum=abs(u-G);  %when vel=0 M=0 and V=0
 % 	end
 % end
 
-  thetadotdot = Minv*(u-(V+G+F));
+  thetadotdot = Minv*(u-V-G-F);
 
   xdot = [thetadot; thetadotdot];
 end
