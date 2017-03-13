@@ -17,9 +17,9 @@ def log1msg(ser):
         if not len(initmsg):
             return
 
-        #print(initmsg)
+        # print(initmsg)
         initmsg = initmsg.decode()
-
+	
         if initmsg[0] == START_CHAR:
             msg = initmsg[2:]
             # print(msg)
@@ -57,13 +57,21 @@ if __name__ == "__main__":
     if not ser.isOpen():
         ser.open()
         print("Serial Open")
+    time.sleep(0.01)
+    ref_msg = REF_CHAR + (intTo3Bytes(int(REF[0]*100))) + (intTo3Bytes(int(REF[1]*100))) +(intTo3Bytes(int(REF[2]*100))) +(intTo3Bytes(int(REF[3]*100)))
+    ser.write(ref_msg)
+    print(ref_msg)
 
     for idx in range(0,100000):
-        ref_msg = REF_CHAR + (intTo3Bytes(int(REF[0])*100)) + (intTo3Bytes(int(REF[1])*100)) +(intTo3Bytes(int(REF[2])*100)) +(intTo3Bytes(int(REF[3])*100))
-        ser.write(ref_msg)
-        ser.write(READY)
-        log1msg(ser)
-        log1msg(ser)
-        time.sleep(0.1)
+	try:
+            ser.write(READY)
+            log1msg(ser)
+            log1msg(ser)
+        except:
+            ser.write(b'S')
+            time.sleep(0.01)
+            exit()
+        else:
+            time.sleep(0.01)
 
 
