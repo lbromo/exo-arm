@@ -1,3 +1,9 @@
+#include <cmath>
+#include "Matrix.h"
+#include "AxoArmUtils.h"
+
+using namespace AxoArm;
+
 Vector AxoArm::get_N_vector(Vector& x){
   Vector n(2);
 
@@ -22,3 +28,16 @@ Matrix AxoArm::get_M_matrix(Vector& x){
 
   return M;
 }
+
+Vector controller(Vector& x, Vector& ref, Matrix& K){
+  auto n = get_N_vector(x);
+  auto M = get_M_matrix(x);
+
+  auto e = x - ref;
+  auto K_tmp = K * e;
+  auto M_tmp = M * K_tmp;
+  auto u = M_tmp + n;
+
+  return u;
+}
+

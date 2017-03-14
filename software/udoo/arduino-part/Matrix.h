@@ -1,3 +1,5 @@
+#pragma once
+
 #if defined (__i386__) || defined (__x86_64__)
 #include <iostream>
 #endif /*  (__i386__) || (__x86_64__) */

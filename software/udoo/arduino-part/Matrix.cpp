@@ -1,5 +1,4 @@
 #include <cstdlib>
-#include <cmath>
 #include <assert.h>
 #include "Matrix.h"
 
@@ -197,24 +196,6 @@ Vector AxoArm::operator* (Matrix& m1, Vector& v){
   }
   return res;
 }
-
-
-
-
-// Vector controller(Vector& x, Vector& ref, Matrix& K){
-//   Vector e(x.elements);
-//   Vector u(2);
-//   Vector K_tmp(2);
-//   Vector M_tmp(2);
-
-//   auto n = get_N_vector(x);
-//   auto M = get_M_matrix(x);
-
-//   std::cout << K_tmp[1] << std::endl;
-
-//   return u;
-
-// }
 
 #if defined (__i386__) || defined (__x86_64__)
 
