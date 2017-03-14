@@ -56,6 +56,7 @@ Vector& Vector::operator= (const Vector& other){
  * We want to be able to index with v[0], v[i] ... v[v.elements - 1]
  */
 float& Vector::operator[] (const int index) const{
+  static_assert(index >= 0 && index < this->_elements, "Index out of bounds");
   assert(index >= 0 && index < this->_elements);
   return this->_values[index];
 }
