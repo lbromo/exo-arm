@@ -61,7 +61,7 @@ float& Vector::operator[] (const int index) const{
 }
 
 /**
- * Matrix implementation
+ * Allocate the memory needed for the matrix
  */
 Matrix::Matrix(size_t rows, size_t columns){
   this->_values = (float**) calloc(rows, sizeof(float*));
@@ -73,6 +73,9 @@ Matrix::Matrix(size_t rows, size_t columns){
   this->_columns = columns;
 }
 
+/**
+ * Free the memory on destruction
+ */
 Matrix::~Matrix(){
   for(int i = 0; i < this->_rows; i++){
     free(this->_values[i]);
@@ -80,18 +83,23 @@ Matrix::~Matrix(){
   free(this->_values);
 }
 
+/**
+ * We want to be able to index with m[0][0], m[i][i] ... m[m.rows - 1][m.columns - 1]
+ * The "Proxy" maps the first index (the row) to the array containing the column elements,
+ * So in practice we got m[i] -> proxy --> proxy[j] -> values of m[i][j]
+ */
 Matrix::Proxy Matrix::operator[] (const int index) const{
   assert(index >= 0 && index < this->_rows);
   return Proxy(this->_values[index], this->_columns);
 }
-
 float& Matrix::Proxy::operator[] (const int index) const{
   assert(index >= 0 && index < this->_columns);
   return _array[index];
 }
 
-/**
- * Matrix Math
+/*
+ * Matrix addition
+ * out[i][j] = m1[i][j] + m2[i][j]
  */
 Matrix Matrix::operator+ (const Matrix& other) const{
   assert(this->rows == other.rows);
@@ -108,7 +116,10 @@ Matrix Matrix::operator+ (const Matrix& other) const{
   return C;
 }
 
-
+/*
+ * Matrix subtraction
+ * out[i][j] = m1[i][j] - m2[i][j]
+ */
 Matrix Matrix::operator- (const Matrix& other) const{
   assert(this->rows == other.rows);
   assert(this->columns == other.columns);
@@ -124,6 +135,10 @@ Matrix Matrix::operator- (const Matrix& other) const{
   return C;
 }
 
+/**
+ * Matrix multiplication
+ * See https://msdn.microsoft.com/en-us/library/hh873134.aspx
+ */
 Matrix Matrix::operator* (const Matrix& other) const{
   assert(this->columns == other.rows);
   auto m = this->rows;
@@ -142,6 +157,10 @@ Matrix Matrix::operator* (const Matrix& other) const{
   return C;
 }
 
+/**
+ * Matrix scalar multiplication
+ * If needed it could be templated 
+ */
 Matrix Matrix::operator* (const int scalar) const{
   auto m = this->rows;
   auto n = this->columns;
@@ -156,6 +175,10 @@ Matrix Matrix::operator* (const int scalar) const{
   return C;
 }
 
+/**
+ * Matrix scalar multiplication
+ * If needed it could be templated 
+ */
 Matrix Matrix::operator* (const float scalar) const{
   auto m = this->rows;
   auto n = this->columns;
@@ -172,6 +195,9 @@ Matrix Matrix::operator* (const float scalar) const{
 
 /**
  * Matrix Vector product
+ * Maps the vector to a (row) matrix with 1 column.
+ * Compute the matrix multiplication with the row matrix
+ * Copy the result into the output vector
  */
 Vector Matrix::operator* (const Vector& v) const{
   assert(this->columns == v.elements);
@@ -192,7 +218,7 @@ Vector Matrix::operator* (const Vector& v) const{
 
 
 /**
- * Vector Math
+ * Vector addition
  */
 Vector Vector::operator+ (const Vector& other) const{
   assert(this->elements == other.elements);
@@ -204,6 +230,9 @@ Vector Vector::operator+ (const Vector& other) const{
   return v;
 }
 
+/**
+ * Vector subtraction
+ */
 Vector Vector::operator- (const Vector& other) const{
   assert(this->elements == other.elements);
   Vector v(this->elements);
@@ -213,6 +242,9 @@ Vector Vector::operator- (const Vector& other) const{
   return v;
 }
 
+/**
+ * dot product
+ */
 float Vector::operator* (const Vector& other) const{
   assert(this->elements == other.elements);
   float val = 0;
@@ -222,6 +254,10 @@ float Vector::operator* (const Vector& other) const{
   return val;
 }
 
+/**
+ * Vector scalar multiplication
+ * If needed it could be templated 
+ */
 Vector Vector::operator* (const int scalar) const{
   Vector v(this->elements);
 
@@ -231,6 +267,10 @@ Vector Vector::operator* (const int scalar) const{
   return v;
 }
 
+/**
+ * Vector scalar multiplication
+ * If needed it could be templated 
+ */
 Vector Vector::operator* (const float scalar) const{
   Vector v(this->elements);
 
@@ -243,6 +283,9 @@ Vector Vector::operator* (const float scalar) const{
 
 #if defined (__i386__) || defined (__x86_64__)
 
+/**
+ * Pretty print matrix
+ */
 std::ostream& AxoArm::operator<< (std::ostream &strm, Matrix& m){
   strm << "[";
   for(int i = 0; i < m.rows; ++i){
@@ -260,8 +303,10 @@ std::ostream& AxoArm::operator<< (std::ostream &strm, Matrix& m){
   return strm;
 }
 
+/**
+ * Pretty print vector
+ */
 std::ostream& AxoArm::operator<< (std::ostream &strm, Vector& v){
-
   for(int i = 0; i < v.elements; i++){
     strm << "[" << v[i] << "]";
     if(!(i == v.elements - 1))
