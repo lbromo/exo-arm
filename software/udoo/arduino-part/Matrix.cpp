@@ -9,13 +9,17 @@
 using namespace AxoArm;
 
 /**
- * Vector implementation
+ * Allocate memory the vector
  */
 Vector::Vector(size_t elements){
   this->_values = (float*) calloc(elements, sizeof(float));
   this->_elements = elements;
 }
 
+/**
+ * Copy constructor
+ * Copies all the data from "other" into a new vector
+ */
 Vector::Vector(const Vector& other){
   if(!(this == &other)){
     /* Free all the "old" buffers */
@@ -31,10 +35,16 @@ Vector::Vector(const Vector& other){
   }
 }
 
+/**
+ * Free the memory on destruction
+ */
 Vector::~Vector(){
   free(this->_values);
 }
 
+/**
+ * The assignment operator invokes the copy constructor and returns a reference to the copied vector
+ */
 Vector& Vector::operator= (const Vector& other){
   if (!(this == &other)){
     new (this) Vector(other);
@@ -42,6 +52,9 @@ Vector& Vector::operator= (const Vector& other){
   return *this;
 }
 
+/**
+ * We want to be able to index with v[0], v[i] ... v[v.elements - 1]
+ */
 float& Vector::operator[] (const int index) const{
   assert(index >= 0 && index < this->_elements);
   return this->_values[index];
