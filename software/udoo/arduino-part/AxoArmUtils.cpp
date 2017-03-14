@@ -1,4 +1,9 @@
+#if defined (__i386__) || defined (__x86_64__)
 #include <cmath>
+#elif defined (ARDUINO)
+#include <math.h>
+#endif
+
 #include "Matrix.h"
 #include "AxoArmUtils.h"
 
@@ -33,9 +38,10 @@ Vector AxoArm::controller(Vector& x, Vector& ref, Matrix& K){
   auto M_tmp = M * K_tmp;
   auto u = M_tmp + n;
 
-  auto u_short = M * (K * e) + n;
+  u[0] = u[0] * 0.282485875706215;
+  u[1] = u[1] * 0.261780104712042;
 
-  return u_short;
+  return u;
 }
 
 
@@ -45,15 +51,13 @@ int main(){
   Vector r(4);
   Matrix K(2,4);
 
-  Matrix M(2,2);
+  r[0] = 1.67;
+  r[1] = 2.36;
 
-  r[0] = 1.6;
-  r[1] = 2.0;
-
-  K[0][0] = 5;
-  K[0][2] = 1;
-  K[1][1] = 5;
-  K[1][3] = 1;
+  K[0][0] = 12;
+  K[0][2] = 3.5;
+  K[1][1] = 12;
+  K[1][3] = 3.5;
 
   auto u = controller(x, r, K);
   std::cout << u << std::endl;
@@ -61,8 +65,6 @@ int main(){
   u = controller(x, r, K);
   std::cout << u << std::endl;
   u = r;
-
-  auto tmp = M * M * M * M;
 
 }
 #endif

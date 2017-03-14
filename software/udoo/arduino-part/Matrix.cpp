@@ -1,8 +1,8 @@
-#include <cstdlib>
 #include <assert.h>
 #include "Matrix.h"
 
 #if defined (__i386__) || defined (__x86_64__)
+#include <cstdlib>
 #include <iostream>
 #endif /*  (__i386__) || (__x86_64__) */
 
@@ -12,14 +12,19 @@ using namespace AxoArm;
  * Vector implementation
  */
 Vector::Vector(size_t elements){
-  this->_values = (float*) malloc(sizeof(float) * elements);
+  this->_values = (float*) calloc(elements, sizeof(float));
   this->_elements = elements;
 }
 
 Vector::Vector(const Vector& other){
   if(!(this == &other)){
+    /* Free all the "old" buffers */
     this->~Vector();
+
+    /* Allocate new memory*/
     new (this) Vector(other.elements);
+
+    /* Copy the content */
     for(int i = 0; i < this->elements; i++){
       (*this)[i] = other[i];
     }
@@ -46,9 +51,9 @@ float& Vector::operator[] (const int index) const{
  * Matrix implementation
  */
 Matrix::Matrix(size_t rows, size_t columns){
-  this->_values = (float**) malloc(sizeof(float*) * rows);
+  this->_values = (float**) calloc(rows, sizeof(float*));
   for(int i = 0; i < rows; i++){
-    this->_values[i] = (float*) malloc(sizeof(float) * columns);
+    this->_values[i] = (float*) calloc(columns, sizeof(float));
   }
 
   this->_rows = rows;
@@ -111,6 +116,7 @@ Matrix Matrix::operator* (const Matrix& other) const{
   auto m = this->rows;
   auto p = this->columns;
   auto n = other.columns;
+
   Matrix C(m, n);
 
   for(int row = 0; row < m; row++){
@@ -156,8 +162,10 @@ Matrix Matrix::operator* (const float scalar) const{
  */
 Vector Matrix::operator* (const Vector& v) const{
   assert(this->columns == v.elements);
+
   Matrix m2(v.elements, 1);
   Vector res(this->rows);
+
   for(int i = 0; i < v.elements; i++)
     m2[i][0] = v[i];
   auto C = (*this) * m2;
@@ -165,6 +173,7 @@ Vector Matrix::operator* (const Vector& v) const{
   for(int i = 0; i < this->rows; i++){
     res[i] = C[i][0];
   }
+
   return res;
 }
 
@@ -178,6 +187,7 @@ Vector Vector::operator+ (const Vector& other) const{
   for(int i = 0; i < this->elements; i++){
     v[i] = (*this)[i] + other[i];
   }
+
   return v;
 }
 
@@ -201,6 +211,7 @@ float Vector::operator* (const Vector& other) const{
 
 Vector Vector::operator* (const int scalar) const{
   Vector v(this->elements);
+
   for(int i = 0; i < this->elements; i++){
     v[i] = (*this)[i] * scalar;
   }
@@ -209,9 +220,11 @@ Vector Vector::operator* (const int scalar) const{
 
 Vector Vector::operator* (const float scalar) const{
   Vector v(this->elements);
+
   for(int i = 0; i < this->elements; i++){
     v[i] = (*this)[i] * scalar;
   }
+
   return v;
 }
 

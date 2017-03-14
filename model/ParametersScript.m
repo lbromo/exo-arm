@@ -1,3 +1,5 @@
+
+function params = Parametersscript()
 %% Exo Dynamic Model Script
 
 %clear all; clc; close all;
@@ -11,13 +13,13 @@
 disp('Parametersscript')
 
 %% Sample Rate
-Ts = 0.01; % [s]
-n_s = 4; % Number of states
-n_i = 2; % Number of inputs
+params.Ts = 0.01; % [s]
+params.n_s = 4; % Number of states
+params.n_i = 2; % Number of inputs
 
 %% Current lim
-maxC1 = 3;
-maxC2 = 1;
+params.maxC1 = 3;
+params.maxC2 = 1;
 
 %% Gear Ratio
 
@@ -93,7 +95,6 @@ hast=[3.4190    2.0148];
 % 		'I1','I2',...
 % 		'g'...
 % 		);
-global params
 params.m1 = m1;
 params.m2 = m2;
 params.a1 = a1;
@@ -123,3 +124,4 @@ params.hast=hast;
 %
 %params.arm = SerialLink(L, 'name', 'Exoskeleton','plotopt',plotopt);
 %save('SerialLinkCC','arm');
+end

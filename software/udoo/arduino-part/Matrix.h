@@ -3,6 +3,9 @@
 
 #if defined (__i386__) || defined (__x86_64__)
 #include <iostream>
+#else
+#include <stdint.h>
+#define size_t uint8_t
 #endif /*  (__i386__) || (__x86_64__) */
 
 namespace AxoArm{
