@@ -6,7 +6,7 @@ function [exo] = exo_sim(controller, x0)
 	params = ParametersScript();
 	addpath controllers;
 
-	if isequal(controller, @c_controller_mex)
+	if isequal(controller, @c_mex)
 		mex -I../software/udoo/arduino-part/ GCC=/usr/bin/gcc-4.9.3 controllers/controller_mex.cpp ../software/udoo/arduino-part/AxoArmUtils.cpp ../software/udoo/arduino-part/Matrix.cpp
 	end
 
@@ -24,10 +24,8 @@ function [exo] = exo_sim(controller, x0)
 	x = zeros(params.n_s,S); % States: [theta_s; theta_e; thetadot_s; thetadot_e]
 	u = zeros(params.n_i,S);
 
-	x_m(:,1) = x0;
+	x(:,1) = x0;
 	u(:,1) = [0; 0];
-	ardref = u;
-	x_m = x;
 
 % 8=====================================D
 % REFERENCE
@@ -63,6 +61,7 @@ function [exo] = exo_sim(controller, x0)
 	exo.x = x;
 	exo.u = u;
 	exo.ref = ref;
+
 	if isequal(controller, @c_arduino)
 		fclose(s);
 	end
