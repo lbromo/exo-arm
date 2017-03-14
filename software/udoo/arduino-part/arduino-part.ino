@@ -14,10 +14,11 @@ const char RDY_CHAR ='&';
 const char REF_CHAR ='R';
 const char STOP_CHAR = 'S';
 
-const float k_m[2][4] = {{12, 0, 3.5, 0},{0, 12, 0, 3.5}};
+const float k_m[2][4] = {{5, 0, 1, 0},{0, 5, 0, 1}};
+// const float k_m[2][4] = {{3, 0, 0, 0},{0, 3, 0, 0}};
 
 float n_v[2], B_m[2][2], u_v[2], y_v[4], r_v[4];
-int ref[4] = {0,0,0,0};
+int ref[4] = {80,80,0,0};
 
 
 bool led = false;
@@ -122,12 +123,12 @@ int reading;
     if (joint == SHOULDER){
         // return (analogRead(pin_vel1) * 0.153398 - 328.8852);
         reading = analogRead(pin_vel1);
-        return ((reading-2144) * 0.153398);
+        return ((reading-2144) * 0.153398)* 0.02; // 0.02 is due to gear ratio
     }
     else if (joint == ELBOW){
         // return (analogRead(pin_vel2) * 0.153398 - 328.8852);
         reading = analogRead(pin_vel2);
-        return ((reading-2144) * 0.153398);
+        return ((reading-2144) * 0.153398)* 0.02;
     }
     else{
         return -1;
@@ -138,7 +139,7 @@ void sendMeas(int joint, unsigned long time, int pos, int vel, int cur){
 
     char msg[50];
 
-    sprintf(msg, "%c,%d,%lu,%d,%d,%d",START_CHAR,joint,time,pos,vel,cur);
+    sprintf(msg, "%c,%d,%lu,%d,%d,%d,%d",START_CHAR,joint,time,pos,vel,cur,ref[joint]);
     Serial.println(msg);
 }
 
@@ -147,8 +148,8 @@ void measure(){
     unsigned long time;
     time = millis();
 
-    sendMeas(SHOULDER, time,    (int)(100*getPos(SHOULDER)),    (int)(getVel(SHOULDER)),    (int)(100*getCur(SHOULDER)));
-    sendMeas(ELBOW, time,       (int)(100*getPos(ELBOW)),       (int)(getVel(ELBOW)),       (int)(100*getCur(ELBOW)));
+    sendMeas(SHOULDER, time,    (int)(100*getPos(SHOULDER)),    (int)(100*getVel(SHOULDER)),    (int)(100*getCur(SHOULDER)));
+    sendMeas(ELBOW, time,       (int)(100*getPos(ELBOW)),       (int)(100*getVel(ELBOW)),       (int)(100*getCur(ELBOW)));
 
 }
 
@@ -257,11 +258,11 @@ void controller(){
     n(y_v[0], y_v[1], y_v[2], y_v[3]);
 
     Matrix.Multiply((float*)k_m,(float*)e_v,2,4,1,(float*)k_tmp);
-    Matrix.Multiply((float*)B_m,(float*)k_tmp,2,2,1,(float*)B_tmp);
-    Matrix.Add(B_tmp,n_v,2,1,u_v);
+    // Matrix.Multiply((float*)B_m,(float*)k_tmp,2,2,1,(float*)B_tmp);
+    // Matrix.Add(B_tmp,n_v,2,1,u_v);
 
 
-    applyControl(u_v);
+    applyControl(k_tmp);
 
     sprintf(msg1,"%d,%d",(int)(u_v[0]*100),(int)(u_v[1]*100));
     // sprintf(msg2,"%d,%d,%d,%d",(int)(y_v[0]*100),(int)(y_v[1]*100),(int)(y_v[2]*100),(int)(y_v[3]*100));
@@ -303,11 +304,12 @@ void loop(){
 
         getRef();
         newRef = 1;
+        on = true;
         
     }
     else if (inByte == STOP_CHAR){
 
-        on = !on;
+        on = false;
     }
         
     if (millis() >= (T_c + SAMPLE_T_MS))
