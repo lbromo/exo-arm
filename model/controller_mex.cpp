@@ -7,7 +7,7 @@
  *========================================================*/
 #include <math.h>
 #include "mex.h"
-
+#include "arduino_in_the_loop/MatrixMath.h"
 
 void n(double *x, double *n_v)
 {

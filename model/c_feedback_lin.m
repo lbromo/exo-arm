@@ -1,4 +1,4 @@
-function u = c_feedback_lin(x,params,upre, xpre,ref)
+function u = c_feedback_lin(x,params,upre, xpre,ref,s)
 
 	p = 12;
 	pd = 3.5;
@@ -10,7 +10,7 @@ function u = c_feedback_lin(x,params,upre, xpre,ref)
 	
 	e = ref-x;
 
-	u = (B(x,params) * (kp * e).*[params.kt1 params.kt2]'*params.N + n(x,params))./([params.kt1 params.kt2]'*params.N);
-	u = u.*[params.kt1 params.kt2]'*params.N;
+	u = (B(x,params) * (kp * e) + n(x,params));
+	u = u./([params.kt1 params.kt2]'*params.N);
 
 end
