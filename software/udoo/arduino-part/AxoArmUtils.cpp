@@ -16,11 +16,6 @@ Vector AxoArm::get_N_vector(Vector& x){
 Matrix AxoArm::get_M_matrix(Vector& x){
   Matrix M(2, 2);
 
-  float ths = x[0];
-  float the = x[1];
-  float dths = x[2];
-  float dthe = x[3];
-
   M[0][0] = cos(x[1])*1.070458975872E-2+4.395832773706053E-1;
   M[0][1] = cos(x[1])*5.352294879359999E-3+1.974569836531137E-3;
   M[1][0] = cos(x[1])*5.352294879359999E-3+1.974569836531137E-3;
@@ -33,10 +28,31 @@ Vector AxoArm::controller(Vector& x, Vector& ref, Matrix& K){
   auto n = get_N_vector(x);
   auto M = get_M_matrix(x);
 
-  auto e = x - ref;
+  auto e = ref - x;
   auto K_tmp = K * e;
   auto M_tmp = M * K_tmp;
   auto u = M_tmp + n;
 
   return u;
 }
+
+
+#if defined (__i386__) || defined (__x86_64__)
+int main(){
+  Vector x(4);
+  Vector r(4);
+  Matrix K(2,4);
+
+  r[0] = 1.6;
+  r[1] = 2.0;
+
+  K[0][0] = 5;
+  K[0][2] = 1;
+  K[1][1] = 5;
+  K[1][3] = 1;
+
+  auto u = controller(x, r, K);
+  std::cout << u << std::endl;
+
+}
+#endif
