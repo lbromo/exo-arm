@@ -11,10 +11,19 @@ namespace AxoArm{
   public:
     Vector() {};
     Vector(size_t elements);
+    Vector(const Vector& other);
     ~Vector();
-    float& operator[] (const int index);
 
     const size_t& elements = _elements;
+
+    Vector& operator= (const Vector& other);
+    float& operator[] (const int index) const;
+
+    Vector operator+ (const Vector& other) const;
+    Vector operator- (const Vector& other) const;
+    float operator* (const Vector& other) const;
+    Vector operator* (const int scalar) const;
+    Vector operator* (const float scalar) const;
 
   private:
     float* _values;
@@ -29,7 +38,7 @@ namespace AxoArm{
     class Proxy{
     public:
       Proxy (float* array, size_t columns) : _array(array), _columns(columns) { }
-      float& operator[](const int index);
+      float& operator[](const int index) const;
     private:
       float* _array;
       size_t _columns;
@@ -39,30 +48,22 @@ namespace AxoArm{
     const size_t& columns = _columns;
 
     Matrix& operator=(const Matrix& m) = default;
-    Proxy operator[](const int index);
+    Proxy operator[](const int index) const;
+
+    Matrix operator+ (const Matrix& other) const;
+    Matrix operator- (const Matrix& other) const;
+    Matrix operator* (const Matrix& other) const;
+    Matrix operator* (const int scalar) const;
+    Matrix operator* (const float scalar) const;
+
+    Vector operator* (const Vector& v) const;
+
 
   private:
     float** _values;
     size_t _rows;
     size_t _columns;
   };
-
-  Matrix operator+ (Matrix& m1, Matrix& m2);
-  Matrix operator- (Matrix& m1, Matrix& m2);
-  Matrix operator* (Matrix& m1, Matrix& m2);
-  Matrix operator* (Matrix& m1, int& scalar);
-  Matrix operator* (Matrix& m1, float& scalar);
-
-  Vector operator+ (Vector& v1, Vector& v2);
-  Vector operator- (Vector& v1, Vector& v2);
-  float operator* (Vector& v1, Vector& v2);
-  Vector operator* (Vector& v1, int& scalar);
-  Vector operator* (Vector& v1, float& scalar);
-
-
-  Vector operator* (Matrix& m1, Vector& v);
-
-
 
 #if defined (__i386__) || defined (__x86_64__)
   std::ostream& operator<< (std::ostream &strm, Matrix& m);

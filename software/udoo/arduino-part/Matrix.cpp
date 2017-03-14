@@ -16,11 +16,28 @@ Vector::Vector(size_t elements){
   this->_elements = elements;
 }
 
+Vector::Vector(const Vector& other){
+  if(!(this == &other)){
+    this->~Vector();
+    new (this) Vector(other.elements);
+    for(int i = 0; i < this->elements; i++){
+      (*this)[i] = other[i];
+    }
+  }
+}
+
 Vector::~Vector(){
   free(this->_values);
 }
 
-float& Vector::operator[] (const int index){
+Vector& Vector::operator= (const Vector& other){
+  if (!(this == &other)){
+    new (this) Vector(other);
+  }
+  return *this;
+}
+
+float& Vector::operator[] (const int index) const{
   assert(index >= 0 && index < this->_elements);
   return this->_values[index];
 }
@@ -45,12 +62,12 @@ Matrix::~Matrix(){
   free(this->_values);
 }
 
-Matrix::Proxy Matrix::operator[] (const int index){
+Matrix::Proxy Matrix::operator[] (const int index) const{
   assert(index >= 0 && index < this->_rows);
   return Proxy(this->_values[index], this->_columns);
 }
 
-float& Matrix::Proxy::operator[] (const int index){
+float& Matrix::Proxy::operator[] (const int index) const{
   assert(index >= 0 && index < this->_columns);
   return _array[index];
 }
@@ -58,143 +75,144 @@ float& Matrix::Proxy::operator[] (const int index){
 /**
  * Matrix Math
  */
-Matrix AxoArm::operator+ (Matrix& m1, Matrix& m2){
-  assert(m1.rows == m2.rows);
-  assert(m1.columns == m2.columns);
-  auto m = m1.rows;
-  auto n = m1.columns;
+Matrix Matrix::operator+ (const Matrix& other) const{
+  assert(this->rows == other.rows);
+  assert(this->columns == other.columns);
+  auto m = this->rows;
+  auto n = this->columns;
   Matrix C(m, n);
 
   for(int row = 0; row < m; row++){
     for(int col = 0; col < n; col++){
-      C[row][col] = m1[row][col] + m2[row][col];
+      C[row][col] = (*this)[row][col] + other[row][col];
     }
   }
   return C;
 }
 
-Matrix AxoArm::operator- (Matrix& m1, Matrix& m2){
-  assert(m1.rows == m2.rows);
-  assert(m1.columns == m2.columns);
-  auto m = m1.rows;
-  auto n = m1.columns;
+
+Matrix Matrix::operator- (const Matrix& other) const{
+  assert(this->rows == other.rows);
+  assert(this->columns == other.columns);
+  auto m = this->rows;
+  auto n = this->columns;
   Matrix C(m, n);
 
   for(int row = 0; row < m; row++){
     for(int col = 0; col < n; col++){
-      C[row][col] = m1[row][col] - m2[row][col];
+      C[row][col] = (*this)[row][col] - other[row][col];
     }
   }
   return C;
 }
 
-Matrix AxoArm::operator* (Matrix& m1, Matrix& m2){
-  assert(m1.columns == m2.rows);
-  auto m = m1.rows;
-  auto p = m1.columns;
-  auto n = m2.columns;
+Matrix Matrix::operator* (const Matrix& other) const{
+  assert(this->columns == other.rows);
+  auto m = this->rows;
+  auto p = this->columns;
+  auto n = other.columns;
   Matrix C(m, n);
 
   for(int row = 0; row < m; row++){
     for(int col = 0; col < n; col++){
       for(int inner = 0; inner < p; inner++){
-        C[row][col] += m1[row][inner] * m2[inner][col];
+        C[row][col] += (*this)[row][inner] * other[inner][col];
       }
     }
   }
   return C;
 }
 
-Matrix operator* (Matrix& m1, int& scalar){
-  auto m = m1.rows;
-  auto n = m1.columns;
+Matrix Matrix::operator* (const int scalar) const{
+  auto m = this->rows;
+  auto n = this->columns;
 
   Matrix C(m, n);
 
   for(int row = 0; row < m; row++){
     for(int col = 0; col < n; col++){
-      C[row][col] = m1[row][col] * scalar;
+      C[row][col] = (*this)[row][col] * scalar;
     }
   }
   return C;
 }
 
-Matrix operator* (Matrix& m1, float& scalar){
-  auto m = m1.rows;
-  auto n = m1.columns;
+Matrix Matrix::operator* (const float scalar) const{
+  auto m = this->rows;
+  auto n = this->columns;
 
   Matrix C(m, n);
 
   for(int row = 0; row < m; row++){
     for(int col = 0; col < n; col++){
-      C[row][col] = m1[row][col] * scalar;
+      C[row][col] = (*this)[row][col] * scalar;
     }
   }
   return C;
 }
-
-/**
- * Vector Math
- */
-Vector AxoArm::operator+ (Vector& v1, Vector& v2){
-  assert(v1.elements == v2.elements);
-  Vector v(v1.elements);
-  for(int i = 0; i < v1.elements; i++){
-    v[i] = v1[i] + v2[i];
-  }
-  return v;
-}
-
-Vector AxoArm::operator- (Vector& v1, Vector& v2){
-  assert(v1.elements == v2.elements);
-  Vector v(v1.elements);
-  for(int i = 0; i < v1.elements; i++){
-    v[i] = v1[i] - v2[i];
-  }
-  return v;
-}
-
-float AxoArm::operator* (Vector& v1, Vector& v2){
-  assert(v1.elements == v2.elements);
-  float val = 0;
-  for(int i = 0; i < v1.elements; i++){
-    val += v1[i]*v2[i];
-  }
-  return val;
-}
-
-Vector AxoArm::operator* (Vector& v1, int& scalar){
-  Vector v(v1.elements);
-  for(int i = 0; i < v1.elements; i++){
-    v[i] = v1[i] * scalar;
-  }
-  return v;
-}
-
-Vector AxoArm::operator* (Vector& v1, float& scalar){
-  Vector v(v1.elements);
-  for(int i = 0; i < v1.elements; i++){
-    v[i] = v1[i] * scalar;
-  }
-  return v;
-}
-
 
 /**
  * Matrix Vector product
  */
-Vector AxoArm::operator* (Matrix& m1, Vector& v){
-  assert(m1.columns == v.elements);
+Vector Matrix::operator* (const Vector& v) const{
+  assert(this->columns == v.elements);
   Matrix m2(v.elements, 1);
-  Vector res(m1.rows);
+  Vector res(this->rows);
   for(int i = 0; i < v.elements; i++)
     m2[i][0] = v[i];
-  auto C = m1 * m2;
+  auto C = (*this) * m2;
 
-  for(int i = 0; i < m1.rows; i++){
+  for(int i = 0; i < this->rows; i++){
     res[i] = C[i][0];
   }
   return res;
+}
+
+
+/**
+ * Vector Math
+ */
+Vector Vector::operator+ (const Vector& other) const{
+  assert(this->elements == other.elements);
+  Vector v(this->elements);
+  for(int i = 0; i < this->elements; i++){
+    v[i] = (*this)[i] + other[i];
+  }
+  return v;
+}
+
+Vector Vector::operator- (const Vector& other) const{
+  assert(this->elements == other.elements);
+  Vector v(this->elements);
+  for(int i = 0; i < this->elements; i++){
+    v[i] = (*this)[i] - other[i];
+  }
+  return v;
+}
+
+float Vector::operator* (const Vector& other) const{
+  assert(this->elements == other.elements);
+  float val = 0;
+  for(int i = 0; i < this->elements; i++){
+    val += (*this)[i]*other[i];
+  }
+  return val;
+}
+
+Vector Vector::operator* (const int scalar) const{
+  Vector v(this->elements);
+  for(int i = 0; i < this->elements; i++){
+    v[i] = (*this)[i] * scalar;
+  }
+  return v;
+}
+
+Vector Vector::operator* (const float scalar) const{
+  Vector v(this->elements);
+  for(int i = 0; i < this->elements; i++){
+    v[i] = (*this)[i] * scalar;
+  }
+  return v;
 }
 
 #if defined (__i386__) || defined (__x86_64__)

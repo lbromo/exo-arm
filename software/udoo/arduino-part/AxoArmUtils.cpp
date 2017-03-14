@@ -33,7 +33,9 @@ Vector AxoArm::controller(Vector& x, Vector& ref, Matrix& K){
   auto M_tmp = M * K_tmp;
   auto u = M_tmp + n;
 
-  return u;
+  auto u_short = M * (K * e) + n;
+
+  return u_short;
 }
 
 
@@ -42,6 +44,8 @@ int main(){
   Vector x(4);
   Vector r(4);
   Matrix K(2,4);
+
+  Matrix M(2,2);
 
   r[0] = 1.6;
   r[1] = 2.0;
@@ -53,6 +57,12 @@ int main(){
 
   auto u = controller(x, r, K);
   std::cout << u << std::endl;
+
+  u = controller(x, r, K);
+  std::cout << u << std::endl;
+  u = r;
+
+  auto tmp = M * M * M * M;
 
 }
 #endif
