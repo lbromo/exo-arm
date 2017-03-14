@@ -61,6 +61,70 @@ float& Vector::operator[] (const int index) const{
 }
 
 /**
+ * Vector addition
+ */
+Vector Vector::operator+ (const Vector& other) const{
+  assert(this->elements == other.elements);
+  Vector v(this->elements);
+  for(int i = 0; i < this->elements; i++){
+    v[i] = (*this)[i] + other[i];
+  }
+
+  return v;
+}
+
+/**
+ * Vector subtraction
+ */
+Vector Vector::operator- (const Vector& other) const{
+  assert(this->elements == other.elements);
+  Vector v(this->elements);
+  for(int i = 0; i < this->elements; i++){
+    v[i] = (*this)[i] - other[i];
+  }
+  return v;
+}
+
+/**
+ * dot product
+ */
+float Vector::operator* (const Vector& other) const{
+  assert(this->elements == other.elements);
+  float val = 0;
+  for(int i = 0; i < this->elements; i++){
+    val += (*this)[i]*other[i];
+  }
+  return val;
+}
+
+/**
+ * Vector scalar multiplication
+ * If needed it could be templated
+ */
+Vector Vector::operator* (const int scalar) const{
+  Vector v(this->elements);
+
+  for(int i = 0; i < this->elements; i++){
+    v[i] = (*this)[i] * scalar;
+  }
+  return v;
+}
+
+/**
+ * Vector scalar multiplication
+ * If needed it could be templated
+ */
+Vector Vector::operator* (const float scalar) const{
+  Vector v(this->elements);
+
+  for(int i = 0; i < this->elements; i++){
+    v[i] = (*this)[i] * scalar;
+  }
+
+  return v;
+}
+
+/**
  * Allocate the memory needed for the matrix
  */
 Matrix::Matrix(size_t rows, size_t columns){
@@ -214,71 +278,6 @@ Vector Matrix::operator* (const Vector& v) const{
   }
 
   return res;
-}
-
-
-/**
- * Vector addition
- */
-Vector Vector::operator+ (const Vector& other) const{
-  assert(this->elements == other.elements);
-  Vector v(this->elements);
-  for(int i = 0; i < this->elements; i++){
-    v[i] = (*this)[i] + other[i];
-  }
-
-  return v;
-}
-
-/**
- * Vector subtraction
- */
-Vector Vector::operator- (const Vector& other) const{
-  assert(this->elements == other.elements);
-  Vector v(this->elements);
-  for(int i = 0; i < this->elements; i++){
-    v[i] = (*this)[i] - other[i];
-  }
-  return v;
-}
-
-/**
- * dot product
- */
-float Vector::operator* (const Vector& other) const{
-  assert(this->elements == other.elements);
-  float val = 0;
-  for(int i = 0; i < this->elements; i++){
-    val += (*this)[i]*other[i];
-  }
-  return val;
-}
-
-/**
- * Vector scalar multiplication
- * If needed it could be templated 
- */
-Vector Vector::operator* (const int scalar) const{
-  Vector v(this->elements);
-
-  for(int i = 0; i < this->elements; i++){
-    v[i] = (*this)[i] * scalar;
-  }
-  return v;
-}
-
-/**
- * Vector scalar multiplication
- * If needed it could be templated 
- */
-Vector Vector::operator* (const float scalar) const{
-  Vector v(this->elements);
-
-  for(int i = 0; i < this->elements; i++){
-    v[i] = (*this)[i] * scalar;
-  }
-
-  return v;
 }
 
 #if defined (__i386__) || defined (__x86_64__)
