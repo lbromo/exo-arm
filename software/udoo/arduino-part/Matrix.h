@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _MATRIX_h_
+#define _MATRIX_h_
 
 #if defined (__i386__) || defined (__x86_64__)
 #include <iostream>
@@ -68,3 +69,5 @@ namespace AxoArm{
   std::ostream& operator<< (std::ostream &strm, Vector& v);
 #endif /*  (__i386__) || (__x86_64__) */
 }
+
+#endif /* _MATRIX_h_ */

@@ -29,7 +29,7 @@ Matrix AxoArm::get_M_matrix(Vector& x){
   return M;
 }
 
-Vector controller(Vector& x, Vector& ref, Matrix& K){
+Vector AxoArm::controller(Vector& x, Vector& ref, Matrix& K){
   auto n = get_N_vector(x);
   auto M = get_M_matrix(x);
 
@@ -40,4 +40,3 @@ Vector controller(Vector& x, Vector& ref, Matrix& K){
 
   return u;
 }
-
