@@ -1,8 +1,8 @@
-#include <cstdlib>
 #include <assert.h>
 #include "Matrix.h"
 
 #if defined (__i386__) || defined (__x86_64__)
+#include <cstdlib>
 #include <iostream>
 #endif /*  (__i386__) || (__x86_64__) */
 
@@ -12,7 +12,7 @@ using namespace AxoArm;
  * Vector implementation
  */
 Vector::Vector(size_t elements){
-  this->_values = (float*) malloc(sizeof(float) * elements);
+  this->_values = (float*) calloc(elements, sizeof(float));
   this->_elements = elements;
 }
 
@@ -29,9 +29,9 @@ float& Vector::operator[] (const int index){
  * Matrix implementation
  */
 Matrix::Matrix(size_t rows, size_t columns){
-  this->_values = (float**) malloc(sizeof(float*) * rows);
+  this->_values = (float**) calloc(rows, sizeof(float*));
   for(int i = 0; i < rows; i++){
-    this->_values[i] = (float*) malloc(sizeof(float) * columns);
+    this->_values[i] = (float*) calloc(columns, sizeof(float));
   }
 
   this->_rows = rows;
@@ -91,7 +91,7 @@ Matrix AxoArm::operator- (Matrix& m1, Matrix& m2){
 Matrix AxoArm::operator* (Matrix& m1, Matrix& m2){
   assert(m1.columns == m2.rows);
   auto m = m1.rows;
-  auto p = m1.columns;
+  auto p = m2.rows;
   auto n = m2.columns;
   Matrix C(m, n);
 
@@ -105,7 +105,7 @@ Matrix AxoArm::operator* (Matrix& m1, Matrix& m2){
   return C;
 }
 
-Matrix operator* (Matrix& m1, int& scalar){
+Matrix operator* (Matrix& m1, int scalar){
   auto m = m1.rows;
   auto n = m1.columns;
 
@@ -119,7 +119,7 @@ Matrix operator* (Matrix& m1, int& scalar){
   return C;
 }
 
-Matrix operator* (Matrix& m1, float& scalar){
+Matrix operator* (Matrix& m1, double scalar){
   auto m = m1.rows;
   auto n = m1.columns;
 
@@ -163,7 +163,7 @@ float AxoArm::operator* (Vector& v1, Vector& v2){
   return val;
 }
 
-Vector AxoArm::operator* (Vector& v1, int& scalar){
+Vector AxoArm::operator* (Vector& v1, int scalar){
   Vector v(v1.elements);
   for(int i = 0; i < v1.elements; i++){
     v[i] = v1[i] * scalar;
@@ -171,7 +171,7 @@ Vector AxoArm::operator* (Vector& v1, int& scalar){
   return v;
 }
 
-Vector AxoArm::operator* (Vector& v1, float& scalar){
+Vector AxoArm::operator* (Vector& v1, double scalar){
   Vector v(v1.elements);
   for(int i = 0; i < v1.elements; i++){
     v[i] = v1[i] * scalar;

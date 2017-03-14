@@ -3,6 +3,9 @@
 
 #if defined (__i386__) || defined (__x86_64__)
 #include <iostream>
+#else
+#include <stdint.h>
+#define size_t uint8_t
 #endif /*  (__i386__) || (__x86_64__) */
 
 namespace AxoArm{
@@ -50,14 +53,14 @@ namespace AxoArm{
   Matrix operator+ (Matrix& m1, Matrix& m2);
   Matrix operator- (Matrix& m1, Matrix& m2);
   Matrix operator* (Matrix& m1, Matrix& m2);
-  Matrix operator* (Matrix& m1, int& scalar);
-  Matrix operator* (Matrix& m1, float& scalar);
+  Matrix operator* (Matrix& m1, int scalar);
+  Matrix operator* (Matrix& m1, double scalar);
 
   Vector operator+ (Vector& v1, Vector& v2);
   Vector operator- (Vector& v1, Vector& v2);
   float operator* (Vector& v1, Vector& v2);
-  Vector operator* (Vector& v1, int& scalar);
-  Vector operator* (Vector& v1, float& scalar);
+  Vector operator* (Vector& v1, int scalar);
+  Vector operator* (Vector& v1, double scalar);
 
 
   Vector operator* (Matrix& m1, Vector& v);
