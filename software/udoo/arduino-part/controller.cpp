@@ -3,9 +3,11 @@
 #include <assert.h>
 #include "controller.h"
 
+#include "MatrixMath.h"
+
 #if defined (__i386__) || defined (__x86_64__)
 #include <iostream>
-#endif
+#endif /*  (__i386__) || (__x86_64__) */
 
 using namespace AxoArm;
 
@@ -50,23 +52,6 @@ float& Matrix::Proxy::operator[] (const int index){
   return _array[index];
 }
 
-std::ostream& AxoArm::operator<< (std::ostream &strm, Matrix& m){
-  strm << "[";
-  for(int i = 0; i < m.rows; ++i){
-    for(int j = 0; j < m.columns; ++j){
-      strm << m[i][j];
-      if(!(j == m.columns-1)){
-        strm << ",";
-      }
-    }
-    strm << "]\n";
-    if(!(i == m.rows-1)){
-      strm << "[";
-    }
-  }
-  return strm;
-}
-
 Vector AxoArm::get_N_vector(Vector& x){
   Vector n(2);
 
@@ -92,19 +77,73 @@ Matrix AxoArm::get_M_matrix(Vector& x){
   return M;
 }
 
+Vector controller(Vector& x, Vector& ref, Matrix& K){
+  Vector e(x.elements);
+  Vector u(2);
+  Vector K_tmp(2);
+  Vector M_tmp(2);
+
+  auto n = get_N_vector(x);
+  auto M = get_M_matrix(x);
+
+  std::cout << K_tmp[1] << std::endl;
+
+  return u;
+
+}
+
 #if defined (__i386__) || defined (__x86_64__)
+
+std::ostream& AxoArm::operator<< (std::ostream &strm, Matrix& m){
+  strm << "[";
+  for(int i = 0; i < m.rows; ++i){
+    for(int j = 0; j < m.columns; ++j){
+      strm << m[i][j];
+      if(!(j == m.columns-1)){
+        strm << ",";
+      }
+    }
+    strm << "]\n";
+    if(!(i == m.rows-1)){
+      strm << "[";
+    }
+  }
+  return strm;
+}
+
+std::ostream& AxoArm::operator<< (std::ostream &strm, Vector& v){
+
+  for(int i = 0; i < v.elements; i++){
+    strm << "[" << v[i] << "]";
+    if(!(i == v.elements - 1))
+      strm << "\n";
+  }
+
+  return strm;
+}
+
 int main(){
-  Vector vect(4);
-  Matrix mat(2,2);
+  auto vector_norm = [](Vector v ) -> float{
+    float norm = 0;
+    for(int i = 0; i < v.elements; i++){
+      norm += sqrt(v[i] * v[i]);
+    }
+    return norm;
+  };
 
-  vect[0] = 1;
-  vect[1] = 1;
 
-  auto n = get_N_vector(vect);
-  auto m = get_M_matrix(vect);
-  auto m2 = get_M_matrix(vect);
+  Vector x(4);
+  Vector r(4);
+  Matrix K(2,4);
 
-  std::cout << m << std::endl;
+  K[0][0] = 12;
+  K[0][2] = 3;
+  K[1][1] = 12;
+  K[1][3] = 3;
+
+  auto tmp = K * r;
+
+  std::cout << tmp << std::endl;
 
 }
 #endif
