@@ -35,7 +35,9 @@ namespace AxoArm{
 
   class Matrix{
   public:
+    Matrix();
     Matrix(size_t rows, size_t columns);
+    Matrix(const Matrix& other);
     ~Matrix();
 
     class Proxy{
@@ -50,7 +52,7 @@ namespace AxoArm{
     const size_t& rows = _rows;
     const size_t& columns = _columns;
 
-    Matrix& operator=(const Matrix& m) = default;
+    Matrix& operator=(const Matrix& other);
     Proxy operator[](const int index) const;
 
     Matrix operator+ (const Matrix& other) const;
