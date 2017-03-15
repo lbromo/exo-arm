@@ -62,5 +62,9 @@ int main(){
   auto u = controller(x, r, K);
   std::cout << u << std::endl;
 
+  u = controller(x, r, K);
+  std::cout << u << std::endl;
+  u = r;
+
 }
 #endif
