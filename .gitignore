@@ -53,3 +53,9 @@ __pycache__
 
 # Compiled Mex Files
 *.mexa64
+
+# Symlinks
+model/arduino_in_the_loop/AxoArmUtils.cpp
+model/arduino_in_the_loop/AxoArmUtils.h
+model/arduino_in_the_loop/Matrix.cpp
+model/arduino_in_the_loop/Matrix.h
