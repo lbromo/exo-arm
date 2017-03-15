@@ -141,6 +141,27 @@ Matrix::Matrix(size_t rows, size_t columns){
 }
 
 /**
+ * Copy constructor
+ * Copies all the data from "other" into a new vector
+ */
+Matrix::Matrix(const Matrix& other){
+  if(!(this == &other)){
+    /* Free all the "old" buffers */
+    this->~Matrix();
+
+    /* Allocate new memory*/
+    new (this) Matrix(other.rows, other.columns);
+
+    /* Copy the content */
+    for(int row = 0; row < this->rows; row++){
+      for(int col = 0; col < this->columns; col++){
+        (*this)[row][col] = other[row][col];
+      }
+    }
+  }
+}
+
+/**
  * Free the memory on destruction
  */
 Matrix::~Matrix(){
@@ -148,6 +169,16 @@ Matrix::~Matrix(){
     free(this->_values[i]);
   }
   free(this->_values);
+}
+
+/**
+ * The assignment operator invokes the copy constructor and returns a reference to the copied vector
+ */
+Matrix& Matrix::operator= (const Matrix& other){
+  if (!(this == &other)){
+    new (this) Matrix(other);
+  }
+  return *this;
 }
 
 /**
@@ -310,9 +341,7 @@ std::ostream& AxoArm::operator<< (std::ostream &strm, Matrix& m){
  */
 std::ostream& AxoArm::operator<< (std::ostream &strm, Vector& v){
   for(int i = 0; i < v.elements; i++){
-    strm << "[" << v[i] << "]";
-    if(!(i == v.elements - 1))
-      strm << "\n";
+    strm << "[" << v[i] << "]" << std::endl;
   }
 
   return strm;

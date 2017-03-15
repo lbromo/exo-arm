@@ -48,6 +48,9 @@ int main(){
   Vector r(4);
   Matrix K(2,4);
 
+  Matrix M(4,4);
+  M[0][0] = 2;
+
   r[0] = 1.67;
   r[1] = 2.36;
 
@@ -61,7 +64,10 @@ int main(){
 
   u = controller(x, r, K);
   std::cout << u << std::endl;
-  u = r;
 
+  std::cout << M << std::endl;
+  M = M * M + M;
+  std::cout << M << std::endl;
+  
 }
 #endif
