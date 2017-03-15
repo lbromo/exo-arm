@@ -89,12 +89,15 @@ void getRef(){
 
 void ctrl(){
 
-char msg[50];
+    char msg[50];
 
-auto u = controller(meas,ref, K);
+    auto u = controller(meas,ref, K);
 
-sprintf(msg,"%d,%d",(int)(100*u[0]),(int)(100*u[1]));
-Serial.println(msg);
+    u[0] = u[0] * 0.282485875706215;
+    u[1] = u[1] * 0.261780104712042;
+
+    sprintf(msg,"%d,%d",(int)(100*u[0]),(int)(100*u[1]));
+    Serial.println(msg);
 
 }
 

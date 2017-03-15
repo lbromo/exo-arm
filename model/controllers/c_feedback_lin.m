@@ -1,7 +1,7 @@
 function u = c_feedback_lin(x,params,upre, xpre,ref,s)
 
-	p = 12;
-	pd = 3.5;
+	p = 50;
+	pd = 10;
 	kp = [p 0  pd 0;...
 		  0  p 0 pd];
 	

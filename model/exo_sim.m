@@ -1,8 +1,12 @@
-function [exo] = exo_sim(controller, x0)
+function [exo] = exo_sim(controller, x0, ref)
 
 % 8=====================================D
 % INITIALIZE
 % 8=====================================D
+	if ~exist('x0')
+		x0 = [0 0 0 0]';
+	end
+
 	params = ParametersScript();
 	addpath controllers;
 
@@ -30,12 +34,17 @@ function [exo] = exo_sim(controller, x0)
 % 8=====================================D
 % REFERENCE
 % 8=====================================D
-	ref1 = [pi/2 pi*3/4 0 0]' * ones(1,T_end/params.Ts);
-	% ref2 = [0.5  1 0 0]' * ones(1,30/Ts);
-	% ref3 = [pi 0.25*pi 0 0]' * ones(1,30/Ts);
-	% ref4 = [2  1 0 0]' * ones(1,30/Ts);
-	
-	ref = [ref1]; % ref2 ref3 ref4];
+	if ~exist('ref')
+		ref1 = [pi/2 pi*3/4 0 0]' * ones(1,T_end/params.Ts);
+		% ref2 = [0.5  1 0 0]' * ones(1,30/Ts);
+		% ref3 = [pi 0.25*pi 0 0]' * ones(1,30/Ts);
+		% ref4 = [2  1 0 0]' * ones(1,30/Ts);
+		
+		ref = [ref1]; % ref2 ref3 ref4];
+	else
+		ref = ref' * ones(1,T_end/params.Ts);
+	end
+
 
 % 8=====================================D
 % SIMULATE

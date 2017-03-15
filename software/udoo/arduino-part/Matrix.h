@@ -1,11 +1,14 @@
 #ifndef _MATRIX_h_
 #define _MATRIX_h_
 
-#if defined (__i386__) || defined (__x86_64__)
-#include <iostream>
+#if defined (__i386__) || defined (__x86_64__) || defined (__arm__)
+  #include <cstdlib>
+  #ifndef __arm__ 
+    #include <iostream> /* Altså kun på rigtige computere... Hvis nogen skulle være i tvivl*/
+  #endif
 #else
-#include <stdint.h>
-#define size_t uint8_t
+  #include <stdint.h>
+  #define size_t uint8_t
 #endif /*  (__i386__) || (__x86_64__) */
 
 namespace AxoArm{

@@ -41,7 +41,7 @@ void mexFunction(
 
 	auto u_v = controller(x_v,ref_v,K);
 
-	u[0] = u_v[0];
-	u[1] = u_v[1];
+	u[0] = u_v[0] * 0.282485875706215;
+	u[1] = u_v[1] * 0.261780104712042;
 
 }

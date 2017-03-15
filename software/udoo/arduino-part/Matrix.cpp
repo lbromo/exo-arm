@@ -1,9 +1,8 @@
 #include <assert.h>
 #include "Matrix.h"
 
-#if defined (__i386__) || defined (__x86_64__)
-#include <cstdlib>
-#include <iostream>
+#ifdef __arm__
+#include <new>
 #endif /*  (__i386__) || (__x86_64__) */
 
 using namespace AxoArm;
@@ -20,6 +19,7 @@ Vector::Vector(size_t elements){
  * Copy constructor
  * Copies all the data from "other" into a new vector
  */
+#if defined (__i386__) || defined (__x86_64__) || defined __arm__
 Vector::Vector(const Vector& other){
   if(!(this == &other)){
     /* Free all the "old" buffers */
@@ -34,6 +34,7 @@ Vector::Vector(const Vector& other){
     }
   }
 }
+#endif
 
 /**
  * Free the memory on destruction
@@ -45,12 +46,14 @@ Vector::~Vector(){
 /**
  * The assignment operator invokes the copy constructor and returns a reference to the copied vector
  */
+#if defined (__i386__) || defined (__x86_64__) || defined __arm__
 Vector& Vector::operator= (const Vector& other){
   if (!(this == &other)){
     new (this) Vector(other);
   }
   return *this;
 }
+#endif
 
 /**
  * We want to be able to index with v[0], v[i] ... v[v.elements - 1]

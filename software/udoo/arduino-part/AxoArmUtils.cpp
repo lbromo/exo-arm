@@ -38,9 +38,6 @@ Vector AxoArm::controller(Vector& x, Vector& ref, Matrix& K){
   auto M_tmp = M * K_tmp;
   auto u = M_tmp + n;
 
-  u[0] = u[0] * 0.282485875706215;
-  u[1] = u[1] * 0.261780104712042;
-
   return u;
 }
 
