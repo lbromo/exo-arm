@@ -10,6 +10,16 @@ function [exo] = exo_sim(controller, x0, ref)
 	params = ParametersScript();
 	addpath controllers;
 
+	T_end = 15; % [s]
+	S = T_end/params.Ts; % Samples total
+	t = 0:params.Ts:T_end-params.Ts;
+
+	x = zeros(params.n_s,S); % States: [theta_s; theta_e; thetadot_s; thetadot_e]
+	u = zeros(params.n_i,S);
+
+	x(:,1) = x0;
+	u(:,1) = [0; 0];
+
 	if isequal(controller, @c_mex)
 		mex -I../software/udoo/arduino-part/ GCC=/usr/bin/gcc-4.9.3 controllers/controller_mex.cpp ../software/udoo/arduino-part/AxoArmUtils.cpp ../software/udoo/arduino-part/Matrix.cpp
 	end
@@ -22,14 +32,10 @@ function [exo] = exo_sim(controller, x0, ref)
 		pause(2);
 	end
 
-	T_end = 15; % [s]
-	S = T_end/params.Ts; % Samples total
 
-	x = zeros(params.n_s,S); % States: [theta_s; theta_e; thetadot_s; thetadot_e]
-	u = zeros(params.n_i,S);
-
-	x(:,1) = x0;
-	u(:,1) = [0; 0];
+	if isequal(controller, @c_admittance)
+		tau = sin(t);
+	end
 
 % 8=====================================D
 % REFERENCE
@@ -51,7 +57,7 @@ function [exo] = exo_sim(controller, x0, ref)
 % 8=====================================D
 	for k = 2:S-1
 		% Get input from controller
-		u(:,k) = controller(x(:,k),params,u(:,k-1),x(:,k-1),ref(:,k),s);
+		u(:,k) = controller(x(:,k),params,tau(:,k),x(:,k-1),ref(:,k),s);
 
 		% Limit input signal to valid current range
 		u(1,k) = saturate(u(1,k),cur2torque(-params.maxC1,1,params),cur2torque(params.maxC1,1,params));
@@ -65,7 +71,6 @@ function [exo] = exo_sim(controller, x0, ref)
 % 8=====================================D
 % SAVE OUTPUTS
 % 8=====================================D
-	t = 0:params.Ts:T_end-params.Ts;
 	exo.t = t;
 	exo.x = x;
 	exo.u = u;
@@ -73,5 +78,9 @@ function [exo] = exo_sim(controller, x0, ref)
 
 	if isequal(controller, @c_arduino)
 		fclose(s);
+	end
+
+	if isequal(controller, @c_admittance)
+		controller([],[],[],[],[],[],1);
 	end
 end
