@@ -144,6 +144,7 @@ Matrix::Matrix(size_t rows, size_t columns){
  * Copy constructor
  * Copies all the data from "other" into a new vector
  */
+#if defined (__i386__) || defined (__x86_64__) || defined __arm__
 Matrix::Matrix(const Matrix& other){
   if(!(this == &other)){
     /* Free all the "old" buffers */
@@ -160,6 +161,7 @@ Matrix::Matrix(const Matrix& other){
     }
   }
 }
+#endif
 
 /**
  * Free the memory on destruction
@@ -174,12 +176,14 @@ Matrix::~Matrix(){
 /**
  * The assignment operator invokes the copy constructor and returns a reference to the copied vector
  */
+ #if defined (__i386__) || defined (__x86_64__) || defined __arm__
 Matrix& Matrix::operator= (const Matrix& other){
   if (!(this == &other)){
     new (this) Matrix(other);
   }
   return *this;
 }
+#endif
 
 /**
  * We want to be able to index with m[0][0], m[i][i] ... m[m.rows - 1][m.columns - 1]

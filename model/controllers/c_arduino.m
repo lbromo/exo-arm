@@ -1,9 +1,12 @@
-function u = c_arduino(x,params,upre, xpre,ref,s)
+function u = c_arduino(x,params,cpars)
 
-	refmsg = sprintf('R%3.3d%3.3d%3.3d%3.3d', round(100*ref(1)),round(100*ref(2)),round(100*ref(3)),round(100*ref(4)));
+	s = cpars.s;
+	ref = cpars.ref;
+
+	refmsg = sprintf('R%3.3d,%3.3d,%3.3d,%3.3d,E', round(100*ref(1)),round(100*ref(2)),round(100*ref(3)),round(100*ref(4)));
 	fwrite(s,refmsg);
 
-	msg = sprintf('$%3.3d%3.3d%3.3d%3.3d', round(100*x(1)),round(100*x(2)),round(100*x(3)),round(100*x(4)));
+	msg = sprintf('$%3.3d,%3.3d,%3.3d,%3.3d,E', round(100*x(1)),round(100*x(2)),round(100*x(3)),round(100*x(4)));
 	fwrite(s,msg);
 
 	inmsg =	fgets(s);

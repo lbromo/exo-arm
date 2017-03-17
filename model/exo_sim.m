@@ -24,17 +24,17 @@ function [exo] = exo_sim(controller, x0, ref)
 		mex -I../software/udoo/arduino-part/ GCC=/usr/bin/gcc-4.9.3 controllers/controller_mex.cpp ../software/udoo/arduino-part/AxoArmUtils.cpp ../software/udoo/arduino-part/Matrix.cpp
 	end
 
-	s = [];
 	if isequal(controller, @c_arduino)
 		delete(instrfindall);
 		s = serialInit('/dev/ttyS01');
 		fopen(s);
 		pause(2);
+		cpars.s = s;
 	end
 
 
 	if isequal(controller, @c_admittance)
-		tau = sin(t);
+		cpars.tau = sin(t);
 	end
 
 % 8=====================================D
@@ -55,9 +55,11 @@ function [exo] = exo_sim(controller, x0, ref)
 % 8=====================================D
 % SIMULATE
 % 8=====================================D
-	for k = 2:S-1
+	for k = 1:S-1
 		% Get input from controller
-		u(:,k) = controller(x(:,k),params,tau(:,k),x(:,k-1),ref(:,k),s);
+		cpars.ref = ref(:,k); 
+		cpars.k = k;
+		u(:,k) = controller(x(:,k),params,cpars);
 
 		% Limit input signal to valid current range
 		u(1,k) = saturate(u(1,k),cur2torque(-params.maxC1,1,params),cur2torque(params.maxC1,1,params));
@@ -81,6 +83,7 @@ function [exo] = exo_sim(controller, x0, ref)
 	end
 
 	if isequal(controller, @c_admittance)
-		controller([],[],[],[],[],[],1);
+		cpars.cl = 1;
+		controller([],[],cpars);
 	end
 end

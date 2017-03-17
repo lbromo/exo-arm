@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "AxoArmUtils.h"
+#include <string.h>
 
 using namespace AxoArm;
 
@@ -11,6 +12,7 @@ using namespace AxoArm;
 const int REF_LEN=12;
 const char START_CHAR='$';
 const char REF_CHAR='R';
+const char END_CHAR='E';
 
 Vector meas(4);
 Vector ref(4);
@@ -34,50 +36,38 @@ void setup(){
 
 void getInput(){
 
-    char pos1_buff[4], pos2_buff[4], vel1_buff[4], vel2_buff[4];
+    char* pos1_buff, *pos2_buff, *vel1_buff, *vel2_buff;
+    char buff[50];
+    char msg[50];
     
-    // String terminators for later use with atoi()
-    pos1_buff[3] = '\0';
-    pos2_buff[3] = '\0';
-    vel1_buff[3] = '\0';
-    vel2_buff[3] = '\0';
+    Serial.readBytesUntil(END_CHAR,buff,50);
 
-    // Wait for whole message to be available
-    while(Serial.available() < REF_LEN) {
-        //Serial.println(Serial.available());
-    };
-
-    Serial.readBytes(pos1_buff,3);
-    Serial.readBytes(pos2_buff,3);
-    Serial.readBytes(vel1_buff,3);
-    Serial.readBytes(vel2_buff,3);
+    pos1_buff = strtok(buff,",");
+    pos2_buff = strtok(NULL,",");
+    vel1_buff = strtok(NULL,",");
+    vel2_buff = strtok(NULL,",");
 
     meas[0] = 0.01 * atoi(pos1_buff);
     meas[1] = 0.01 * atoi(pos2_buff);
     meas[2] = 0.01 * atoi(vel1_buff);
     meas[3] = 0.01 * atoi(vel2_buff);
     
+    // sprintf(msg,"%3d,%3d,%3d,%3d", (int)(100*meas[0]),(int)(100*meas[1]),(int)(100*meas[2]),(int)(100*meas[3]));
+    // Serial.println(msg);
+
 }
 
 void getRef(){
 
-    char pos1_buff[4], pos2_buff[4], vel1_buff[4], vel2_buff[4];
-    
-    // String terminators for later use with atoi()
-    pos1_buff[3] = '\0';
-    pos2_buff[3] = '\0';
-    vel1_buff[3] = '\0';
-    vel2_buff[3] = '\0';
+    char *pos1_buff, *pos2_buff, *vel1_buff, *vel2_buff;
+    char buff[50];
 
-    // Wait for whole message to be available
-    while(Serial.available() < REF_LEN) {
-        //Serial.println(Serial.available());
-    };
+    Serial.readBytesUntil(END_CHAR,buff,50);
 
-    Serial.readBytes(pos1_buff,3);
-    Serial.readBytes(pos2_buff,3);
-    Serial.readBytes(vel1_buff,3);
-    Serial.readBytes(vel2_buff,3);
+    pos1_buff = strtok(buff,",");
+    pos2_buff = strtok(NULL,",");
+    vel1_buff = strtok(NULL,",");
+    vel2_buff = strtok(NULL,",");
 
     ref[0] = 0.01 * atoi(pos1_buff);
     ref[1] = 0.01 * atoi(pos2_buff);
@@ -89,7 +79,7 @@ void getRef(){
 
 void ctrl(){
 
-    char msg[50];
+    char msg[100];
 
     auto u = controller(meas,ref, K);
 

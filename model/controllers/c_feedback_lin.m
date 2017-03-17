@@ -1,4 +1,4 @@
-function u = c_feedback_lin(x,params,upre, xpre,ref,s)
+function u = c_feedback_lin(x,params,cpars)
 
 	p = 50;
 	pd = 10;
@@ -8,7 +8,7 @@ function u = c_feedback_lin(x,params,upre, xpre,ref,s)
 
 	% x = x + 0.1 * rand(4,1);
 	
-	e = ref-x;
+	e = cpars.ref-x;
 
 	u = (B(x,params) * (kp * e) + n(x,params));
 	u = u./([params.kt1 params.kt2]'*params.N);

@@ -1,6 +1,6 @@
 % Simulation using mex file;
-function u = c_mex(x,params,upre, xpre,ref,s)
+function u = c_mex(x,params,cpars)
 
-	u = controller_mex(x, ref);
+	u = controller_mex(x, cpars.ref);
 
 end
