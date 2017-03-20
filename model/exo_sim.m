@@ -51,6 +51,7 @@ function [exo] = exo_sim(controller, x0, ref)
 		ref = ref' * ones(1,T_end/params.Ts);
 	end
 
+	n = [0.1 0.1 1 1]' .* randn(params.n_s,S);
 
 % 8=====================================D
 % SIMULATE
@@ -59,6 +60,7 @@ function [exo] = exo_sim(controller, x0, ref)
 		% Get input from controller
 		cpars.ref = ref(:,k); 
 		cpars.k = k;
+		cpars.n = n(:,k);
 		u(:,k) = controller(x(:,k),params,cpars);
 
 		% Limit input signal to valid current range
