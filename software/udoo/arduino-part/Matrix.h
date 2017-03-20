@@ -15,18 +15,14 @@ namespace AxoArm{
 
   class Vector{
   public:
-    Vector() {};
+    Vector() : _elements(0) {};
     Vector(size_t elements);
-#if defined (__i386__) || defined (__x86_64__) || defined (__arm__)
     Vector(const Vector& other);
-#endif
     ~Vector();
 
     const size_t& elements = _elements;
 
-#if defined (__i386__) || defined (__x86_64__) || defined (__arm__)
     Vector& operator= (const Vector& other);
-#endif
     float& operator[] (const int index) const;
 
     Vector operator+ (const Vector& other) const;
@@ -36,17 +32,17 @@ namespace AxoArm{
     Vector operator* (const float scalar) const;
 
   private:
+    void _allocate(size_t elements);
+    void _copy(const Vector& other);
     float* _values;
     size_t _elements;
   };
 
   class Matrix{
   public:
-    Matrix();
+  Matrix() : _rows(0), _columns(0) {};
     Matrix(size_t rows, size_t columns);
-#if defined (__i386__) || defined (__x86_64__) || defined (__arm__)
     Matrix(const Matrix& other);
-#endif
     ~Matrix();
 
     class Proxy{
@@ -61,9 +57,7 @@ namespace AxoArm{
     const size_t& rows = _rows;
     const size_t& columns = _columns;
 
-#if defined (__i386__) || defined (__x86_64__) || defined (__arm__)
     Matrix& operator=(const Matrix& other);
-#endif
     Proxy operator[](const int index) const;
 
     Matrix operator+ (const Matrix& other) const;
@@ -76,6 +70,8 @@ namespace AxoArm{
 
 
   private:
+    void _allocate(size_t rows, size_t cols);
+    void _copy(const Matrix& other);
     float** _values;
     size_t _rows;
     size_t _columns;

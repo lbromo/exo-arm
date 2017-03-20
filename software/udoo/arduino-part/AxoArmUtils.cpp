@@ -30,14 +30,15 @@ Matrix AxoArm::get_M_matrix(Vector& x){
 }
 
 Vector AxoArm::controller(Vector& x, Vector& ref, Matrix& K){
+  Vector u; /* Output vector */
+  
   auto n = get_N_vector(x);
   auto M = get_M_matrix(x);
 
   auto e = ref - x;
-  auto K_tmp = K * e;
-  auto M_tmp = M * K_tmp;
-  auto u = M_tmp + n;
 
+  u = M * K * e + n;
+  
   return u;
 }
 
@@ -50,6 +51,9 @@ int main(){
 
   Matrix M(4,4);
   M[0][0] = 2;
+  M[1][1] = 2;
+  M[2][2] = 2;
+  M[3][3] = 2;
 
   r[0] = 1.67;
   r[1] = 2.36;
@@ -66,7 +70,9 @@ int main(){
   std::cout << u << std::endl;
 
   std::cout << M << std::endl;
-  M = M * M + M;
+
+  M = (M * M) * M - M * (float)0.33;
+
   std::cout << M << std::endl;
   
 }

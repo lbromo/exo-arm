@@ -10,50 +10,65 @@ using namespace AxoArm;
 /**
  * Allocate memory the vector
  */
-Vector::Vector(size_t elements){
+
+void Vector::_allocate(size_t elements){
   this->_values = (float*) calloc(elements, sizeof(float));
   this->_elements = elements;
+}
+
+void Vector::_copy(const Vector& other){
+  for(int i = 0; i < this->elements; i++){
+    (*this)[i] = other[i];
+  }
+}
+
+
+Vector::Vector(size_t elements){
+  this->_allocate(elements);
 }
 
 /**
  * Copy constructor
  * Copies all the data from "other" into a new vector
  */
-#if defined (__i386__) || defined (__x86_64__) || defined __arm__
 Vector::Vector(const Vector& other){
   if(!(this == &other)){
     /* Free all the "old" buffers */
     this->~Vector();
 
     /* Allocate new memory*/
-    new (this) Vector(other.elements);
+    /* New syntax -- doesn't work with AVR-GCC */
+    //new (this) Vector(other.elements);
+    this->_allocate(other.elements);
 
     /* Copy the content */
-    for(int i = 0; i < this->elements; i++){
-      (*this)[i] = other[i];
-    }
+    this->_copy(other);
+
   }
 }
-#endif
 
 /**
  * Free the memory on destruction
  */
 Vector::~Vector(){
-  free(this->_values);
+  if(elements){
+    free(this->_values);
+  }
 }
 
 /**
  * The assignment operator invokes the copy constructor and returns a reference to the copied vector
  */
-#if defined (__i386__) || defined (__x86_64__) || defined __arm__
 Vector& Vector::operator= (const Vector& other){
   if (!(this == &other)){
-    new (this) Vector(other);
+    this->~Vector();
+
+    this->_allocate(other.elements);
+    this->_copy(other);
+    
   }
   return *this;
 }
-#endif
 
 /**
  * We want to be able to index with v[0], v[i] ... v[v.elements - 1]
@@ -130,7 +145,7 @@ Vector Vector::operator* (const float scalar) const{
 /**
  * Allocate the memory needed for the matrix
  */
-Matrix::Matrix(size_t rows, size_t columns){
+void Matrix::_allocate(size_t rows, size_t columns){
   this->_values = (float**) calloc(rows, sizeof(float*));
   for(int i = 0; i < rows; i++){
     this->_values[i] = (float*) calloc(columns, sizeof(float));
@@ -140,28 +155,36 @@ Matrix::Matrix(size_t rows, size_t columns){
   this->_columns = columns;
 }
 
+void Matrix::_copy(const Matrix& other){
+  for(int row = 0; row < this->rows; row++){
+    for(int col = 0; col < this->columns; col++){
+      (*this)[row][col] = other[row][col];
+    }
+  }
+}
+
+Matrix::Matrix(size_t rows, size_t columns){
+  this->_allocate(rows, columns);
+}
+
+
 /**
  * Copy constructor
  * Copies all the data from "other" into a new vector
  */
-#if defined (__i386__) || defined (__x86_64__) || defined __arm__
 Matrix::Matrix(const Matrix& other){
   if(!(this == &other)){
     /* Free all the "old" buffers */
     this->~Matrix();
 
     /* Allocate new memory*/
-    new (this) Matrix(other.rows, other.columns);
+    this->_allocate(other.rows, other.columns);
 
     /* Copy the content */
-    for(int row = 0; row < this->rows; row++){
-      for(int col = 0; col < this->columns; col++){
-        (*this)[row][col] = other[row][col];
-      }
+    this->_copy(other);
+
     }
-  }
 }
-#endif
 
 /**
  * Free the memory on destruction
@@ -170,20 +193,25 @@ Matrix::~Matrix(){
   for(int i = 0; i < this->_rows; i++){
     free(this->_values[i]);
   }
-  free(this->_values);
+  /*
+   * If we haven't any rows, we have nothing to free
+   */
+  if (_rows){
+    free(this->_values);
+  }
 }
 
 /**
  * The assignment operator invokes the copy constructor and returns a reference to the copied vector
  */
- #if defined (__i386__) || defined (__x86_64__) || defined __arm__
 Matrix& Matrix::operator= (const Matrix& other){
   if (!(this == &other)){
-    new (this) Matrix(other);
+    this->~Matrix();
+    this->_allocate(other.rows, other.columns);
+    this->_copy(other);
   }
   return *this;
 }
-#endif
 
 /**
  * We want to be able to index with m[0][0], m[i][i] ... m[m.rows - 1][m.columns - 1]
