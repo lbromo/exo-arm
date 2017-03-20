@@ -8,6 +8,7 @@ READY = b'&'
 START_CHAR = '$'
 START = str('b\'$\\r\\n\'')
 REF_CHAR = b'R'
+END_CHAR = b'E'
 
 REF = np.array([np.pi/2, np.pi/2,0,0])
 
@@ -58,16 +59,17 @@ if __name__ == "__main__":
         ser.open()
         print("Serial Open")
     time.sleep(0.01)
-    ref_msg = REF_CHAR + (intTo3Bytes(int(REF[0]*100))) + (intTo3Bytes(int(REF[1]*100))) +(intTo3Bytes(int(REF[2]*100))) +(intTo3Bytes(int(REF[3]*100)))
+    ref_msg = REF_CHAR + (intTo3Bytes(int(REF[0]*100))) + b',' + (intTo3Bytes(int(REF[1]*100))) + b',' + (intTo3Bytes(int(REF[2]*100))) + b',' + (intTo3Bytes(int(REF[3]*100))) + b',' + END_CHAR
     ser.write(ref_msg)
     print(ref_msg)
 
     for idx in range(0,100000):
-	try:
+        try:
+            ts = time.time()
             ser.write(READY)
             log1msg(ser)
-            log1msg(ser)
         except:
+            time.sleep(0.01)
             ser.write(b'S')
             time.sleep(0.01)
             exit()

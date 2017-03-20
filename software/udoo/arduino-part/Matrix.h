@@ -17,12 +17,16 @@ namespace AxoArm{
   public:
     Vector() {};
     Vector(size_t elements);
+#if defined (__i386__) || defined (__x86_64__) || defined (__arm__)
     Vector(const Vector& other);
+#endif
     ~Vector();
 
     const size_t& elements = _elements;
 
+#if defined (__i386__) || defined (__x86_64__) || defined (__arm__)
     Vector& operator= (const Vector& other);
+#endif
     float& operator[] (const int index) const;
 
     Vector operator+ (const Vector& other) const;
@@ -40,7 +44,9 @@ namespace AxoArm{
   public:
     Matrix();
     Matrix(size_t rows, size_t columns);
+#if defined (__i386__) || defined (__x86_64__) || defined (__arm__)
     Matrix(const Matrix& other);
+#endif
     ~Matrix();
 
     class Proxy{
@@ -55,7 +61,9 @@ namespace AxoArm{
     const size_t& rows = _rows;
     const size_t& columns = _columns;
 
+#if defined (__i386__) || defined (__x86_64__) || defined (__arm__)
     Matrix& operator=(const Matrix& other);
+#endif
     Proxy operator[](const int index) const;
 
     Matrix operator+ (const Matrix& other) const;
