@@ -261,8 +261,7 @@ class FlexProblem(problem.base):
 
 
 if __name__ == '__main__':
-    import matplotlib.pyplot as plt
-
+    import pickle
     prob = FlexProblem()
 
     algo = algorithm.pso(gen=100)  # 500 generations of bee_colony algorithm
@@ -270,67 +269,33 @@ if __name__ == '__main__':
     #isl.evolve(1)  # Evolve the island once
     #isl.join()
 
-    archi = archipelago(algo,prob,2,5)
+    archi = archipelago(algo,prob,1,1)
 
     #And we start the evolution loops (each evolve will advance each island 10 generation)
     archi.evolve(1)
     archi.join()
 
     val, idx = min((val, idx) for (idx, val) in enumerate([isl.population.champion.f for isl in archi]))
-    print([isl.population.champion.f for isl in archi])
     print('Best fitness:', val)
 
     best = [isl.population.champion.x for isl in archi][idx]
-    print(best)
 
+    out = {}
+    muscle_names = [
+            muscle_utils.MUSCLE_NAME.TRICEPS_BRACHII,
+            muscle_utils.MUSCLE_NAME.BICEPS_BRACHII,
+            muscle_utils.MUSCLE_NAME.BRACHIALIS,
+            muscle_utils.MUSCLE_NAME.BRACHIORADIALIS
+    ]
     params = [
         'C1', 'C2', 'A', 'd',
         'max_length', 'optimal_fiber_length', 'tensor_slack_length',
         'max_force', 'alpha', 'Spe', 'Sse', 'phi_m', 'phi_v'
     ]
 
-    n = 13
-    values = [best[i:i+n] for i in range(0, len(best), n)]
+    for name, i in zip(muscle_names, range(0, len(best), len(params))):
+        out[name] = dict(zip(params, best[i:i+len(params)]))
 
-    for j in range(NR_MUSCLES):
-        [print(params[i], values[j][i]) for i in range(len(params))]
 
-    muslces = prob.set_up_muscles(best)
-    t, a, ts = prob.simulate(muslces)
-
-    angles = [a for run in angles_in for a in run]
-    torque = [t for run in torque_out for t in run]
-
-    plt.subplot(2,2,1);
-    plt.plot(angles, torque, 'x', linewidth=0.5)
-    plt.plot(angles, t, 'x', linewidth=0.5)
-    plt.legend(['Measuremed', 'Simulated'])
-    plt.xlabel('Angle [deg]')
-    plt.ylabel('Torque [Nm]')
-    plt.title('Torque over angle')
-
-    plt.subplot(2,2,2);
-    plt.plot(torque)
-    plt.plot(t)
-    plt.legend(['Measuremed', 'Simulated'])
-    plt.xlabel('Sample')
-    plt.ylabel('Torque [Nm]')
-    plt.title('Torque over time (samples)')
-
-    plt.subplot(2,2,3);
-    for sig in a:
-        plt.plot(sig)
-    plt.legend(['TRICEPS_BRACHII', 'BICEPS_BRACHII', 'BRACHIALIS', 'BRACHIORADIALIS'])
-    plt.xlabel('Sample')
-    plt.ylabel('Activation [pct]')
-    plt.title('Activation signals')
-
-    plt.subplot(2,2,4);
-    for sig in ts:
-        plt.plot(sig)
-    plt.legend(['TRICEPS_BRACHII', 'BICEPS_BRACHII', 'BRACHIALIS', 'BRACHIORADIALIS'])
-    plt.xlabel('Sample')
-    plt.ylabel('Torque')
-    plt.title('Torque contributions')
-
-    plt.show()
+    with open('params.pickle', 'wb') as f:
+        pickle.dump(out, f)
