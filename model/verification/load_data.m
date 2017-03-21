@@ -1,6 +1,8 @@
 % -----------------------------------------
 % LOAD DATA AND PARAMETERS
 % -----------------------------------------
+params = ParametersScript();
+N = params.N;
 timeF=0;
 timeL=0;
 m2 = importdata('both/motor1_both_march_2.log');      %new_1              %time,angle,velocity,current
@@ -24,10 +26,10 @@ time=time(1+timeF:end-timeL,:);                                     %the time ve
 Ts=Ts(1+timeF:end-timeL,:);                                         %the sample vector wanted
 angle_m1  = (m1.data(1+timeF:length(time)+timeF,ang_id)); 
 vel_m1  = (m1.data(1+timeF:length(time)+timeF,vel_id))/N;           %from before to after gear 
-cur_m1 = m1.data(1+timeF:length(time)+timeF,cur_id).*params.kt1*N;  %to get torque input and after gears
+cur_m1 = m1.data(1+timeF:length(time)+timeF,cur_id);%.*params.kt1*N;  %to get torque input and after gears
 angle_m2  = (m2.data(1+timeF:length(time)+timeF,ang_id)); 
 vel_m2  = (m2.data(1+timeF:length(time)+timeF,vel_id))/N;           %from before to after gear 
-cur_m2 = m2.data(1+timeF:length(time)+timeF,cur_id).*params.kt2*N;  %to get torque input and after gears 
+cur_m2 = m2.data(1+timeF:length(time)+timeF,cur_id);%.*params.kt2*N;  %to get torque input and after gears 
 
 %in  
 on1_id = find(~cellfun(@isempty,strfind(in.colheaders,'on1')));
