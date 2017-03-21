@@ -1,5 +1,6 @@
 import sys
 from PyGMO import *
+from future import print_function
 
 import numpy as np
 import scipy
@@ -14,6 +15,11 @@ import mre7
 import mre8
 import mrf1
 
+import mmre1
+import mmrf1
+import mmrf2
+
+
 ts = 0.01
 padding = int(10/ts)
 
@@ -21,7 +27,13 @@ angles_in = [mre7.angles_in,
              [0]*padding,
              mre8.angles_in,
              [0]*padding,
-             mrf1.angles_in
+             mmre1.angles_in,
+             [0]*padding,
+             mrf1.angles_in,
+             [0]*padding,
+             mmrf1.angles_in,
+             [0]*padding,
+             mmrf2.angles_in,
 ]
 
 
@@ -29,34 +41,73 @@ torque_out = [mre7.torque_out,
               [0]*padding,
               mre8.torque_out,
               [0]*padding,
-              mrf1.torque_out
+              mmre1.torque_out,
+              [0]*padding,
+              mrf1.torque_out,
+              [0]*padding,
+              mmrf1.torque_out,
+              [0]*padding,
+              mmrf2.torque_out,
 ]
 
 emg0_training = [mre7.emg0_training,
                  np.zeros((padding, 8)),
                  mre8.emg0_training,
                  np.zeros((padding, 8)),
-                 mrf1.emg0_training
+                 mmre1.emg0_training,
+                 np.zeros((padding, 8)),
+                 mrf1.emg0_training,
+                 np.zeros((padding, 8)),
+                 mmrf1.emg0_training,
+                 np.zeros((padding, 8)),
+                 mmrf2.emg1_training
 ]
 emg1_training = [mre7.emg1_training,
                  np.zeros((padding, 8)),
                  mre8.emg1_training,
                  np.zeros((padding, 8)),
-                 mrf1.emg1_training
+                 mmre1.emg1_training,
+                 np.zeros((padding, 8)),
+                 mrf1.emg1_training,
+                 np.zeros((padding, 8)),
+                 mmrf1.emg1_training,
+                 np.zeros((padding, 8)),
+                 mmrf2.emg1_training
 ]
 
 emg0_in = [mre7.emg0_in,
            np.zeros((padding, 8)),
            mre8.emg0_in,
            np.zeros((padding, 8)),
-           mrf1.emg0_in
+           mmre1.emg0_in, 
+           np.zeros((padding, 8)),
+           mrf1.emg0_in,
+           np.zeros((padding, 8)),
+           mmrf1.emg0_in,
+           np.zeros((padding, 8)),
+           mmrf2.emg0_in
 ]
 emg1_in = [mre7.emg1_in,
            np.zeros((padding, 8)),
            mre8.emg1_in,
            np.zeros((padding, 8)),
-           mrf1.emg1_in
+           mmre1.emg1_in,
+           np.zeros((padding, 8)),
+           mrf1.emg1_in,
+           np.zeros((padding, 8)),
+           mmrf1.emg1_in,
+           np.zeros((padding, 8)),
+           mmrf2.emg1_in
 ]
+
+"""
+angles_in = [mmre1.angles_in]
+torque_out = [mmre1.torque_out]
+emg0_training = [mmre1.emg0_training]
+emg1_training = [mmre1.emg1_training]
+emg0_in = [mmre1.emg0_in]
+emg1_in = [mmre1.emg1_in]
+"""
 
 NR_MUSCLES = 4
 
@@ -214,15 +265,15 @@ if __name__ == '__main__':
 
     prob = FlexProblem()
 
-    algo = algorithm.pso(gen=500)  # 500 generations of bee_colony algorithm
+    algo = algorithm.pso(gen=100)  # 500 generations of bee_colony algorithm
     #isl = island(algo, prob, 500)  # Instantiate population with 20 individuals
     #isl.evolve(1)  # Evolve the island once
     #isl.join()
 
-    archi = archipelago(algo,prob,10,50,topology = topology.ageing_clustered_ba(a=25))
+    archi = archipelago(algo,prob,2,5)
 
     #And we start the evolution loops (each evolve will advance each island 10 generation)
-    archi.evolve(10)
+    archi.evolve(1)
     archi.join()
 
     val, idx = min((val, idx) for (idx, val) in enumerate([isl.population.champion.f for isl in archi]))
@@ -282,4 +333,4 @@ if __name__ == '__main__':
     plt.ylabel('Torque')
     plt.title('Torque contributions')
 
-    #plt.show()
+    plt.show()
