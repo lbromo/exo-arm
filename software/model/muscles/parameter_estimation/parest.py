@@ -1,6 +1,6 @@
+from __future__ import print_function
 import sys
 from PyGMO import *
-from future import print_function
 
 import numpy as np
 import scipy
