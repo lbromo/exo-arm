@@ -13,7 +13,7 @@ function exoPlot(exo,fid)
 	figure(fid);
 	ax(1) = subplot(311); 
 	plot(t,x(1,:),t,x(2,:)); grid on;
-	title('Joint Angles - Matlab Feedback Lin')
+	title('Joint Angles')
 	legend('Shoulder','Elbow','Location','bestoutside');
 
 	ax(2) = subplot(312); 

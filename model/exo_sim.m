@@ -16,6 +16,7 @@ function [exo] = exo_sim(controller, x0, ref)
 
 	x = zeros(params.n_s,S); % States: [theta_s; theta_e; thetadot_s; thetadot_e]
 	u = zeros(params.n_i,S);
+	c = zeros(params.n_i,S);
 
 	x(:,1) = x0;
 	u(:,1) = [0; 0];
@@ -61,11 +62,15 @@ function [exo] = exo_sim(controller, x0, ref)
 		cpars.ref = ref(:,k); 
 		cpars.k = k;
 		cpars.n = n(:,k);
+		tic;
 		u(:,k) = controller(x(:,k),params,cpars);
-
+		toc;
 		% Limit input signal to valid current range
-		u(1,k) = saturate(u(1,k),cur2torque(-params.maxC1,1,params),cur2torque(params.maxC1,1,params));
-		u(2,k) = saturate(u(2,k),cur2torque(-params.maxC2,2,params),cur2torque(params.maxC2,2,params));
+		% u(1,k) = saturate(u(1,k),cur2torque(-params.maxC1,1,params),cur2torque(params.maxC1,1,params)) ;
+		% u(2,k) = saturate(u(2,k),cur2torque(-params.maxC2,2,params),cur2torque(params.maxC2,2,params)) ;
+
+		% u(1,k) = cur2torque(saturate(c(1,k),-params.maxC1,params.maxC1),1,params);
+		% u(2,k) = cur2torque(saturate(c(2,k),-params.maxC2,params.maxC2),2,params);
 
 		% Forward euler
 	 	x(:,k+1) = x(:,k) + params.Ts*f(x(:,k), u(:,k), params);
@@ -78,6 +83,7 @@ function [exo] = exo_sim(controller, x0, ref)
 	exo.t = t;
 	exo.x = x;
 	exo.u = u;
+	exo.c = c;
 	exo.ref = ref;
 
 	if isequal(controller, @c_arduino)

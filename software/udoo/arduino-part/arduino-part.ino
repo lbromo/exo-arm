@@ -11,12 +11,15 @@ using namespace AxoArm;
 
 const int PWM_MAX = 235;
 const int PWM_MIN = 25;
-const int REF_LEN=50;
+const int REF_LEN = 50;
 const char START_CHAR='$';
 const char RDY_CHAR ='&';
 const char REF_CHAR ='R';
 const char STOP_CHAR = 'S';
 const char END_CHAR = 'E';
+
+const float Nkt0 = 3.54;
+const float Nkt1 = 3.82;
 
 Vector meas(4);
 Vector ref(4);
@@ -69,7 +72,9 @@ void setup(){
     pinMode(13,OUTPUT);
     pinMode(12,OUTPUT);
 
+#ifdef __arm__
     analogReadResolution(12);
+#endif
 
     analogWrite(pin_pwm_shoulder, 25);
     analogWrite(pin_pwm_elbow, 25);
@@ -249,7 +254,10 @@ void ctrl(){
 
     auto u_tmp = K * (ref-meas);
 
-    applyControl(u_tmp);
+    u[0] /= Nkt0;
+    u[1] /= Nkt1;
+
+    applyControl(u);
 
 }
 
