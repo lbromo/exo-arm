@@ -6,36 +6,26 @@ import pwd
 user = pwd.getpwuid( os.getuid() )[0]
 
 kinkom=np.genfromtxt(
-    "/home/{}/Dropbox/exo-arm/logs/kincom_logs/morten/MRE7_clean".format(
-        user
-    )
-    , delimiter=',')
+    "/afs/ies.auc.dk/group/17gr1035/Private/logs/kincom_logs/morten/MRE7_clean",
+    delimiter=',')
 
 angle = abs(kinkom[:,1])
 force = kinkom[:,-1]
 
 emg0_meas = np.genfromtxt(
-    "/home/{}/Dropbox/exo-arm/logs/emg_logs/mr_morten/parsed/MRE7_emg0.log".format(
-        user
-    ),
+    "/afs/ies.auc.dk/group/17gr1035/Private/logs/emg_logs/mr_morten/parsed/MRE7_emg0.log",
     delimiter=',')
 
 emg1_meas = np.genfromtxt(
-    "/home/{}/Dropbox/exo-arm/logs/emg_logs/mr_morten/parsed/MRE7_emg1.log".format(
-        user
-    ), 
+    "/afs/ies.auc.dk/group/17gr1035/Private/logs/emg_logs/mr_morten/parsed/MRE7_emg1.log",
     delimiter=',')
 
 imu0_meas = np.genfromtxt(
-    "/home/{}/Dropbox/exo-arm/logs/emg_logs/mr_morten/parsed/MRE7_imu0.log".format(
-        user
-    ),
+    "/afs/ies.auc.dk/group/17gr1035/Private/logs/emg_logs/mr_morten/parsed/MRE7_imu0.log",
     delimiter=',')
 
 imu1_meas = np.genfromtxt(
-    "/home/{}/Dropbox/exo-arm/logs/emg_logs/mr_morten/parsed/MRE7_imu1.log".format(
-        user
-    ),
+    "/afs/ies.auc.dk/group/17gr1035/Private/logs/emg_logs/mr_morten/parsed/MRE7_imu1.log",
     delimiter=',')
 
 tmp = np.array([imu1_meas[1:,1][i] - imu1_meas[1:,1][i-1] for i in range(1, len(imu1_meas[1:,1]))])
