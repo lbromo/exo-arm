@@ -34,16 +34,16 @@ tmp = np.array([imu1_meas[1:,1][i] - imu1_meas[1:,1][i-1] for i in range(1, len(
 dA = np.array([angle[i] - angle[i-1] for i in range(1, len(angle))])
 
 imu_start = np.where( tmp > 0.1 )[0][0]
-imu_stop = np.where( tmp[0:-100] > 0.1 )[0][-1]
+imu_stop = np.where( tmp > 0.1 )[0][-1]
 
-t_start = imu0_meas[1:,0][imu_start]
+t_start = imu1_meas[1:,0][imu_start]
 t_stop  = imu1_meas[1:,0][imu_stop]
 
 angle_start = np.where( abs(dA) >= 0.4 )[0][0]
 # We lost some measurements from the myo, so we cut off a after that
-angle_stop = np.where(kinkom_time >= imu0_meas[1:,0][imu_stop] - t_start)[0][0]
+angle_stop = np.where(kinkom_time >= imu1_meas[1:,0][imu_stop] - t_start)[0][0]
 
-angle = angle[angle_start:angle_stop]
+angle = angle[angle_start:angle_stop+angle_start]
 
 emg0_start_idx = np.where(emg0_meas[1:,0] >= imu1_meas[1:,0][imu_start])[0][0]
 emg0_stop_idx  = np.where(emg0_meas[1:,0] >= imu1_meas[1:,0][imu_stop])[0][0]
