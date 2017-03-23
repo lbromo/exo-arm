@@ -295,7 +295,7 @@ if __name__ == '__main__':
     #isl.evolve(1)  # Evolve the island once
     #isl.join()
 
-    archi = archipelago(algo,prob,2,50)
+    archi = archipelago(algo,prob,2,5)
 
     #And we start the evolution loops (each evolve will advance each island 10 generation)
     archi.evolve(1)

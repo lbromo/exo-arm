@@ -10,14 +10,14 @@ echo "$CORES"
 
 for i in {1..$CORES}
 do
-    screen -dmS "parest_$j_$i" \
+    screen -dmS "parest_$i" \
            bash -c         \
            "
            source venv/bin/activate;
-           export LD_LIBRARY_PATH=/afs/ies.auc.dk/group/17gr1035/no_backup/pagmo/build/lib;
-           export PYTHONPATH=/afs/ies.auc.dk/group/17gr1035/no_backup/pagmo/build/usr/lib/python2.7/dist-packages;
-           cd software/model/muscles/parameter_estimation
-           python parest.py parest_$j_$i.pickle;
+           export LD_LIBRARY_PATH=/afs/ies.auc.dk/group/17gr1035/no_backup/usr/lib;
+           export PYTHONPATH=/afs/ies.auc.dk/group/17gr1035/no_backup/usr/lib/python2.7/dist-packages;
+           cd software/model/muscles/parameter_estimation;
+           nice -n 10 python parest.py parest_$i.pickle;
            exec bash
            "
 done

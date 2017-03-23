@@ -55,6 +55,8 @@ class Muscle():
   def __get_force_estimate__(self, dLpe, activation_level):
     a = activation_level
     error = False
+    if a < 0:
+      a = -a
 
     bisect_func = lambda dLce, dLpe, a, self: self.__Fse__(dLce, dLpe, a) - self.__Fce__(dLce, dLpe, a)
     try:
@@ -63,14 +65,15 @@ class Muscle():
       print('Bisection error with length:', self.Lmax)
       error = True
 
-    Ftot = self.__Fpe__(dLpe) + self.__Fce__(dLce, dLpe, a)
-
     if error:
       print('#'*10)
+      dLce = dLpe
       print('dLce:', dLce)
       print('a:', a)
       print('Fpe:', self.__Fpe__(dLpe))
       print('Fce:', self.__Fce__(dLce, dLpe, a))
+
+    Ftot = self.__Fpe__(dLpe) + self.__Fce__(dLce, dLpe, a)
 
     return Ftot
 
