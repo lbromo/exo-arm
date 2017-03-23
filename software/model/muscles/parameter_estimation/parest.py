@@ -264,12 +264,12 @@ if __name__ == '__main__':
     import pickle
     prob = FlexProblem()
 
-    algo = algorithm.pso(gen=100)  # 500 generations of bee_colony algorithm
+    algo = algorithm.pso(gen=500, eta1=0.9, eta2=1)  # 500 generations of bee_colony algorithm
     #isl = island(algo, prob, 500)  # Instantiate population with 20 individuals
     #isl.evolve(1)  # Evolve the island once
     #isl.join()
 
-    archi = archipelago(algo,prob,1,1)
+    archi = archipelago(algo,prob,2,50)
 
     #And we start the evolution loops (each evolve will advance each island 10 generation)
     archi.evolve(1)
