@@ -33,7 +33,7 @@ def log1msg(ser, logfile):
 def tUpdateRef(ser):
     while True:
         try:
-            ref_shoulder, ref_elbow = [int(var) for var in input("Enter new reference: ").split()]
+            ref_shoulder, ref_elbow = [int(var) for var in raw_input("Enter new reference: ").split()]
         except:
             print("Error getting new ref. Please input as <shoulder_ref elbow_ref>")
         else:
@@ -69,7 +69,8 @@ if __name__ == "__main__":
         ser.open()
         print("Serial Open")
 
-    t = threading.Thread(target=tUpdateRef, args=(ser,), daemon=True)
+    t = threading.Thread(target=tUpdateRef, args=(ser,))
+    t.daemon = True
     t.start()
 
     f = open(LOG_FILE, 'w')
@@ -83,7 +84,6 @@ if __name__ == "__main__":
             time.sleep(0.01)
             ser.write(b'S')
             time.sleep(0.01)
-            t.join()
             f.close()
             exit()
         else:
