@@ -51,7 +51,7 @@ angles_in = angle
 emg0_training = emg0_meas[1:,1:][0:emg0_start_idx]
 emg0_in = emg0_meas[1:,1:][emg0_start_idx:emg0_stop_idx]
 emg1_training = emg1_meas[1:,1:][0:emg1_start_idx]
-emg1_in = emg0_meas[1:,1:][emg1_start_idx:emg1_stop_idx]
+emg1_in = emg1_meas[1:,1:][emg1_start_idx:emg1_stop_idx]
 torque_out = force[angle_start:] * 0.2
 
 ## Resample
