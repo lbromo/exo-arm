@@ -100,6 +100,32 @@ emg1_in = [mre7.emg1_in,
            mmrf2.emg1_in
 ]
 
+imu0_in = [mre7.imu0_meas,
+           np.zeros((padding, 7)),
+           mre8.imu0_meas,
+           np.zeros((padding, 7)),
+           mmre1.imu0_meas, 
+           np.zeros((padding, 7)),
+           mrf1.imu0_meas,
+           np.zeros((padding, 7)),
+           mmrf1.imu0_meas,
+           np.zeros((padding, 7)),
+           mmrf2.imu0_meas
+]
+
+imu1_in = [mre7.imu1_meas,
+           np.zeros((padding, 7)),
+           mre8.imu1_meas,
+           np.zeros((padding, 7)),
+           mmre1.imu1_meas,
+           np.zeros((padding, 7)),
+           mrf1.imu1_meas,
+           np.zeros((padding, 7)),
+           mmrf1.imu1_meas,
+           np.zeros((padding, 7)),
+           mmrf2.imu1_meas
+]
+
 """
 angles_in = [mmre1.angles_in]
 torque_out = [mmre1.torque_out]
