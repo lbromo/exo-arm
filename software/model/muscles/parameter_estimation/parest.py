@@ -280,7 +280,7 @@ if __name__ == '__main__':
 
     best = [isl.population.champion.x for isl in archi][idx]
 
-    out = {}
+    out = {'MSE': val}
     muscle_names = [
             muscle_utils.MUSCLE_NAME.TRICEPS_BRACHII,
             muscle_utils.MUSCLE_NAME.BICEPS_BRACHII,
