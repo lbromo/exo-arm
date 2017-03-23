@@ -59,3 +59,6 @@ torque_out = force[angle_start:angle_stop] * 0.2
 ## Resample
 emg0_in = scipy.signal.resample(emg0_in, len(angles_in))
 emg1_in = scipy.signal.resample(emg1_in, len(angles_in))
+
+imu0_meas = scipy.signal.resample(imu0_meas[imu_start:imu_stop], len(angles_in))
+imu1_meas = scipy.signal.resample(imu1_meas[imu_start:imu_stop], len(angles_in))
