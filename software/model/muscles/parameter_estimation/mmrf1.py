@@ -21,11 +21,11 @@ emg0_meas = np.genfromtxt(
     "/afs/ies.auc.dk/group/17gr1035/Private/logs/emg_logs/mr_morten/marts/MRF1_emg1.log",
     delimiter=',')
 
-imu0_meas = np.genfromtxt(
+imu1_meas = np.genfromtxt(
     "/afs/ies.auc.dk/group/17gr1035/Private/logs/emg_logs/mr_morten/marts/MRF1_imu0.log",
     delimiter=',')
 
-imu1_meas = np.genfromtxt(
+imu0_meas = np.genfromtxt(
     "/afs/ies.auc.dk/group/17gr1035/Private/logs/emg_logs/mr_morten/marts/MRF1_imu1.log",
     delimiter=',')
 
@@ -53,9 +53,12 @@ angles_in = angle
 emg0_training = emg0_meas[1:,1:][0:emg0_start_idx]
 emg0_in = emg0_meas[1:,1:][emg0_start_idx:emg0_stop_idx]
 emg1_training = emg1_meas[1:,1:][0:emg1_start_idx]
-emg1_in = emg0_meas[1:,1:][emg1_start_idx:emg1_stop_idx]
+emg1_in = emg1_meas[1:,1:][emg1_start_idx:emg1_stop_idx]
 torque_out = force[angle_start:angle_stop] * 0.2
 
 ## Resample
 emg0_in = scipy.signal.resample(emg0_in, len(angles_in))
 emg1_in = scipy.signal.resample(emg1_in, len(angles_in))
+
+imu0_meas = scipy.signal.resample(imu0_meas[imu_start:imu_stop], len(angles_in))
+imu1_meas = scipy.signal.resample(imu1_meas[imu_start:imu_stop], len(angles_in))

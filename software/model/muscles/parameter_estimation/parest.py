@@ -100,6 +100,32 @@ emg1_in = [mre7.emg1_in,
            mmrf2.emg1_in
 ]
 
+imu0_in = [mre7.imu0_meas,
+           np.zeros((padding, 7)),
+           mre8.imu0_meas,
+           np.zeros((padding, 7)),
+           mmre1.imu0_meas, 
+           np.zeros((padding, 7)),
+           mrf1.imu0_meas,
+           np.zeros((padding, 7)),
+           mmrf1.imu0_meas,
+           np.zeros((padding, 7)),
+           mmrf2.imu0_meas
+]
+
+imu1_in = [mre7.imu1_meas,
+           np.zeros((padding, 7)),
+           mre8.imu1_meas,
+           np.zeros((padding, 7)),
+           mmre1.imu1_meas,
+           np.zeros((padding, 7)),
+           mrf1.imu1_meas,
+           np.zeros((padding, 7)),
+           mmrf1.imu1_meas,
+           np.zeros((padding, 7)),
+           mmrf2.imu1_meas
+]
+
 """
 angles_in = [mmre1.angles_in]
 torque_out = [mmre1.torque_out]
@@ -264,15 +290,15 @@ if __name__ == '__main__':
     import pickle
     prob = FlexProblem()
 
-    algo = algorithm.pso(gen=100)  # 500 generations of bee_colony algorithm
+    algo = algorithm.pso(gen=1000, eta1=0.9, eta2=1)  # 500 generations of bee_colony algorithm
     #isl = island(algo, prob, 500)  # Instantiate population with 20 individuals
     #isl.evolve(1)  # Evolve the island once
     #isl.join()
 
-    archi = archipelago(algo,prob,1,1)
+    archi = archipelago(algo,prob, 5, 250)
 
     #And we start the evolution loops (each evolve will advance each island 10 generation)
-    archi.evolve(1)
+    archi.evolve(10)
     archi.join()
 
     val, idx = min((val, idx) for (idx, val) in enumerate([isl.population.champion.f for isl in archi]))
@@ -280,7 +306,7 @@ if __name__ == '__main__':
 
     best = [isl.population.champion.x for isl in archi][idx]
 
-    out = {}
+    out = {'MSE': val}
     muscle_names = [
             muscle_utils.MUSCLE_NAME.TRICEPS_BRACHII,
             muscle_utils.MUSCLE_NAME.BICEPS_BRACHII,
