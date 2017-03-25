@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name escon-50-5-mobo)(type KiCad)(uri /home/morten/Documents/exo-arm/hardware/pcb/escon-triple-mobo/escon-50-5-mobo.pretty)(options "")(descr ""))
+)
