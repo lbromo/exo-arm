@@ -23,8 +23,8 @@ do
                exec bash; \\
                ^C;
                "
+    i=$[$i+1]
     else
         sleep 300
     fi
-    i=$[$i+1]
 done
