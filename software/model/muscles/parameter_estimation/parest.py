@@ -126,14 +126,6 @@ imu1_in = [mre7.imu1_meas,
            mmrf2.imu1_meas
 ]
 
-"""
-angles_in = [mmre1.angles_in]
-torque_out = [mmre1.torque_out]
-emg0_training = [mmre1.emg0_training]
-emg1_training = [mmre1.emg1_training]
-emg0_in = [mmre1.emg0_in]
-emg1_in = [mmre1.emg1_in]
-"""
 
 NR_MUSCLES = 4
 
@@ -290,19 +282,19 @@ if __name__ == '__main__':
     import sys
     import pickle
 
-    if len(sys.argv) > 2:
+    if len(sys.argv) > 1:
         PICKLE_FILE = sys.argv[1]
     else:
         PICKLE_FILE = 'params.pickle'
 
     prob = FlexProblem()
 
-    algo = algorithm.pso(gen=500, eta1=0.9, eta2=1)  # 500 generations of bee_colony algorithm
+    algo = algorithm.pso(gen=10, eta1=0.9, eta2=1)  # 500 generations of bee_colony algorithm
     #isl = island(algo, prob, 500)  # Instantiate population with 20 individuals
     #isl.evolve(1)  # Evolve the island once
     #isl.join()
 
-    archi = archipelago(algo,prob, 2, 50)
+    archi = archipelago(algo,prob, 1, 5)
 
     #And we start the evolution loops (each evolve will advance each island 10 generation)
     archi.evolve(10)
