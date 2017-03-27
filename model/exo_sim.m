@@ -31,6 +31,7 @@ function [exo] = exo_sim(controller, x0, ref)
 		fopen(s);
 		pause(2);
 		cpars.s = s;
+		out = zeros(4,S);
 	end
 
 
@@ -62,9 +63,8 @@ function [exo] = exo_sim(controller, x0, ref)
 		cpars.ref = ref(:,k); 
 		cpars.k = k;
 		cpars.n = n(:,k);
-		tic;
 		u(:,k) = controller(x(:,k),params,cpars);
-		toc;
+
 		% Limit input signal to valid current range
 		% u(1,k) = saturate(u(1,k),cur2torque(-params.maxC1,1,params),cur2torque(params.maxC1,1,params)) ;
 		% u(2,k) = saturate(u(2,k),cur2torque(-params.maxC2,2,params),cur2torque(params.maxC2,2,params)) ;
@@ -85,6 +85,8 @@ function [exo] = exo_sim(controller, x0, ref)
 	exo.u = u;
 	exo.c = c;
 	exo.ref = ref;
+	exo.epwm = out(1,:);
+	exo.spwm = out(2,:);
 
 	if isequal(controller, @c_arduino)
 		fclose(s);

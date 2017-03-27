@@ -94,10 +94,10 @@ int cur2pwm(int joint, float cur){
     int pwm = 0;
 
     if (joint == SHOULDER){
-        pwm = (int)(abs(cur) * (PWM_MAX-PWM_MIN)/3.0);
+        pwm = (int)(fabs(cur) * (PWM_MAX-PWM_MIN)/3.0);
     }
     else if (joint == ELBOW){
-        pwm = int(abs(cur) * (PWM_MAX-PWM_MIN)/1.0);
+        pwm = (int)(fabs(cur) * (PWM_MAX-PWM_MIN)/1.0);
     }
 
     pwm += PWM_MIN;
