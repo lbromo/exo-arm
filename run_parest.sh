@@ -12,7 +12,7 @@ while [ $i -lt $RUNS ]
 do
     if [ "$(ps -ef | grep -v grep | grep parest.py | wc -l)" -lt  "36" ]
     then
-        screen -XdmS "parest_$i" \
+        screen -dmS "parest_$i" \
                bash -c         \
                "
                source venv/bin/activate; \\
