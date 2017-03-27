@@ -1,4 +1,4 @@
-#if defined (__i386__) || defined (__x86_64__)
+#if defined (__i386__) || defined (__x86_64__) || defined (__arm__)
 #include <cmath>
 #elif defined (ARDUINO)
 #include <math.h>

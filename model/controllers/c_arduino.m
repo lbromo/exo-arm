@@ -15,7 +15,7 @@ function u = c_arduino(x,params,cpars)
 		disp('Shit..')
 	end
 	
-	u = str2num(inmsg)';
+	out = str2num(inmsg)';
 
 	% u = out * 0.01;
 
@@ -24,7 +24,7 @@ function u = c_arduino(x,params,cpars)
 	% u(1) = out(1) * 1/(params.kt1 * params.N);% 
 	% u(2) = out(2) * 1/(params.kt2 * params.N);% 
 
-	% u(1) = cur2torque(pwm2cur(out(1), out(3), 1),1,params); % Shoulder
-	% u(2) = cur2torque(pwm2cur(out(2), out(4), 2),2,params); % Elbow
+	u(1) = cur2torque(pwm2cur(out(1), out(3), 1),1,params); % Shoulder
+	u(2) = cur2torque(pwm2cur(out(2), out(4), 2),2,params); % Elbow
 
 end

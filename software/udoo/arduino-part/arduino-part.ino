@@ -28,6 +28,10 @@ Matrix K(2,4);
 
 bool on = false;
 
+int dir_shoulder, dir_elbow;
+int pwm_shoulder, pwm_elbow;
+
+
 void ctrl();
 void pulse();
 
@@ -160,7 +164,7 @@ void sendMeas(unsigned long time, int spos, int svel, int scur, int epos, int ev
 
     char msg[100];
 
-    sprintf(msg, "%c,%lu,%d,%d,%d,%d,%d,%d,%d,%d",START_CHAR,time,SHOULDER,spos,svel,scur,ELBOW,epos,evel,ecur);
+    sprintf(msg, "%c,%d,%d,%d,%d",START_CHAR,dir_shoulder,pwm_shoulder,dir_elbow,pwm_elbow);
     Serial.println(msg);
 }
 
@@ -201,10 +205,10 @@ int cur2pwm(int joint, float cur){
     int pwm = 0;
 
     if (joint == SHOULDER){
-        pwm = (int)(abs(cur) * (PWM_MAX-PWM_MIN)/3.0);
+        pwm = (int)(fabs(cur) * (PWM_MAX-PWM_MIN)/3.0);
     }
     else if (joint == ELBOW){
-        pwm = int(abs(cur) * (PWM_MAX-PWM_MIN)/1.0);
+        pwm = (int)(fabs(cur) * (PWM_MAX-PWM_MIN)/1.0);
     }
 
     pwm += PWM_MIN;
@@ -225,9 +229,6 @@ int getDir(float u){
 }
 
 void applyControl(Vector u){
-
-    int dir_shoulder, dir_elbow;
-    int pwm_shoulder, pwm_elbow;
 
     dir_shoulder    = getDir(u[SHOULDER]);
     dir_elbow       = getDir(u[ELBOW]);
