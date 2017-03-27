@@ -40,7 +40,7 @@ angles_in = [mre7.angles_in,
 torque_out = [mre7.torque_out,
               [0]*padding,
               mre8.torque_out,
-              [0]*padding,
+     in $(seq 1 $RUNS)         [0]*padding,
               mmre1.torque_out,
               [0]*padding,
               mrf1.torque_out,
@@ -287,15 +287,22 @@ class FlexProblem(problem.base):
 
 
 if __name__ == '__main__':
+    import sys
     import pickle
+
+    if len(sys.argv) > 2:
+        PICKLE_FILE = sys.argv[1]
+    else:
+        PICKLE_FILE = 'params.pickle'
+
     prob = FlexProblem()
 
-    algo = algorithm.pso(gen=1000, eta1=0.9, eta2=1)  # 500 generations of bee_colony algorithm
+    algo = algorithm.pso(gen=500, eta1=0.9, eta2=1)  # 500 generations of bee_colony algorithm
     #isl = island(algo, prob, 500)  # Instantiate population with 20 individuals
     #isl.evolve(1)  # Evolve the island once
     #isl.join()
 
-    archi = archipelago(algo,prob, 5, 250)
+    archi = archipelago(algo,prob, 2, 50)
 
     #And we start the evolution loops (each evolve will advance each island 10 generation)
     archi.evolve(10)
@@ -323,5 +330,5 @@ if __name__ == '__main__':
         out[name] = dict(zip(params, best[i:i+len(params)]))
 
 
-    with open('params.pickle', 'wb') as f:
+    with open(PICKLE_FILE, 'wb') as f:
         pickle.dump(out, f)
