@@ -25,6 +25,7 @@ do
                "
     i=$[$i+1]
     else
+        echo "Sleeping for 5 mins. $i runs so far"
         sleep 300
     fi
 done
