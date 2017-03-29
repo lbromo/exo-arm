@@ -57,6 +57,8 @@ for file in glob.glob("/afs/ies.auc.dk/group/17gr1035/Private/exo-arm/software/m
         values = pickle.load(tmp)
         FILE_MSE[file] = values['MSE']
 
+pp.pprint(FILE_MSE)
+
 best_parest = min(FILE_MSE, key=FILE_MSE.get)
 
 pars = {}
@@ -136,36 +138,62 @@ print(len(params))
 
 estimated = parest.FlexProblem()
 muscles = estimated.set_up_muscles(params)
-tau, act, _ = estimated.simulate(muscles)
+tau, act, m_tau = estimated.simulate(muscles)
+
+act = np.transpose(np.array(act))
+m_tau = np.transpose(np.array(m_tau))
 
 b, a = signal.butter(4, 1/(0.5*100), 'lowpass')
-tau = signal.lfilter(b, a, tau)
+tau_lp = signal.lfilter(b, a, tau)
+
+time = np.linspace(0, len(tau)*0.01, len(tau))
+
+act_vstack = np.vstack([a.flatten() for a in act])
+m_tau_vstack = np.vstack([t.flatten() for t in m_tau])
+
+np.savetxt('tau_est.dat', tau, header='TORQUE', comments='')
+np.savetxt('tau_est_lp.dat', tau_lp, header='TORQUE', comments='')
+np.savetxt('act.dat', act_vstack, header='TRICEPS, BICEPS, BRACHIALIS, BRACHIORADIALIS', comments='')
+np.savetxt('m_tau.dat', m_tau_vstack, header='TRICEPS, BICEPS, BRACHIALIS, BRACHIORADIALIS', comments='')
+np.savetxt('tau_est_lp.dat', tau_lp, header='TORQUE', comments='')
+
 
 plt.subplot(2, 1, 1)
-plt.plot(torque, linewidth=0.5)
-plt.plot(tau, '--',linewidth=0.5)
+plt.title('Torque')
+plt.plot(time, torque, linewidth=0.5)
+plt.plot(time, tau_lp, '--',linewidth=0.5)
 plt.subplot(2, 1, 2)
-plt.plot(angles)
+plt.title('Angle')
+plt.plot(time, angles, linewidth=0.5)
 
 plt.figure()
-for i in range(8):
-    plt.subplot(4, 2, i+1)
-    plt.plot(emg0[:,i])
+plt.subplot(2, 1, 1)
+plt.title('Activation Signals')
+plt.plot(time, act, linewidth=0.5)
+plt.subplot(2, 1, 2)
+plt.title('Torque Contributions')
+plt.plot(time, m_tau, linewidth=0.5)
 
-plt.figure()
-for i in range(8):
-    plt.subplot(4, 2, i+1)
-    plt.plot(emg1[:,i])
+## 
+# plt.figure()
+# for i in range(8):
+#     plt.subplot(4, 2, i+1)
+#     plt.plot(emg0[:,i])
 
-plt.figure()
-for i in range(1,4):
-    plt.subplot(3, 1, i)
-    plt.plot(imu0[:,i])
+# plt.figure()
+# for i in range(8):
+#     plt.subplot(4, 2, i+1)
+#     plt.plot(emg1[:,i])
 
-plt.figure()
-for i in range(1,4):
-    plt.subplot(3, 1, i)
-    plt.plot(imu1[:,i])
+# plt.figure()
+# for i in range(1,4):
+#     plt.subplot(3, 1, i)
+#     plt.plot(imu0[:,i])
+
+# plt.figure()
+# for i in range(1,4):
+#     plt.subplot(3, 1, i)
+#     plt.plot(imu1[:,i])
 
 plt.show()
 
