@@ -9,12 +9,12 @@ using namespace AxoArm;
 #define SHOULDER 0
 #define ELBOW 1
 
-const int PWM_MAX = 235;
+const int PWM_MAX = 230;
 const int PWM_MIN = 25;
 const int REF_LEN = 50;
-const char START_CHAR='$';
-const char RDY_CHAR ='&';
-const char REF_CHAR ='R';
+const char START_CHAR = '$';
+const char RDY_CHAR = '&';
+const char REF_CHAR = 'R';
 const char STOP_CHAR = 'S';
 const char END_CHAR = 'E';
 
@@ -24,7 +24,7 @@ const float Nkt1 = 3.82;
 Vector meas(4);
 Vector ref(4);
 
-Matrix K(2,4);
+Matrix K(2, 4);
 
 bool on = false;
 
@@ -60,238 +60,239 @@ int pin_pwm_elbow = 9;
 bool newRef = 0;
 bool led = false;
 
-void setup(){
+void setup() {
 
-    Serial.begin(230400);
-      //analogReference(EXTERNAL);
-    
-    pinMode(pin_on_shoulder,OUTPUT);
-    pinMode(pin_dir_shoulder,OUTPUT);
-    pinMode(pin_pwm_shoulder,OUTPUT);
+  Serial.begin(230400);
+  #ifdef ARDUINO
+  analogReference(EXTERNAL);
+  #endif
+  pinMode(pin_on_shoulder, OUTPUT);
+  pinMode(pin_dir_shoulder, OUTPUT);
+  pinMode(pin_pwm_shoulder, OUTPUT);
 
-    pinMode(pin_on_elbow,OUTPUT);
-    pinMode(pin_dir_elbow,OUTPUT);
-    pinMode(pin_pwm_elbow,OUTPUT);
+  pinMode(pin_on_elbow, OUTPUT);
+  pinMode(pin_dir_elbow, OUTPUT);
+  pinMode(pin_pwm_elbow, OUTPUT);
 
-    pinMode(13,OUTPUT);
-    pinMode(12,OUTPUT);
+  pinMode(13, OUTPUT);
+  pinMode(12, OUTPUT);
 
 #ifdef __arm__
-    analogReadResolution(12);
+  analogReadResolution(12);
 #endif
 
-    analogWrite(pin_pwm_shoulder, 25);
-    analogWrite(pin_pwm_elbow, 25);
+  analogWrite(pin_pwm_shoulder, 25);
+  analogWrite(pin_pwm_elbow, 25);
 
-    
-    K[0][0] = 12;
-    K[0][2] = 0;
-    K[1][1] = 12;
-    K[1][3] = 0;
-    
-    /*
+
+  K[0][0] = 12;
+  K[0][2] = 3;
+  K[1][1] = 12;
+  K[1][3] = 3;
+
+  /*
     K[0][0] = 6;
     K[0][2] = 1;
     K[1][1] = 6;
     K[1][3] = 1;
-    */
+  */
 
-    runner.init();
-    runner.addTask(t_ctrl);
-    runner.addTask(t_pulse);
-    t_ctrl.enable();
-    t_pulse.enable();
+  runner.init();
+  runner.addTask(t_ctrl);
+  runner.addTask(t_pulse);
+  t_ctrl.enable();
+  t_pulse.enable();
+}
+
+void pulse() {
+
+  led = !led;
+  digitalWrite(13, led);
+
+}
+
+float getPos(int joint) {
+
+  if (joint == SHOULDER) {
+    return analogRead(pin_pos_shoulder) * -0.001681795 + 3.1331837;
+  }
+  else if (joint == ELBOW) {
+    return analogRead(pin_pos_elbow) * -0.00165696 + 3.4945247;
+  }
+  else {
+    return 0;
+  }
+}
+
+float getCur(int joint) {
+
+  int reading;
+
+  if (joint == SHOULDER) {
+    // return (analogRead(pin_cur1) * 0.0014652 - 3.1414);
+    reading = analogRead(pin_cur_shoulder);
+    return ((reading - 2144) * 0.0014652);
+  }
+  else if (joint == ELBOW) {
+    // return (analogRead(pin_cur2) * 0.0004884 - 1.0471);
+    reading = analogRead(pin_cur_elbow);
+    return ((reading - 2144) * 0.0004884);
+  }
+  else {
+    return -1;
+  }
+}
+
+float getVel(int joint) {
+  int reading;
+
+  if (joint == SHOULDER) {
+    // return (analogRead(pin_vel1) * 0.153398 - 328.8852);
+    reading = analogRead(pin_vel_shoulder);
+    return (((reading - 2144) * 0.153398) * 0.02); // 0.02 is due to gear ratio
+  }
+  else if (joint == ELBOW) {
+    // return (analogRead(pin_vel2) * 0.153398 - 328.8852);
+    reading = analogRead(pin_vel_elbow);
+    return (((reading - 2144) * 0.153398) * 0.02);
+  }
+  else {
+    return -1;
+  }
+}
+
+void sendMeas(unsigned long time, int spos, int svel, int scur, int epos, int evel, int ecur) {
+
+  char msg[100];
+
+  sprintf(msg, "%c,%lu,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d", START_CHAR, time, SHOULDER, spos, svel, scur, dir_shoulder, pwm_shoulder, ELBOW, epos, evel, ecur, dir_elbow, pwm_elbow);
+  Serial.println(msg);
+}
+
+void measure() {
+
+  unsigned long time;
+  time = millis();
+
+  // sendMeas(SHOULDER, time,    (int)(100*getPos(SHOULDER)),    (int)(100*getVel(SHOULDER)),    (int)(100*getCur(SHOULDER)));
+  // sendMeas(ELBOW, time,       (int)(100*getPos(ELBOW)),       (int)(100*getVel(ELBOW)),       (int)(100*getCur(ELBOW)));
+
+  sendMeas(time, (int)(100 * getPos(SHOULDER)),    (int)(100 * getVel(SHOULDER)),    (int)(100 * getCur(SHOULDER)),
+           (int)(100 * getPos(ELBOW)),       (int)(100 * getVel(ELBOW)),       (int)(100 * getCur(ELBOW)));
+
+}
+
+void getRef() {
+
+  char *pos1_buff, *pos2_buff, *vel1_buff, *vel2_buff;
+  char buff[50];
+
+  Serial.readBytesUntil(END_CHAR, buff, 50);
+
+  pos1_buff = strtok(buff, ",");
+  pos2_buff = strtok(NULL, ",");
+  vel1_buff = strtok(NULL, ",");
+  vel2_buff = strtok(NULL, ",");
+
+  ref[0] = 0.01 * atoi(pos1_buff);
+  ref[1] = 0.01 * atoi(pos2_buff);
+  ref[2] = 0.01 * atoi(vel1_buff);
+  ref[3] = 0.01 * atoi(vel2_buff);
+
+}
+
+int cur2pwm(int joint, float cur) {
+
+  int pwm = 0;
+
+  if (joint == SHOULDER) {
+    pwm = (int)(fabs(cur) * (PWM_MAX - PWM_MIN) / 3.0);
+  }
+  else if (joint == ELBOW) {
+    pwm = (int)(fabs(cur) * (PWM_MAX - PWM_MIN) / 1.0);
   }
 
-void pulse(){
+  pwm += PWM_MIN;
 
-    led = !led;
-    digitalWrite(13,led);
+  if (pwm > PWM_MAX) {
+    pwm = PWM_MAX;
+  } else if (pwm < PWM_MIN) {
+    pwm = PWM_MIN;
+  }
 
-}
-
-float getPos(int joint){
-
-    if (joint == SHOULDER){
-        return analogRead(pin_pos_shoulder) * -0.001681795 + 3.1331837;
-    }
-    else if (joint == ELBOW){
-        return analogRead(pin_pos_elbow) * -0.00165696 + 3.4945247;
-    }
-    else{
-        return 0;
-    }
-}
-
-float getCur(int joint){
-
-    int reading;
-
-    if (joint == SHOULDER){
-        // return (analogRead(pin_cur1) * 0.0014652 - 3.1414);
-        reading = analogRead(pin_cur_shoulder);
-        return ((reading-2144) * 0.0014652);
-    }
-    else if (joint == ELBOW){
-        // return (analogRead(pin_cur2) * 0.0004884 - 1.0471);
-        reading = analogRead(pin_cur_elbow);
-        return ((reading-2144) * 0.0004884);
-    }
-    else{
-        return -1;
-    }
-}
-
-float getVel(int joint){
-int reading; 
-
-    if (joint == SHOULDER){
-        // return (analogRead(pin_vel1) * 0.153398 - 328.8852);
-        reading = analogRead(pin_vel_shoulder);
-        return (((reading-2144) * 0.153398)* 0.02); // 0.02 is due to gear ratio
-    }
-    else if (joint == ELBOW){
-        // return (analogRead(pin_vel2) * 0.153398 - 328.8852);
-        reading = analogRead(pin_vel_elbow);
-        return (((reading-2144) * 0.153398)* 0.02);
-    }
-    else{
-        return -1;
-    }
-}
-
-void sendMeas(unsigned long time, int spos, int svel, int scur, int epos, int evel, int ecur){
-
-    char msg[100];
-
-    sprintf(msg, "%c,%d,%d,%d,%d",START_CHAR,dir_shoulder,pwm_shoulder,dir_elbow,pwm_elbow);
-    Serial.println(msg);
-}
-
-void measure(){
-
-    unsigned long time;
-    time = millis();
-
-    // sendMeas(SHOULDER, time,    (int)(100*getPos(SHOULDER)),    (int)(100*getVel(SHOULDER)),    (int)(100*getCur(SHOULDER)));
-    // sendMeas(ELBOW, time,       (int)(100*getPos(ELBOW)),       (int)(100*getVel(ELBOW)),       (int)(100*getCur(ELBOW)));
-
-    sendMeas(time,(int)(100*getPos(SHOULDER)),    (int)(100*getVel(SHOULDER)),    (int)(100*getCur(SHOULDER)),
-                  (int)(100*getPos(ELBOW)),       (int)(100*getVel(ELBOW)),       (int)(100*getCur(ELBOW)));
+  return pwm;
 
 }
 
-void getRef(){
+int getDir(float u) {
 
-    char *pos1_buff, *pos2_buff, *vel1_buff, *vel2_buff;
-    char buff[50];
-
-    Serial.readBytesUntil(END_CHAR,buff,50);
-
-    pos1_buff = strtok(buff,",");
-    pos2_buff = strtok(NULL,",");
-    vel1_buff = strtok(NULL,",");
-    vel2_buff = strtok(NULL,",");
-
-    ref[0] = 0.01 * atoi(pos1_buff);
-    ref[1] = 0.01 * atoi(pos2_buff);
-    ref[2] = 0.01 * atoi(vel1_buff);
-    ref[3] = 0.01 * atoi(vel2_buff);
-    
+  return (int)(u > 0);
 }
 
-int cur2pwm(int joint, float cur){
+void applyControl(Vector u) {
 
-    int pwm = 0;
+  dir_shoulder    = getDir(u[SHOULDER]);
+  dir_elbow       = getDir(u[ELBOW]);
 
-    if (joint == SHOULDER){
-        pwm = (int)(fabs(cur) * (PWM_MAX-PWM_MIN)/3.0);
-    }
-    else if (joint == ELBOW){
-        pwm = (int)(fabs(cur) * (PWM_MAX-PWM_MIN)/1.0);
-    }
+  pwm_shoulder    = cur2pwm(SHOULDER, u[SHOULDER]);
+  pwm_elbow       = cur2pwm(ELBOW, u[ELBOW]);
 
-    pwm += PWM_MIN;
+  digitalWrite(pin_dir_shoulder, dir_shoulder);
+  digitalWrite(pin_dir_elbow, dir_elbow);
 
-    if (pwm > PWM_MAX){
-        pwm = PWM_MAX;
-    } else if (pwm < PWM_MIN){
-        pwm = PWM_MIN;
-    }
-
-    return pwm;
+  analogWrite(pin_pwm_shoulder, pwm_shoulder);
+  analogWrite(pin_pwm_elbow, pwm_elbow);
 
 }
 
-int getDir(float u){
+void ctrl() {
 
-    return (int)(u > 0);
-}
+  meas[0] = getPos(SHOULDER);
+  meas[1] = getPos(ELBOW);
+  meas[2] = getVel(SHOULDER);
+  meas[3] = getVel(ELBOW);
 
-void applyControl(Vector u){
+  auto u = controller(meas, ref, K);
 
-    dir_shoulder    = getDir(u[SHOULDER]);
-    dir_elbow       = getDir(u[ELBOW]);
+  auto u_tmp = K * (ref - meas);
 
-    pwm_shoulder    = cur2pwm(SHOULDER, u[SHOULDER]);
-    pwm_elbow       = cur2pwm(ELBOW, u[ELBOW]);
+  u[0] /= Nkt0;
+  u[1] /= Nkt1;
 
-    digitalWrite(pin_dir_shoulder, dir_shoulder);
-    digitalWrite(pin_dir_elbow, dir_elbow);
-
-    analogWrite(pin_pwm_shoulder, pwm_shoulder);
-    analogWrite(pin_pwm_elbow, pwm_elbow);
-
-}
-
-void ctrl(){
-
-    meas[0] = getPos(SHOULDER);
-    meas[1] = getPos(ELBOW);
-    meas[2] = getVel(SHOULDER);
-    meas[3] = getVel(ELBOW);
-
-    auto u = controller(meas,ref,K);
-
-    auto u_tmp = K * (ref-meas);
-
-    u[0] /= Nkt0;
-    u[1] /= Nkt1;
-
-    applyControl(u);
+  applyControl(u);
 
 }
 
 
-void loop(){
-    runner.execute();
-    char inByte;
+void loop() {
+  runner.execute();
+  char inByte;
 
-    digitalWrite(pin_on_shoulder,on);
-    digitalWrite(pin_on_elbow,on);
+  digitalWrite(pin_on_shoulder, on);
+  digitalWrite(pin_on_elbow, on);
 
-    if(Serial.available())
-    {
-        inByte = Serial.read();
-    } else {
-        inByte = '\0';
-    }
+  if (Serial.available())
+  {
+    inByte = Serial.read();
+  } else {
+    inByte = '\0';
+  }
 
-    if (inByte == RDY_CHAR){
+  if (inByte == RDY_CHAR) {
 
-        measure();
+    measure();
 
-    }
-    else if (inByte == REF_CHAR){
+  }
+  else if (inByte == REF_CHAR) {
 
-        getRef();
-        newRef = 1;
-        on = true;
-        
-    }
-    else if (inByte == STOP_CHAR){
+    getRef();
+    newRef = 1;
+    on = true;
 
-        on = false;
-    }
-        
+  }
+  else if (inByte == STOP_CHAR) {
+
+    on = false;
+  }
+
 }
