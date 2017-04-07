@@ -19,8 +19,9 @@ end
 	kp = 12;
 	kd = 6;
 	ki = 3;
-	k = [kp 0    kd 0  ki 0;...
-		 0  kp 0  kd 0  0];
+
+	k = [kp 0  kd 0  ki 0;...
+		   0  kp 0  kd 0  ki];
 	
 	% x = x + cpars.n;
 	

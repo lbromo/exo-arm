@@ -127,7 +127,7 @@ imu1_in = [mre7.imu1_meas,
 ]
 
 
-NR_MUSCLES = 4
+NR_MUSCLES = 2
 
 class FlexProblem(problem.base):
 
@@ -161,14 +161,14 @@ class FlexProblem(problem.base):
         emg_pods = [
             emg.EMGPOD.TRICEPS_BRACHII,
             emg.EMGPOD.BICEPS_BRACHII,
-            emg.EMGPOD.BRACHIALIS,
-            emg.EMGPOD.BRACHIORADIALIS
+#            emg.EMGPOD.BRACHIALIS,
+#            emg.EMGPOD.BRACHIORADIALIS
         ]
         muscle_names = [
             muscle_utils.MUSCLE_NAME.TRICEPS_BRACHII,
             muscle_utils.MUSCLE_NAME.BICEPS_BRACHII,
-            muscle_utils.MUSCLE_NAME.BRACHIALIS,
-            muscle_utils.MUSCLE_NAME.BRACHIORADIALIS
+#            muscle_utils.MUSCLE_NAME.BRACHIALIS,
+#            muscle_utils.MUSCLE_NAME.BRACHIORADIALIS
         ]
 
         muscles = []
@@ -294,10 +294,10 @@ if __name__ == '__main__':
     #isl.evolve(1)  # Evolve the island once
     #isl.join()
 
-    archi = archipelago(algo,prob, 2, 100)
+    archi = archipelago(algo,prob, 1, 1000)
 
     #And we start the evolution loops (each evolve will advance each island 10 generation)
-    archi.evolve(10)
+    archi.evolve(1)
     archi.join()
 
     val, idx = min((val, idx) for (idx, val) in enumerate([isl.population.champion.f for isl in archi]))
@@ -309,8 +309,8 @@ if __name__ == '__main__':
     muscle_names = [
             muscle_utils.MUSCLE_NAME.TRICEPS_BRACHII,
             muscle_utils.MUSCLE_NAME.BICEPS_BRACHII,
-            muscle_utils.MUSCLE_NAME.BRACHIALIS,
-            muscle_utils.MUSCLE_NAME.BRACHIORADIALIS
+#            muscle_utils.MUSCLE_NAME.BRACHIALIS,
+#            muscle_utils.MUSCLE_NAME.BRACHIORADIALIS
     ]
     params = [
         'C1', 'C2', 'A', 'd',
