@@ -11,8 +11,8 @@ import tempfile
 import matplotlib.pyplot as plt
 
 START = str('b\'$\\r\\n\'')
-MOTORIDINDEX = 3
-MSGSTARTINDEX = 5
+MOTORIDINDEX = 2
+MSGSTARTINDEX = 4
 
 SAMPLE_F_HZ = 100
 
@@ -38,11 +38,11 @@ def cur_pwm(cur,motorid):
 
 def decodeMsg(msg):
     msgstr = str(msg)
+    print(msgstr)
     motorid = int(msgstr[MOTORIDINDEX])
     datastr = msgstr[MSGSTARTINDEX:msgstr.find('\\')]
     splittedData = datastr.split(',')
     dataints = (int(splittedData[0]), int(splittedData[1]), int(splittedData[2]), int(splittedData[3])) 
-    #print(dataints[1])
     if motorid == 1:
         dataUnits = (dataints[0], convertToAngle_Elbow(dataints[1]), convertToVel_Elbow(dataints[2]), convertToCurrent_Elbow(dataints[3]))
     elif motorid == 2:
@@ -80,14 +80,15 @@ def log1msg(ser, motor1_file_h, motor2_file_h):
     if ser.isOpen():
         starttime = time.time()
         initmsg = ser.readline()
-
+        # print(initmsg)
         if str(initmsg) == START:
             msg = ser.readline()
+            # print(msg)
             motor, data_w_units = decodeMsg(msg)
-            #print("Received msg: " + str(data_w_units))
+            # print("Received msg: " + str(data_w_units))
             if motor == 1:
                 motor1_file_h.write(','.join([str(x) for x in data_w_units]) + "\n")
-                # print("motor1")
+                # print("I wrote something")
                 # print(data_w_units[1])
             elif motor == 2:
                 motor2_file_h.write(','.join([str(x) for x in data_w_units]) + "\n")

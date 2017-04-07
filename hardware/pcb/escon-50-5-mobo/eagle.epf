@@ -1,5 +1,5 @@
 [Eagle]
-Version="08 00 02"
+Version="08 01 00"
 Platform="Linux"
 Globals="Globals"
 Desktop="Desktop"
@@ -18,5 +18,5 @@ State=1
 Number=0
 
 [Desktop]
-Screen="3200 1080"
+Screen="2560 1024"
 Window="Win_1"

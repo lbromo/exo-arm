@@ -1,4 +1,4 @@
-update=2017-03-22T17:30:52 CET
+update=2017-03-31T12:16:57 CEST
 version=1
 last_client=kicad
 [pcbnew]
@@ -60,3 +60,13 @@ LibName30=escon-50-5-mobo
 LibName31=/usr/share/kicad/library/power
 [general]
 version=1
+[schematic_editor]
+version=1
+PageLayoutDescrFile=
+PlotDirectoryName=
+SubpartIdSeparator=0
+SubpartFirstId=65
+NetFmtName=
+SpiceForceRefPrefix=0
+SpiceUseNetNumbers=0
+LabSize=60

@@ -1,9 +1,9 @@
-(kicad_pcb (version 4) (host pcbnew 4.0.5)
+(kicad_pcb (version 4) (host pcbnew 4.0.6)
 
   (general
     (links 181)
     (no_connects 0)
-    (area 33 30 196.700001 134.500001)
+    (area 0 0 0 0)
     (thickness 1.6)
     (drawings 1)
     (tracks 594)
@@ -92,7 +92,7 @@
       (mirror false)
       (drillshape 0)
       (scaleselection 1)
-      (outputdirectory ""))
+      (outputdirectory gerber))
   )
 
   (net 0 "")
