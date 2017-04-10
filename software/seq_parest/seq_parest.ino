@@ -8,21 +8,21 @@
 bool led;
 
 // Analog inputs
-int pin_cur1 = A0;
-int pin_vel1 = A1;
-int pin_pos1 = A2;
-int pin_cur2 = A3;
-int pin_vel2 = A4;
-int pin_pos2 = A5;
+int pin_cur2 = A0;
+int pin_vel2 = A1;
+int pin_pos2 = A2;
+int pin_cur1 = A3;
+int pin_vel1 = A4;
+int pin_pos1 = A5;
 
 
 // Outputs
-int  pin_on2 = 2;
-int pin_dir2 = 3;
-int pin_pwm2 = 5;
-int  pin_on1 = 7;
-int pin_dir1 = 8;
-int pin_pwm1 = 9;
+int  pin_on1 = 2;
+int pin_dir1 = 3;
+int pin_pwm1 = 5;
+int  pin_on2 = 7;
+int pin_dir2 = 8;
+int pin_pwm2 = 9;
 
 
 void setup(){

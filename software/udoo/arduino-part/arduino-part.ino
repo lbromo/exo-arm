@@ -64,7 +64,7 @@ void setup() {
 
   Serial.begin(230400);
   #if defined(ARDUINO)
-  // analogReference(EXTERNAL);
+  analogReference(EXTERNAL);
   #endif
   pinMode(pin_on_shoulder, OUTPUT);
   pinMode(pin_dir_shoulder, OUTPUT);
@@ -268,8 +268,8 @@ void loop() {
   runner.execute();
   char inByte;
 
-  digitalWrite(pin_on_shoulder, on);
-  digitalWrite(pin_on_elbow, on);
+  digitalWrite(pin_on_shoulder, LOW);
+  digitalWrite(pin_on_elbow, LOW);
 
   if (Serial.available())
   {

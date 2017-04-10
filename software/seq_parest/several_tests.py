@@ -21,10 +21,10 @@ SHOULDER = 2
 PULSE_PERIOD_ELBOW_S = 1
 PULSE_PERIOD_SHOULDER_S = 4
 
-T_END_S = 10
-NAME = "BLINK"
+T_END_S = 60
+NAME = "new_elbow_sw"
 #AMPS = np.linspace(10,100,10)
-AMPS = np.array([0.3])
+AMPS = np.array([0.7])
 
 SEQ_LEN = T_END_S * pe.SAMPLE_F_HZ
 
@@ -137,8 +137,8 @@ if __name__ == "__main__":
             motor1_file_h.write("time,angle,velocity,current\n")
             motor2_file_h.write("time,angle,velocity,current\n")
             input_file_h.write("on1,dir1,pwm1,on2,dir2,pwm2\n")
-            t, sig_motor1, dir1 = randStep(1/pe.ELBOW_PULSE_PERIOD_MAX_S, pe.cur_pwm(AMPS[idx], ELBOW), T_END_S)
-            # t, sig_motor1, dir1 = sineSweep(1/pe.ELBOW_PULSE_PERIOD_MAX_S, 10, pe.cur_pwm(AMPS[idx],ELBOW), T_END_S)
+            # t, sig_motor1, dir1 = randStep(1/pe.ELBOW_PULSE_PERIOD_MAX_S, pe.cur_pwm(AMPS[idx], ELBOW), T_END_S)
+            t, sig_motor1, dir1 = sineSweep(1/pe.ELBOW_PULSE_PERIOD_MAX_S, 10, pe.cur_pwm(AMPS[idx],ELBOW), T_END_S)
             # t, sig_motor2, dir2 = makeSine(1/PULSE_PERIOD_SHOULDER_S, amps[SHOULDER-1], T_END_S)
             # t, sig_motor1, dir1 = makeSine(1/PULSE_PERIOD_ELBOW_S, amps[ELBOW-1], T_END_S)
             # for idx in range(0, len(sig_motor1)):

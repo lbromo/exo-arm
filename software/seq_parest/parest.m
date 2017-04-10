@@ -144,10 +144,10 @@ disp('N*MSE:')
 %disp(exo_mse(x(2,2:end),vel))
 disp(goodnessOfFit(x(2,2:end)',vel,'NMSE'));
 
-% param.kt = kt;
-% param.b =b;
-% param.tau_c = tau_c;
-% param.sigmoidpar = sigmoidpar;
+param.kt = kt;
+param.b =b;
+param.tau_c = tau_c;
+param.sigmoidpar = sigmoidpar;
 
 % if joint == 1
 % 	elbow = param

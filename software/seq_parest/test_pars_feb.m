@@ -7,12 +7,14 @@ function [tau_f x vel time] = test_pars_feb(name,joint, par)
 par = [par.kt par.b par.tau_c par.sigmoidpar];
 
 if joint == 1
-    jname = 'elbow';
+    jname = 'elbow/';
 elseif joint == 2
-    jname = 'shoulder';     
+    jname = 'shoulder/';  
+elseif joint == 0   
+	jname = '';
 end
 
-fm1 = strcat('logs/',jname,'/motor1_',name,'.log');
+fm1 = strcat('logs/',jname,'motor1_',name,'.log');
 
 m1 = importdata(fm1);
 
