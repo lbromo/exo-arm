@@ -17,17 +17,17 @@ int pin_pos1 = A5;
 
 
 // Outputs
-int pin_on1 = 2;
+int  pin_on1 = 2;
 int pin_dir1 = 3;
 int pin_pwm1 = 5;
-int pin_on2 = 7;
+int  pin_on2 = 7;
 int pin_dir2 = 8;
 int pin_pwm2 = 9;
 
 
 void setup(){
 
-        //analogReference(EXTERNAL);
+        analogReference(EXTERNAL);
 
         Serial.begin(115200);
 
@@ -92,7 +92,8 @@ int getVel(int joint){
 void sendMeas(int joint, unsigned long time, int ang, int vel, int cur){
 
         char msg[50];
-        sprintf(msg, "%c,%d,%d,%d,%d,%d",START_CHAR,joint,time,ang,vel,cur);
+        Serial.println(START_CHAR);
+        sprintf(msg, "%d,%lu,%d,%d,%d",joint,time,ang,vel,cur);
         Serial.println(msg);
 
 }
@@ -188,8 +189,9 @@ void loop(){
 	int starttime;
 	starttime = int(millis());
 
-    read_msg();
+  read_msg();
 	measure();
+  // delay(500);
 	
 	//delay(starttime+SAMPLE_T_MS-int(millis()));
 

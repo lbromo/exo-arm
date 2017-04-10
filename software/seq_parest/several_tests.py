@@ -21,10 +21,10 @@ SHOULDER = 2
 PULSE_PERIOD_ELBOW_S = 1
 PULSE_PERIOD_SHOULDER_S = 4
 
-T_END_S = 30
-NAME = "both_march_3"
+T_END_S = 60
+NAME = "new_elbow_sw"
 #AMPS = np.linspace(10,100,10)
-AMPS = np.array([0.7, 1.7])
+AMPS = np.array([0.7])
 
 SEQ_LEN = T_END_S * pe.SAMPLE_F_HZ
 
@@ -107,76 +107,76 @@ if __name__ == "__main__":
     if not ser.isOpen():
         ser.open()
     
-    print(NAME)
     time.sleep(2)
 
     ser.write(b'$00' + pe.intTo3Bytes(pe.PWM_MIN) + b'00' + pe.intTo3Bytes(pe.PWM_MIN))
 
 #    amps = np.linspace(20,30,11);
 
-    amps = np.array([0,0])
-    amps[ELBOW-1] = pe.cur_pwm(AMPS[ELBOW-1],ELBOW)
+    # amps = np.array([0,0])
+    # amps[ELBOW-1] = pe.cur_pwm(AMPS[ELBOW-1],ELBOW)
 
-    amps[SHOULDER-1] = pe.cur_pwm(AMPS[SHOULDER-1],SHOULDER)
-    TEST_LEN = len(amps)
+    # amps[SHOULDER-1] = pe.cur_pwm(AMPS[SHOULDER-1],SHOULDER)
+    TEST_LEN = len(AMPS)
 
     # Main loop!
     try:
-        #for idx in range(0,TEST_LEN):
-        name = NAME#+ str(int(amps[idx]))
-    # File initialization
+        for idx in range(0,TEST_LEN):
+            name = NAME+ str(AMPS[idx])
+        # File initialization
+            print(name)
 
-        INPUT_FILE = "./logs/both/input_" + name + ".log"
-        MOTOR1_FILE = "./logs/both/motor1_" + name + ".log"
-        MOTOR2_FILE = "./logs/both/motor2_" + name + ".log"
+            INPUT_FILE = "./logs/input_" + name + ".log"
+            MOTOR1_FILE = "./logs/motor1_" + name + ".log"
+            MOTOR2_FILE = "./logs/motor2_" + name + ".log"
 
-        motor1_file_h = open((MOTOR1_FILE), 'w')
-        motor2_file_h = open((MOTOR2_FILE), 'w')
-        input_file_h = open((INPUT_FILE), 'w')
+            motor1_file_h = open((MOTOR1_FILE), 'w')
+            motor2_file_h = open((MOTOR2_FILE), 'w')
+            input_file_h = open((INPUT_FILE), 'w')
 
-        motor1_file_h.write("time,angle,velocity,current\n")
-        motor2_file_h.write("time,angle,velocity,current\n")
-        input_file_h.write("on1,dir1,pwm1,on2,dir2,pwm2\n")
-        #t, sig_motor1, dir1 = randStep(1/pe.SHOULDER_PULSE_PERIOD_MAX_S, amps[idx], T_END_S)
-        #t, sig_motor1, dir1 = sineSweep(1/pe.SHOULDER_PULSE_PERIOD_MAX_S, 5, amps[idx], T_END_S)
-        t, sig_motor2, dir2 = makeSine(1/PULSE_PERIOD_SHOULDER_S, amps[SHOULDER-1], T_END_S)
-        t, sig_motor1, dir1 = makeSine(1/PULSE_PERIOD_ELBOW_S, amps[ELBOW-1], T_END_S)
-        for idx in range(0, len(sig_motor1)):
-            if dir2[idx] == 0:
-                sig_motor2[idx] = (sig_motor2[idx]-pe.PWM_MIN)*0.4 + pe.PWM_MIN
-            if dir1[idx] == 0: 
-                sig_motor1[idx] = (sig_motor1[idx]-pe.PWM_MIN)*0.95+ pe.PWM_MIN
-    #    sig_motor2  = np.ones(SEQ_LEN)
-    #    dir2 = np.ones(SEQ_LEN)
-        on1 = 1
-        on2 = 1
+            motor1_file_h.write("time,angle,velocity,current\n")
+            motor2_file_h.write("time,angle,velocity,current\n")
+            input_file_h.write("on1,dir1,pwm1,on2,dir2,pwm2\n")
+            # t, sig_motor1, dir1 = randStep(1/pe.ELBOW_PULSE_PERIOD_MAX_S, pe.cur_pwm(AMPS[idx], ELBOW), T_END_S)
+            t, sig_motor1, dir1 = sineSweep(1/pe.ELBOW_PULSE_PERIOD_MAX_S, 10, pe.cur_pwm(AMPS[idx],ELBOW), T_END_S)
+            # t, sig_motor2, dir2 = makeSine(1/PULSE_PERIOD_SHOULDER_S, amps[SHOULDER-1], T_END_S)
+            # t, sig_motor1, dir1 = makeSine(1/PULSE_PERIOD_ELBOW_S, amps[ELBOW-1], T_END_S)
+            # for idx in range(0, len(sig_motor1)):
+            #     if dir2[idx] == 0:
+            #         sig_motor2[idx] = (sig_motor2[idx]-pe.PWM_MIN)*0.4 + pe.PWM_MIN
+            #     if dir1[idx] == 0: 
+            #         sig_motor1[idx] = (sig_motor1[idx]-pe.PWM_MIN)*0.95+ pe.PWM_MIN
+            sig_motor2  = np.ones(SEQ_LEN)
+            dir2 = np.ones(SEQ_LEN)
+            on1 = 1
+            on2 = 0
 
-        print('Starting loop')
+            print('Starting loop')
 
-        if ser.isOpen():
-            for i in range(0, int(SEQ_LEN-1)):
-                starttime = time.time()
-                #sig_motor1[i] = 25
-                out = pe.parseMsg(on1, dir1[i], sig_motor1[i], on2, dir2[i], sig_motor2[i])
-                # Writing on serial
-                ser.write(out)
+            if ser.isOpen():
+                for i in range(0, int(SEQ_LEN-1)):
+                    starttime = time.time()
+                    #sig_motor1[i] = 25
+                    out = pe.parseMsg(on1, dir1[i], sig_motor1[i], on2, dir2[i], sig_motor2[i])
+                    # Writing on serial
+                    ser.write(out)
 
-                # Logging
-                input_file_h.write(str(on1) + ',' + str(dir1[i]) + ',' + str(round(sig_motor1[i])).zfill(3) + ',' + str(on2) + ',' + str(int(dir2[i])) + ',' + str(round(sig_motor2[i])).zfill(3) + '\n')
-#                print("Ctrl:" + str(out))
-                
-                pe.log1msg(ser,motor1_file_h,motor2_file_h)
-                pe.log1msg(ser,motor1_file_h,motor2_file_h)
-                
-                # Wait for next sample period
-                time_to_sleep = starttime+pe.SAMPLE_PERIOD_S-time.time()
-#                print(time_to_sleep)
-                # Only wait if we made it in time 
-                if time_to_sleep > 0:
-                    time.sleep(time_to_sleep)
-                else:
-                    print("Missed it")
-        ser.write(b'$00' + pe.intTo3Bytes(pe.PWM_MIN) + b'00' + pe.intTo3Bytes(pe.PWM_MIN))
+                    # Logging
+                    input_file_h.write(str(on1) + ',' + str(dir1[i]) + ',' + str(round(sig_motor1[i])).zfill(3) + ',' + str(on2) + ',' + str(int(dir2[i])) + ',' + str(round(sig_motor2[i])).zfill(3) + '\n')
+    #                print("Ctrl:" + str(out))
+                    
+                    pe.log1msg(ser,motor1_file_h,motor2_file_h)
+                    pe.log1msg(ser,motor1_file_h,motor2_file_h)
+                    
+                    # Wait for next sample period
+                    time_to_sleep = starttime+pe.SAMPLE_PERIOD_S-time.time()
+    #                print(time_to_sleep)
+                    # Only wait if we made it in time 
+                    if time_to_sleep > 0:
+                        time.sleep(time_to_sleep)
+                    else:
+                        print("Missed it")
+            ser.write(b'$00' + pe.intTo3Bytes(pe.PWM_MIN) + b'00' + pe.intTo3Bytes(pe.PWM_MIN))
         print('done')
     except:
         out = pe.parseMsg(0, 0, pe.PWM_MIN, 0, 0, pe.PWM_MIN)

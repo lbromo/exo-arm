@@ -4,7 +4,7 @@
 
 using namespace AxoArm;
 
-#define SAMPLE_F 100 // Hz
+#define SAMPLE_F 1000 // Hz
 #define SAMPLE_T_MS 1000 * 1/SAMPLE_F
 #define SHOULDER 0
 #define ELBOW 1
@@ -63,7 +63,7 @@ bool led = false;
 void setup() {
 
   Serial.begin(230400);
-  #ifdef ARDUINO
+  #if defined(ARDUINO)
   analogReference(EXTERNAL);
   #endif
   pinMode(pin_on_shoulder, OUTPUT);
@@ -268,8 +268,8 @@ void loop() {
   runner.execute();
   char inByte;
 
-  digitalWrite(pin_on_shoulder, on);
-  digitalWrite(pin_on_elbow, on);
+  digitalWrite(pin_on_shoulder, LOW);
+  digitalWrite(pin_on_elbow, LOW);
 
   if (Serial.available())
   {

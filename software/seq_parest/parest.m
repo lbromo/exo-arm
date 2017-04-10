@@ -10,9 +10,11 @@ SHOULDER = 2;
 Ts = 0.01;
 joint = ELBOW;
 
-if joint == 1 % Elbow
-	names = {'rs_60_0.1', 'rs_60_0.2', 'rs_60_0.3', 'e_sin_no_0.6', 'e_sin_no_0.7'};
-elseif joint == 2 % shoulder
+
+if joint == ELBOW % Elbow
+	% names = {'rs_60_0.1', 'rs_60_0.2', 'rs_60_0.3', 'e_sin_no_0.6', 'e_sin_no_0.7'};
+	names = {'new_elbow0.5', 'new_elbow0.6', 'new_elbow0.7', 'new_elbow_sw0.6', 'new_elbow_sw0.7'}; 
+elseif joint == SHOULDER % shoulder
 	names = {'rs_60_0.1', 'rs_60_0.3', 'rs_60_0.5', 's_sin_no_1.3', 's_sin_no_1.5'};
 end
 
@@ -142,10 +144,10 @@ disp('N*MSE:')
 %disp(exo_mse(x(2,2:end),vel))
 disp(goodnessOfFit(x(2,2:end)',vel,'NMSE'));
 
-% param.kt = kt;
-% param.b =b;
-% param.tau_c = tau_c;
-% param.sigmoidpar = sigmoidpar;
+param.kt = kt;
+param.b =b;
+param.tau_c = tau_c;
+param.sigmoidpar = sigmoidpar;
 
 % if joint == 1
 % 	elbow = param

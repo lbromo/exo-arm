@@ -82,11 +82,17 @@ void setup(){
     analogWrite(pin_pwm_shoulder, 25);
     analogWrite(pin_pwm_elbow, 25);
 
-    
+/*    
     K[0][0] = 12;
     K[0][2] = 3;
     K[1][1] = 12;
     K[1][3] = 3;
+*/
+    K[0][0] = 30;
+    K[0][2] = 5;
+    K[1][1] = 30;
+    K[1][3] = 5;
+
     
     /*
     K[0][0] = 6;
