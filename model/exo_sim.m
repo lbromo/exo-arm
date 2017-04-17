@@ -10,7 +10,7 @@ function [exo] = exo_sim(controller, x0, ref)
 	params = ParametersScript();
 	addpath controllers;
 
-	T_end = 120; % [s]
+	T_end = 30; % [s]
 	S = T_end/params.Ts; % Samples total
 	t = 0:params.Ts:T_end-params.Ts;
 
@@ -48,8 +48,11 @@ function [exo] = exo_sim(controller, x0, ref)
 		ref2 = [0.5  1 0 0]' * ones(1,30/params.Ts);
 		ref3 = [pi 0.25*pi 0 0]' * ones(1,30/params.Ts);
 		ref4 = [2  1 0 0]' * ones(1,30/params.Ts);
+
+		ref5 = [1 1 0 0]' * ones(1,30/params.Ts);
+
 		
-		ref = [ref1 ref2 ref3 ref4];
+		ref = [ref5]; % ref2 ref3 ref4];
 	else
 		ref = ref' * ones(1,T_end/params.Ts);
 	end
@@ -65,7 +68,7 @@ function [exo] = exo_sim(controller, x0, ref)
 		cpars.k = k;
 		cpars.n = n(:,k);
 
-		[u(:,k) e] = controller(x(:,k),params,cpars);
+		u(:,k) = controller(x(:,k),params,cpars);
 
 		% Forward euler
 	 	x(:,k+1) = x(:,k) + params.Ts*f(x(:,k), u(:,k), params);
