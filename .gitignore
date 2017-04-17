@@ -50,6 +50,7 @@ __pycache__
 
 # Other stuff
 *.png
+*.dat
 
 # Compiled Mex Files
 *.mexa64
