@@ -32,7 +32,7 @@ bool led = false;
 
 void setup() {
 
-  Serial0.begin(115200);
+  Serial0.begin(230400);
 
   #if not defined(__arm__)
     analogReference(EXTERNAL);
