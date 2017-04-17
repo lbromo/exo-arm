@@ -19,7 +19,6 @@ Vector AxoArm::get_N_vector(Vector& x){
   n[0] = x[2]*4.86725E-1+sin(x[0]+x[1])*1.591091295955199E-1+sin(x[0])*2.173806515142+(2.41E2/2.5E1)/(exp(x[2]*(-1.9E1/8.0))+1.0)-x[3]*sin(x[1])*(x[2]*2.0+x[3])*5.35229487936E-3-2.41E2/5.0E1;
   n[1] = x[3]*1.101175E-1+sin(x[0]+x[1])*1.5910912959552E-1+(x[2]*x[2])*sin(x[1])*5.35229487936E-3+(1.8E1/2.5E1)/(exp(x[3]*(-6.495))+1.0)-9.0/2.5E1;
 
-
   return n;
 }
 
@@ -52,6 +51,84 @@ Vector AxoArm::controller(Vector& x, Vector& ref, Matrix& K){
   return u;
 }
 
+
+float AxoArm::getPos(int joint) {
+
+  if (joint == SHOULDER) {
+    return analogRead(pin_pos_shoulder) * -0.001681795 + 3.1331837;
+  }
+  else if (joint == ELBOW) {
+    return analogRead(pin_pos_elbow) * -0.00165696 + 3.4945247;
+  }
+  else {
+    return 0;
+  }
+}
+
+float AxoArm::getCur(int joint) {
+
+  int reading;
+
+  if (joint == SHOULDER) {
+    // return (analogRead(pin_cur1) * 0.0014652 - 3.1414);
+    reading = analogRead(pin_cur_shoulder);
+    return ((reading - 2144) * 0.0014652);
+  }
+  else if (joint == ELBOW) {
+    // return (analogRead(pin_cur2) * 0.0004884 - 1.0471);
+    reading = analogRead(pin_cur_elbow);
+    return ((reading - 2144) * 0.0004884);
+  }
+  else {
+    return -1;
+  }
+}
+
+float AxoArm::getVel(int joint) {
+  int reading;
+
+  if (joint == SHOULDER) {
+    // return (analogRead(pin_vel1) * 0.153398 - 328.8852);
+    reading = analogRead(pin_vel_shoulder);
+    return (((reading - 2144) * 0.153398) * 0.02); // 0.02 is due to gear ratio
+  }
+  else if (joint == ELBOW) {
+    // return (analogRead(pin_vel2) * 0.153398 - 328.8852);
+    reading = analogRead(pin_vel_elbow);
+    return (((reading - 2144) * 0.153398) * 0.02);
+  }
+  else {
+    return -1;
+  }
+}
+
+int AxoArm::cur2pwm(int joint, float cur) {
+
+  int pwm = 0;
+
+  if (joint == SHOULDER) {
+    pwm = (int)(fabs(cur) * (PWM_MAX - PWM_MIN) / 3.0);
+  }
+  else if (joint == ELBOW) {
+    pwm = (int)(fabs(cur) * (PWM_MAX - PWM_MIN) / 1.0);
+  }
+
+  pwm += PWM_MIN;
+
+  if (pwm > PWM_MAX) {
+    pwm = PWM_MAX;
+  } else if (pwm < PWM_MIN) {
+    pwm = PWM_MIN;
+  }
+
+  return pwm;
+
+}
+
+int AxoArm::getDir(float u) {
+
+  return (int)(u > 0);
+}
 
 #if defined (__i386__) || defined (__x86_64__)
 int main(){
