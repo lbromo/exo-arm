@@ -40,15 +40,14 @@ I2 = np.matrix([
 
 
 # FRICTION
-vm1 = 3.69e-6 # 3.5099e-6 # NEJ - 1.0488
-vm2 = 3.71e-6 # 3.8198e-6
+vm1 = 1.9469e-4
+vm2 = 4.4047e-5
 
-vm1_scale = 0.0488
-vm2_scale = 0.0296
+cm1 = 0.0964
+cm2 = 0.0072
 
-
-cm1 = 1.36e-3
-cm2 = 1.97e-3
+sig1 = 0.0475
+sig2 = 0.1299
 
 # Adding motor
 N = 50

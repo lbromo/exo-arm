@@ -35,14 +35,13 @@ class Mech_2_dof_arm():
       'g': params.g,
       'vm1': params.vm1,
       'vm2': params.vm2,
-      'vm1_scale': params.vm1_scale,
-      'vm2_scale': params.vm2_scale,
       'cm1': params.cm1,
       'cm2': params.cm2,
+      'sig1': params.sig1,
+      'sig2': params.sig2,
       'N': params.N,
       'Im_s': params.Im_shoulder,
       'Im_e': params.Im_elbow
-
     }
 
     symbolic_M, symbolic_G, symbolic_V, symbolic_F = self.__get_symbolic_matrices__()
@@ -65,24 +64,25 @@ class Mech_2_dof_arm():
     states = sp.symbols('th1 th2 dth1 dth2')
 
     tmp = M + Im * N**2
-    f_M = sp.lambdify(states, tmp)
-    self.f_M_inv = sp.lambdify(states, tmp.inv(method='LU')) # Matlab uses LU
-    self.f_G = sp.lambdify(states, G, 'numpy')
-    self.f_V = sp.lambdify(states, V, 'numpy')
-    self.f_F = sp.lambdify(states, F * N**2, 'numpy')
-
-    self.vm1_scale = self.matrice_parameters['vm1_scale']
-    self.vm2_scale = self.matrice_parameters['vm2_scale']
+    self.M = sp.lambdify(states, tmp)
+    self.M_inv = sp.lambdify(states, tmp.inv(method='LU')) # Matlab uses LU
+    self.G = sp.lambdify(states, G, 'numpy')
+    self.V = sp.lambdify(states, V, 'numpy')
+    self.F = sp.lambdify(states, F * N**2, 'numpy')
+    self.N = lambda th1, th2, dth1, dth2:   \
+             self.V(th1, th2, dth1, dth2) + \
+             self.G(th1, th2, dth1, dth2) + \
+             self.F(th1, th2, dth1, dth2)
 
   def step(self, u=np.array([0, 0])):
     th1, th2, dth1, dth2 = float(self.x[0]), float(self.x[1]), float(self.x[2]), float(self.x[3])
     dth = np.array([[dth1, dth2]])
     u = np.array([[u[0]], [u[1]]])
 
-    M = self.f_M_inv(th1, th2, dth1, dth2)
-    V = self.f_V(th1, th2, dth1, dth2)
-    G = self.f_G(th1, th2, dth1, dth2)
-    F = self.f_F(th1, th2, dth1, dth2)
+    M = self.M_inv(th1, th2, dth1, dth2)
+    V = self.V(th1, th2, dth1, dth2)
+    G = self.G(th1, th2, dth1, dth2)
+    F = self.F(th1, th2, dth1, dth2)
 
     ddth = M.dot(u - (V + G + F))
 
@@ -231,81 +231,50 @@ def __generate_symbolic_matrices__():
 
   ## Friction model
   #vm1, vm2, cm1, cm2 = sp.symbols('vm1 vm2 cm1 cm2')
-  cm1, cm2 = sp.symbols('cm1 cm2')  # 0.01, 0.05
-  vm1, vm2 = sp.symbols('vm1 vm2')  # 0.00005, 0.00055
+  N = sp.symbols('N')
+  cm1, cm2, sig1 = sp.symbols('cm1 cm2 sig1')  # 0.01, 0.05
+  vm1, vm2, sig2 = sp.symbols('vm1 vm2 sig2')  # 0.00005, 0.00055
   F = sp.Matrix([
-    [vm1 * dth1],  # + cm1 * sp.sign(dth1)],
-    [vm2 * dth2]   # + cm2 * sp.sign(dth2)]
+    [vm1 * dth1 * N + cm1 * (2/(1+sp.exp(-sig1 * dth1 * N))-1)],
+    [vm2 * dth2 * N + cm2 * (2/(1+sp.exp(-sig2 * dth1 * N))-1)]
   ])
+  F = F * N
 
   return M, G, V, F
 
 
 if __name__ == '__main__':
   import matplotlib
-  matplotlib.use('GTKAgg')
   import matplotlib.pyplot as plt
 
-# Prepare for simluation
-  ts = 0.001
-  tend = 20
+  # Prepare for simluation
+  ts = 0.01
+  tend = 5
   Tend = int(20 / ts)
   t = np.linspace(0, tend, Tend)
   x = np.zeros((4, Tend))
   u = np.zeros((2, Tend))
-  #u[1, 1/ts:2/ts] = 0.5
-  x0=np.array([[1], [1], [0], [0]])
+  ref = np.array([np.pi/2, np.pi/4, 0, 0])
+  x0=np.array([[0], [0], [0], [0]])
 
   m = Mech_2_dof_arm(x0=x0, ts=ts)
 
-  fig, ax = plt.subplots(1, 1)
-  ax.set_xlim(-0.6, 0.6)
-  ax.set_ylim(-0.6, 0.1)
-  ax.hold(True)
+  K = np.array([[12, 0, 3, 0], [0, 12, 0, 3]])
 
-  plt.show(False)
-  plt.draw()
-
-  line, = ax.plot([0,
-                   params.l1 * np.sin(x[0, 0]),
-                   params.l1 * np.sin(x[0, 0]) + params.l2 * np.sin(x[1, 0])],
-                  [0,
-                   params.l1 * -np.cos(x[0, 0]),
-                   params.l1 * -np.cos(x[0, 0]) - params.l2 * np.cos(x[1, 0])],
-                  'o-', lw=2)
-
-  background = fig.canvas.copy_from_bbox(ax.bbox)
-
-  fig.canvas.draw()
- 
-  print(time.time())
   for i in range(Tend-1):
+    e = np.reshape(ref - x[:, i], (4,1))
+    tmp = m.M(*x[:,i]).dot(K.dot(e)) + m.N(*x[:,i])
+    u[:,i][0] = tmp[0]
+    u[:,i][1] = tmp[1]
+
     x[:, i+1] = m.step(u[:, i])
-    if i % 20 == 0:
-      step_time = time.time()
-      line.set_data([0,
-                     params.a1 * np.sin(x[0, i+1]),
-                     params.a1 * np.sin(x[0, i+1]) + params.a2 * np.sin(x[0, i+1] + x[1, i+1])],
-                    [0,
-                     -params.a1 * np.cos(x[0, i+1]),
-                     -params.a1 * np.cos(x[0, i+1]) - params.a2 * np.cos(x[0, i+1] + x[1, i+1])])
-      #fig.canvas.draw()
-
-      fig.canvas.restore_region(background)
-      ax.draw_artist(line)
-      fig.canvas.blit(ax.bbox)
-
-      #time.sleep(20*ts - (time.time() - step_time))
-
-  print(time.time())
-  plt.close(fig)
 
   plt.subplot(2, 1, 1)
   plt.plot(t, x[0,:])
   plt.plot(t, x[1,:])
 
   plt.subplot(2, 1, 2)
-  plt.plot(t, u[0,:])
-  plt.plot(t, u[1,:])
+  plt.plot(t, x[2,:])
+  plt.plot(t, x[3,:])
 
   plt.show()
