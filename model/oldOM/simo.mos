@@ -1,4 +1,0 @@
-loadModel(Modelica);
- loadFile("test.mo");
- instantiateModel(test);
-  buildModel(test);
