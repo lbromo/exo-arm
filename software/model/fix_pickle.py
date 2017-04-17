@@ -4,7 +4,7 @@ sys.path.append('muscles')
 import muscle_utils
 import emg
 
-with open('4muslces.pickle', 'rb') as f:
+with open('2muslces.pickle', 'rb') as f:
     pars = pickle.load(f)
 
 del pars['MSE']
@@ -23,5 +23,5 @@ for k in pars.keys():
     del pars[k]['d']
     print(pars[k])
 
-with open('4muslces_cleaned.pickle', 'wb') as f:
+with open('2muslces_cleaned.pickle', 'wb') as f:
     pickle.dump(pars, f)
