@@ -5,7 +5,7 @@ import numpy as np
 
 BAUD = 230400
 
-READY = b'&'
+READY = b'M'
 START_CHAR = '$'
 START = str('b\'$\\r\\n\'')
 REF_CHAR = b'R'
@@ -28,7 +28,8 @@ def log1msg(ser, logfile):
             msg = initmsg[2:]
             # print(msg)
             data_w_units = msg.strip().split(',')
-            logfile.write(str(data_w_units) + '\n')
+            print(','.join(str(x) for x in data_w_units))
+            logfile.write(','.join(str(x) for x in data_w_units) + '\n')
 
 def tUpdateRef(ser):
     while True:
@@ -45,7 +46,7 @@ def tUpdateRef(ser):
             ])
             with SER_LOCK:
                 if ser.isOpen():
-                    print('Goding to: ('+ str(ref[0]) +',', str(ref[1]) + ')')
+                    print('Going to: ('+ str(ref[0]) +',', str(ref[1]) + ')')
                     ref_msg = REF_CHAR + (intTo3Bytes(int(ref[0]*100))) + b',' + (intTo3Bytes(int(ref[1]*100))) + b',' + (intTo3Bytes(int(ref[2]*100))) + b',' + (intTo3Bytes(int(ref[3]*100))) + b',' + END_CHAR
                     ser.write(ref_msg)
 
@@ -61,7 +62,7 @@ if __name__ == "__main__":
         LOG_FILE = sys.argv[1]
         SER_PORT = sys.argv[2]
     else:
-        SER_PORT = "/dev/ttyACM0"
+        SER_PORT = "/dev/ttyUSB0"
 
     ser = serial.Serial(SER_PORT, BAUD, timeout=2)
 
