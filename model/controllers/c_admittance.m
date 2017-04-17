@@ -1,4 +1,4 @@
-function u = c_admittance(x,params,cpars)
+function [u e] = c_admittance(x,params,cpars)
 
 persistent thref;
 
