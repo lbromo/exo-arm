@@ -1,5 +1,6 @@
 function F = fcn(dth, vm, cm, N, sigmoidpar, u)
 
+% dth is velocity on the output of the gear
 
 Fmatrix = [...
 	vm(1)*dth(1)*N + cm(1) * sigmoid(dth(1)*N,sigmoidpar(1));...%cm(1)*(2./(1+exp(-sigmoidpar(1) * dth(1)))-1);... +cm(1)*sign(dth(1));...
