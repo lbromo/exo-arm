@@ -4,6 +4,28 @@ import numpy as np
 import scipy.optimize
 
 import muscle_utils
+import activation_signal
+import emg
+import copy
+
+def create_muscles(param_dict):
+  muscles = []
+  pars = copy.deepcopy(param_dict)
+  for k, v in pars.items():
+    act_pars = v['ACTIVATION_SIGNAL']
+    act = activation_signal.ActivationSignal(
+      **act_pars,
+    )
+    del v['ACTIVATION_SIGNAL']
+    muscles.append(
+      Muscle(
+        activation_signal=act,
+        muscle_type=k,
+        **v
+      )
+    )
+
+  return muscles
 
 class Muscle():
 
