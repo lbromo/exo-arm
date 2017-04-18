@@ -259,7 +259,10 @@ if __name__ == '__main__':
 
   m = Mech_2_dof_arm(x0=x0, ts=ts)
 
-  K = np.array([[12, 0, 3, 0], [0, 12, 0, 3]])
+  kp = 10
+  K = np.array([
+    [kp, 0, 2*np.sqrt(kp), 0],
+    [0, kp, 0,             2*np.sqrt(kp)]])
 
   for i in range(Tend-1):
     e = np.reshape(ref - x[:, i], (4,1))
