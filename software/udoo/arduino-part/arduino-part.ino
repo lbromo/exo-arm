@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "AxoArmUtils.h"
+#include "hal.h"
 
 #include <imx6sx_sdb_m4.h>
 #include <hwtimer_epit.h>
