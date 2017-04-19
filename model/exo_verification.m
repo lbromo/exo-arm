@@ -15,8 +15,10 @@ addpath('useful_scripts')
 addpath('old_scripts')
 addpath('system_matrices')
 addpath('verification')
-ParametersScript  %model parameters
-load_data   %data for verification
+clear globals;
+global params;
+params = ParametersScript;  %model parameters
+load_data;   %data for verification
 %% 
 % ----------------------------------------------
 %  ODE SOLVER
@@ -40,21 +42,21 @@ end
 % -----------------------------------------------
 if abe == 3
 	global x0;
-	xd = [angle_m1(1);angle_m2(1);vel_m1(1);vel_m2(1)]; %angle and vel init
-	x0=xd;
+	x0 = [angle_m1(1);angle_m2(1);vel_m1(1);vel_m2(1)]; %angle and vel init
+	xd=x0;
 	u = zeros(2, length(time)); %to be sure that the lengths of the vectors are the same "length(time(1:end-10))" are used everywhere
 	u(1, 1:end) = cur_in_m1;%(1:length(time(1:end-10)));
 	u(2, 1:end) = cur_in_m2;%(1:length(time(1:end-10)));
 	%--------------------------------------------------------------------
 	%parameter estimate or not
 	if monkey1 == 1
-	 par_to_get=[params.hast];% params.cm params.vm  params.sigmoidpar params.hast
+	 par_to_get=[params.cm params.vm  params.sigmoidpar];% params.cm params.vm  params.sigmoidpar params.hast
 	 ydata=[vel_m1 vel_m2]'; 
-	 [X, resnorm] = lsqcurvefit(@parest_forward, par_to_get, u, ydata, [0 0])
-	 %params.cm=X(1:2);
-	 %params.vm=X(3:4);
-	%params.sigmoidpar=X(5:6);
-	params.hast=X(1:2);
+	 [X, resnorm] = lsqcurvefit(@parest_forward, par_to_get, u, ydata, [0 0 0 0 0 0]);
+	 params.cm=X(1:2);
+	 params.vm=X(3:4);
+	 params.sigmoidpar=X(5:6);
+	% params.hast=X(1:2);
 	end
 	%--------------------------------------------------------------------
 	for k = 1:length(time(1:end-1))  %forward euler
@@ -62,7 +64,7 @@ if abe == 3
 	end
 
 	residual_error=sum(([xd(3,:) xd(4,:)] -[vel_m1; vel_m2]').^2) %squared 2 norm error
-	mse = goodnessOfFit([xd(3,:) xd(4,:)]', [vel_m1; vel_m2], 'NMSE')
+	nmse = goodnessOfFit([xd(3,:) xd(4,:)]', [vel_m1; vel_m2], 'NMSE')
 
 	figure(1)
 	ax(1) = subplot(3,2,1);

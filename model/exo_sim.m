@@ -40,6 +40,10 @@ function [exo] = exo_sim(controller, x0, ref)
 		cpars.tau = sin(t);
 	end
 
+	if isequal(controller, @c_test)
+		cpars.t_end = 100;
+	end
+
 % 8=====================================D
 % REFERENCE
 % 8=====================================D

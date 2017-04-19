@@ -1,13 +1,13 @@
 % -----------------------------------------
 % LOAD DATA AND PARAMETERS
 % -----------------------------------------
-params = ParametersScript();
+% params = ParametersScript();
 N = params.N;
 timeF=0;
 timeL=0;
-m2 = importdata('both/motor1_both_march_2.log');      %new_1              %time,angle,velocity,current
-m1 = importdata('both/motor2_both_march_2.log');       %march_3            %time,angle,velocity,current
-in = importdata('both/input_both_march_2.log');                    %on1,dir1,pwm1,on2,dir2,pwm2
+m2 = importdata('both/motor1_both_march_3.log');      %new_1              %time,angle,velocity,current
+m1 = importdata('both/motor2_both_march_3.log');       %march_3            %time,angle,velocity,current
+in = importdata('both/input_both_march_3.log');                    %on1,dir1,pwm1,on2,dir2,pwm2
 
 %m1 and m2
 time_id = find(~cellfun(@isempty,strfind(m1.colheaders,'time')));
@@ -46,13 +46,16 @@ on_m1 = in.data(1+timeF:length(time)+timeF,on2_id);
 dir_m1  = in.data(1+timeF:length(time)+timeF,dir2_id); 
 pwm_m1  = in.data(1+timeF:length(time)+timeF,pwm2_id); 
 
-cur_in_m1= zeros(length(time),1);
-for k=1:length(pwm_m1)
+
+cur_in_m1 = zeros(length(time),1);
+for k=1:length(time)
 	cur_in_m1(k)=pwm2cur(pwm_m1(k), dir_m1(k), 2, 0);
 end    
 cur_in_m1=cur_in_m1.*params.kt1*N;
+
+
 cur_in_m2= zeros(length(time),1);
-for k=1:length(pwm_m2)
+for k=1:length(time)
 	cur_in_m2(k)=pwm2cur(pwm_m2(k), dir_m2(k), 1, 0);
 end  
 cur_in_m2=cur_in_m2.*params.kt2*N;

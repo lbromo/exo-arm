@@ -28,7 +28,8 @@ def log1msg(ser, logfile):
             msg = initmsg[2:]
             # print(msg)
             data_w_units = msg.strip().split(',')
-            print(','.join(str(x) for x in data_w_units))
+            # NICE PRINTING FUNCTION
+            # print(','.join(str(x) for x in data_w_units))
             logfile.write(','.join(str(x) for x in data_w_units) + '\n')
 
 def tUpdateRef(ser):
