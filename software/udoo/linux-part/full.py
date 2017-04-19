@@ -11,6 +11,7 @@ import muscle, muscle_utils, emg, pymyo
 BAUD = 230400
 
 READY = b'M'
+STOP = b'S'
 START_CHAR = '$'
 START = str('b\'$\\r\\n\'')
 REF_CHAR = b'R'
@@ -22,6 +23,9 @@ _ser = None
 _logfile = None
 _muscles = None
 
+ref = np.zeros((4,))
+
+B = 0.25
 
 def intTo3Bytes(intvar):
     return str.encode(str(intvar).zfill(3))
@@ -50,15 +54,21 @@ def get_angles(ser, logfile):
             data_w_units = msg.strip().split(',')
             logfile.write(','.join(str(x) for x in data_w_units) + '\n')
 
-            shoulder_pos = data_w_units[3] * 0.01
-            elbow_pos = data_w_units[8] * 0.01
+            shoulder_pos = int(data_w_units[3]) * 0.01
+            elbow_pos = int(data_w_units[8]) * 0.01
             return shoulder_pos, elbow_pos
 
 def update(emg_meas):
-    angles = list(get_angles(_ser, _logfile))
+    try:
+        angles = list(get_angles(_ser, _logfile))
+    except:
+        print("error")
+        return
+
     _emg.on_emg_measurement(emg_meas.sample1)
     _emg.on_emg_measurement(emg_meas.sample2)
 
+    tau = np.array([0, 0])
     for m in _muslces:
         tmp = np.array([
             0, #m.get_torque_estimate(angles, muscle_utils.MUSCLE_JOINT.SHOULDER),
@@ -66,17 +76,18 @@ def update(emg_meas):
         ])
         if abs(tmp[1]) < 1:
             tmp = 0
-            tau = tau + tmp
+        tau = tau + tmp
 
-    ref[0] = ref[0] + tau[0] * 0.01
-    ref[1] = ref[1] + tau[1] * 0.01
-    ref[2] = tau[0] * 0.01
-    ref[3] = tau[1] * 0.01
-    print(ref)
+    tmp = tau * B
+
+    ref[0] = ref[0] + ref[2] * 0.01
+    ref[1] = ref[1] + ref[3] * 0.01
+    ref[2] = tmp[0]
+    ref[3] = tmp[1]
 
     ref_msg = REF_CHAR + (intTo3Bytes(int(ref[0]*100))) + b',' + (intTo3Bytes(int(ref[1]*100))) + b',' + (intTo3Bytes(int(ref[2]*100))) + b',' + (intTo3Bytes(int(ref[3]*100))) + b',' + END_CHAR
     print(ref_msg)
-    ser.write(ref_msg)
+    _ser.write(ref_msg)
 
 
 if __name__ == "__main__":
@@ -95,6 +106,8 @@ if __name__ == "__main__":
     if not _ser.isOpen():
         _ser.open()
         print("Serial Open")
+
+    _ser.write(STOP)
 
     _logfile = open(log_path, 'w')
 
