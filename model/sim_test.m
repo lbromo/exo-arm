@@ -1,4 +1,8 @@
 clear all; close all;
+clear globals;
+
+global params;
+params = ParametersScript;
 
 [in m2 m1] = getParestData('new_1',4);
 
@@ -9,30 +13,43 @@ pwm2 = getSignal(in, 'pwm1');
 on2  = getSignal(in, 'on1');
 dir2 = getSignal(in, 'dir1');
 
-vel1 = getSignal(m1, 'velocity');
+vel1 = getSignal(m1, 'velocity')./params.N;
 ang1 = getSignal(m1, 'angle');
-vel2 = getSignal(m2, 'velocity');
+vel2 = getSignal(m2, 'velocity')./params.N;
 ang2 = getSignal(m2, 'angle');
+
+addpath('verification')
+
+global Ts;
+Ts = 0.010 * ones(length(vel1),1);
 
 %% FROM HERE, EVERYTHING THAT NEEDS SWITCHING IS SWITCHED!
 
-cur1 = pwm2cur(pwm1, dir1, 1);
 
+global x0;
+x0=[ang1(1), ang2(1), vel1(1), vel2(1)];
+
+
+cur1 = pwm2cur(pwm1, dir1, 1);
 cur2 = pwm2cur(pwm2, dir2, 2);
 
-params = ParametersScript;
-
 u = zeros(2,length(cur1));
-u(1,:) = cur1' * params.kt1 * params.N;
+u(1,:) = cur1' * params.kt1 * params.N; % Torque
 u(2,:) = cur2' * params.kt2 * params.N;
 
+% par_to_get=[params.cm params.vm params.sigmoidpar];% params.cm params.vm  params.sigmoidpar params.hast
+% ydata=[ang1 ang2 vel1 vel2]'; 
+% [X, resnorm] = lsqcurvefit(@parest_forward, par_to_get, u, ydata, [0 0 0 0 0 0]);
+
+% params.cm=X(1:2);
+% params.vm=X(3:4);
+% params.sigmoidpar=X(5:6);
+
 xd = zeros(4,length(u(:,1)));
-xd(:,1) = [ang1(1), ang2(1), vel1(1)/params.N, vel2(1)/params.N];
+xd(:,1) = x0;
 
-Ts = 0.01;
-
-for k = 1:length(u(1,:))-2  %forward euler
+for k = 1:length(u(1,:))-1  %forward euler
 	[xdot V(:,k) G(:,k) F(:,k)] = f(xd(:,k), u(:,k), params);
-	xd(:,k+1) = xd(:,k) + Ts*xdot;
-	xd(1:2,k+1) = [ang1(k+1) ang2(k+1)];
+	xd(:,k+1) = xd(:,k) + Ts(k)*xdot;
+	% xd(1:2,k+1) = [ang1(k+1) ang2(k+1)];
 end
