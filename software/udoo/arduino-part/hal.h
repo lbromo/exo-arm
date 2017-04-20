@@ -1,7 +1,7 @@
 #include "Arduino.h"
 
 namespace AxoArm{
-	const int SAMPLE_F = 200; // Hz
+	const int SAMPLE_F = 100; // Hz
 	const unsigned long SAMPLE_T_MS = 1000 * 1/SAMPLE_F;
 	const unsigned long SAMPLE_T_US = 1000000 * 1/SAMPLE_F;
 	const int SHOULDER = 0;
