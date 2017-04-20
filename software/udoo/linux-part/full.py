@@ -3,7 +3,6 @@ import serial
 import numpy as np
 sys.path.append('../../model/mechanics')
 sys.path.append('../../model/muscles')
-sys.path.append('../../../../pymyo')
 import mech_arm
 import activation_signal
 import muscle, muscle_utils, emg, pymyo
@@ -48,9 +47,7 @@ def get_angles(ser, logfile):
             # Removeing the <start char,> -- we have the following left
             #  [0]    [1]             [2]               [3]             [4]             [5]        [6]        [7]             [8]          [9]         [10]
             # time, shoulder, <shoulder pos ref>, <shoulder pos>, <shoulder vel>, <shoulder cur>, elbow, <elbow pos ref>, <elbow pos>, <elbow vel>, <elbow cur>
-
             msg = initmsg[2:]
-            # print(msg)
             data_w_units = msg.strip().split(',')
             logfile.write(','.join(str(x) for x in data_w_units) + '\n')
 
