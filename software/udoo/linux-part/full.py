@@ -1,4 +1,5 @@
-import sys,pickle
+import sys, pickle
+from threading import Timer
 import serial
 import numpy as np
 sys.path.append('../../model/mechanics')
@@ -30,6 +31,7 @@ def intTo3Bytes(intvar):
     return str.encode(str(intvar).zfill(3))
 
 def get_angles(ser, logfile):
+    global _angles
     """
     Message format:
          [0]       [1]     [2]            [3]              [4]               [5]             [6]        [7]        [8]             [9]         [10]          [11]
@@ -53,15 +55,10 @@ def get_angles(ser, logfile):
 
             shoulder_pos = int(data_w_units[3]) * 0.01
             elbow_pos = int(data_w_units[8]) * 0.01
-            return shoulder_pos, elbow_pos
+            _angles = [shoulder_pos, elbow_pos]
+            Timer(0.01, get_angles, (ser, logfile)).start()
 
 def update(emg_meas):
-    try:
-        angles = list(get_angles(_ser, _logfile))
-    except:
-        print("error")
-        return
-
     _emg.on_emg_measurement(emg_meas.sample1)
     _emg.on_emg_measurement(emg_meas.sample2)
 
@@ -69,7 +66,7 @@ def update(emg_meas):
     for m in _muslces:
         tmp = np.array([
             0, #m.get_torque_estimate(angles, muscle_utils.MUSCLE_JOINT.SHOULDER),
-            m.get_torque_estimate(angles, muscle_utils.MUSCLE_JOINT.ELBOW),
+            m.get_torque_estimate(_angles, muscle_utils.MUSCLE_JOINT.ELBOW),
         ])
         if abs(tmp[1]) < 1:
             tmp = 0
@@ -105,8 +102,9 @@ if __name__ == "__main__":
         print("Serial Open")
 
     _ser.write(STOP)
-
     _logfile = open(log_path, 'w')
+    t = Timer(0.01, get_angles, (_ser, _logfile))
+    t.start()
 
     # Setup muscles
     with open('../../../software/model/2muslces_cleaned.pickle', 'rb') as f:
