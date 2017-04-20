@@ -5,9 +5,9 @@
 N = params.N;
 timeF=0;
 timeL=0;
-m2 = importdata('both/motor1_both_march_3.log');      %new_1              %time,angle,velocity,current
-m1 = importdata('both/motor2_both_march_3.log');       %march_3            %time,angle,velocity,current
-in = importdata('both/input_both_march_3.log');                    %on1,dir1,pwm1,on2,dir2,pwm2
+m2 = importdata('both/motor1_both_new_1.log');      %new_1              %time,angle,velocity,current
+m1 = importdata('both/motor2_both_new_1.log');       %march_3            %time,angle,velocity,current
+in = importdata('both/input_both_new_1.log');                    %on1,dir1,pwm1,on2,dir2,pwm2
 
 %m1 and m2
 time_id = find(~cellfun(@isempty,strfind(m1.colheaders,'time')));
