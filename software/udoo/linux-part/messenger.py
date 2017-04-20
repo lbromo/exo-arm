@@ -11,8 +11,6 @@ START = str('b\'$\\r\\n\'')
 REF_CHAR = b'R'
 END_CHAR = b'E'
 
-LOG_FILE = 'default.log'
-
 SER_LOCK = threading.Lock()
 
 def log1msg(ser, logfile):
@@ -63,6 +61,7 @@ if __name__ == "__main__":
         LOG_FILE = sys.argv[1]
         SER_PORT = sys.argv[2]
     else:
+        LOG_FILE = 'default.log'
         SER_PORT = "/dev/ttyUSB0"
 
     ser = serial.Serial(SER_PORT, BAUD, timeout=2)
