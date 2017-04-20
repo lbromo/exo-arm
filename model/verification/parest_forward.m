@@ -12,7 +12,7 @@ function [xd] = parest_forward(c_est, u)
 	for k = 1:length(Ts)
 	  xd(:,k+1) = xd(:,k) + Ts(k)*f(xd(:,k), u(:,k), tmp_pars);
 	end
-
 	xd=xd(3:4,:);
+
 end
 
