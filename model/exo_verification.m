@@ -9,7 +9,7 @@
 clear all;
 close all;
 abe = 3;
-monkey1=0; 
+monkey1=1; 
 monkey2 =0;
 addpath('useful_scripts')
 addpath('old_scripts')
@@ -51,7 +51,7 @@ if abe == 3
 	%parameter estimate or not
 	if monkey1 == 1
 	 par_to_get=[params.cm params.vm  params.sigmoidpar];% params.cm params.vm  params.sigmoidpar params.hast
-	 ydata=[vel_m1 vel_m2]'; 
+	 ydata=[vel_m1 vel_m2]'; %' angle_m1 angle_m2]'; 
 	 [X, resnorm] = lsqcurvefit(@parest_forward, par_to_get, u, ydata, [0 0 0 0 0 0]);
 	 params.cm=X(1:2);
 	 params.vm=X(3:4);
