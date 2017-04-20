@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "AxoArmUtils.h"
+#include "hal.h"
 
 #include <imx6sx_sdb_m4.h>
 #include <hwtimer_epit.h>
@@ -55,9 +56,9 @@ void setup() {
   analogWrite(pin_pwm_shoulder, 25);
   analogWrite(pin_pwm_elbow, 25);
 
-  K[0][0] = 100;
+  K[0][0] = 0;//100;
   K[0][2] = 20;
-  K[1][1] = 100;
+  K[1][1] = 0;//100;
   K[1][3] = 20;
 
   // K[0][0] = 12;
@@ -112,7 +113,7 @@ void measure() {
   evel = (int) (100 * getVel(ELBOW));
   ecur = (int) (100 * getCur(ELBOW));
 
-  sprintf(msg, "%c,%lu,%d,%d,%d,%d,%d,%d,%d,%d", START_CHAR, time, SHOULDER, spos, svel, scur,ELBOW, epos, evel, ecur);
+  sprintf(msg, "%c,%lu,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d", START_CHAR, time, SHOULDER, (int)(100*ref[0]), spos, svel, scur, ELBOW, (int)(100*ref[1]), epos, evel, ecur);
   Serial0.println(msg);
 
 }

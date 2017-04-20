@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import numpy as np
 
 from enum import Enum
@@ -128,6 +127,7 @@ def get_muscle_value(muscle, joint_angles, joint=None): #som default er joint=no
     return func(joint_angles)
 
 if __name__ == '__main__':
+  import matplotlib.pyplot as plt
   brachialis_len, brachialis_ma_elbow = ([], [])
   brachioradialis_len, brachioradialis_ma_elbow = ([], [])
   biceps_len, biceps_ma_elbow, biceps_ma_shoulder = ([], [], [])
