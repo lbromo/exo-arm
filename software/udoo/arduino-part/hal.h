@@ -21,12 +21,6 @@ namespace AxoArm{
 	const float Nkt1 = 3.82;
 	const int N_STATES = 4; // Number of states
 
-	// Fix for shitty pos
-	const int MAGIC_VOLTAGE = 3750;
-	const int MAGIC_OFFSET	= 3873;
-	const float MIN_RAD = -0.1745;
-	const float MAX_RAD = 3.3163;
-
 	// Analog inputs
 	const int pin_cur_elbow = A3;
 	const int pin_vel_elbow = A4;
