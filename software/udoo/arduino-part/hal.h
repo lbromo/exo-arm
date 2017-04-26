@@ -19,7 +19,7 @@ namespace AxoArm{
 
 	const float Nkt0 = 3.54; // Gear and motor constant multipliers
 	const float Nkt1 = 3.82;
-	const int N_STATES = 4; // Number of states
+	const int N_STATES = 6; // Number of states
 
 	// Analog inputs
 	const int pin_cur_elbow = A3;
