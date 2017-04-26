@@ -19,8 +19,8 @@ bool do_interface = false;
 int dir_shoulder, dir_elbow;
 int pwm_shoulder, pwm_elbow;
 
-void ctrl();  
-void interface(); 
+void ctrl();
+void interface();
 
 // Periodic tasks
 void t_ctrl(void *param);
@@ -31,7 +31,7 @@ HWTIMER timer1, timer2;
 int cnt = 0;
 bool led = false;
 
-void setup() {
+void setup(){
 
   Serial0.begin(230400);
 
@@ -56,16 +56,12 @@ void setup() {
   analogWrite(pin_pwm_shoulder, 25);
   analogWrite(pin_pwm_elbow, 25);
 
-  K[0][0] = 0;//100;
-  K[0][2] = 20;
-  K[1][1] = 0;//100;
-  K[1][3] = 20;
-
-  // K[0][0] = 12;
-  // K[0][2] = 3;
-  // K[1][1] = 12;
-  // K[1][3] = 3;
-
+  K[0][0] = 1; // shoulder Ki;
+  K[0][2] = 1; // Shoulder Kp;
+  K[0][4] = 1; // Shoulder Kd;
+  K[1][1] = 1; // shoulder Ki;
+  K[1][3] = 1; // Shoulder Kp;
+  K[1][5] = 1; // Shoulder Kd;
 
   hwtimer_init(&timer2, &BSP_HWTIMER2_DEV, BSP_HWTIMER2_ID, 2);
   hwtimer_set_period(&timer2, BSP_HWTIMER2_SOURCE_CLK, SAMPLE_T_US);
@@ -76,7 +72,6 @@ void setup() {
   hwtimer_set_period(&timer1, BSP_HWTIMER1_SOURCE_CLK, SAMPLE_T_US);
   hwtimer_callback_reg(&timer1, t_interface, 0);
   hwtimer_start(&timer1);
-
 }
 
 /*
@@ -104,16 +99,19 @@ void measure() {
   char msg[100];
   time = millis();
 
-  int spos,svel,scur,epos,evel,ecur;
+  int iepos, spos, svel, scur;
+  int ispos, epos, evel, ecur;
 
-  spos = (int) (100 * getPos(SHOULDER));
-  svel = (int) (100 * getVel(SHOULDER));
+  ispos = (int) (100 * meas[0]);
+  iepos = (int) (100 * meas[1]);
+  spos = (int) (100 * meas[2]);
+  spos = (int) (100 * meas[3]);
+  svel = (int) (100 * meas[4]);
+  svel = (int) (100 * meas[5]);
   scur = (int) (100 * getCur(SHOULDER));
-  epos = (int) (100 * getPos(ELBOW));
-  evel = (int) (100 * getVel(ELBOW));
   ecur = (int) (100 * getCur(ELBOW));
 
-  sprintf(msg, "%c,%lu,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d", START_CHAR, time, SHOULDER, (int)(100*ref[0]), spos, svel, scur, ELBOW, (int)(100*ref[1]), epos, evel, ecur);
+  sprintf(msg, "%c,%lu,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d%d,%d", START_CHAR, time, SHOULDER, (int)(100*ref[0]), ispos, spos, svel, scur, ELBOW, (int)(100*ref[1]), iepos, epos, evel, ecur);
   Serial0.println(msg);
 
 }
@@ -127,27 +125,27 @@ void getRef() {
 
   char *pos1_buff, *pos2_buff, *vel1_buff, *vel2_buff;
   char buff[50];
-  
+
   Serial0.readBytesUntil(END_CHAR, buff, 50);
-  
+
   pos1_buff = strtok(buff, ",");
   pos2_buff = strtok(NULL, ",");
   vel1_buff = strtok(NULL, ",");
   vel2_buff = strtok(NULL, ",");
 
-  ref[0] = 0.01 * atoi(pos1_buff);
-  ref[1] = 0.01 * atoi(pos2_buff);
-  ref[2] = 0.01 * atoi(vel1_buff);
-  ref[3] = 0.01 * atoi(vel2_buff);
+  ref[2] = 0.01 * atoi(pos1_buff);
+  ref[3] = 0.01 * atoi(pos2_buff);
+  ref[4] = 0.01 * atoi(vel1_buff);
+  ref[5] = 0.01 * atoi(vel2_buff);
 
 }
 
 /*
 ** Parses input current into something than can be applied in HW
-** 
+**
 ** Called from ctrl()
 */
-void applyControl(Vector u) {
+void applyControl(const Vector& u) {
 
   // Create direction signal
   dir_shoulder    = getDir(u[SHOULDER]);
@@ -175,7 +173,7 @@ void t_interface(void *param){
 void t_ctrl(void *param){
 
   do_control = true;
-  
+
 }
 
 /*
@@ -184,18 +182,22 @@ void t_ctrl(void *param){
 **
 ** Is run with a period of SAMPLE_T_US on hwtimer2
 */
+float tmp[4] = {0, 0, 0, 0};
 void ctrl(void *param) {
-
   // Do measurements
-  meas[0] = getPos(SHOULDER);
-  meas[1] = getPos(ELBOW);
-  meas[2] = getVel(SHOULDER);
-  meas[3] = getVel(ELBOW);
+
+  auto s_pos = getPos(SHOULDER);
+  auto e_pos = getPos(ELBOW);
+
+  meas[0] += -1 * SAMPLE_T_S * s_pos; /* Flipped sign as we later do ref - meas */
+  meas[1] += -1 * SAMPLE_T_S * e_pos; /* Flipped sign as we later do ref - meas */
+  meas[2] = s_pos;
+  meas[3] = e_pos;
+  meas[4] = getVel(SHOULDER);
+  meas[5] = getVel(ELBOW);
 
   // Run cuntroller
   auto u = controller(meas, ref, K);
-
-  // auto u_tmp = K * (ref - meas);
 
   // Convert torque to current
   u[0] /= Nkt0;
@@ -203,12 +205,9 @@ void ctrl(void *param) {
 
   // Apply current
   applyControl(u);
-
 }
 
-
 void interface(void *param){
-
   digitalWrite(pin_on_shoulder, on);
   digitalWrite(pin_on_elbow, on);
 
@@ -220,7 +219,6 @@ void interface(void *param){
     inByte = Serial0.read();
   } else {
     inByte = '\0';
-    return;
   }
 
   // Figure out what to do!
@@ -238,12 +236,9 @@ void interface(void *param){
     default:
       break;
   }
-
 }
 
-
 void loop() {
-
   if (do_control){
     ctrl(NULL);
     do_control = false;
@@ -251,6 +246,5 @@ void loop() {
   if (do_interface){
     interface(NULL);
     do_interface = false;
-  }  
-
+  }
 }
