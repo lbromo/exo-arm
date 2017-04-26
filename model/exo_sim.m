@@ -10,7 +10,7 @@ function [exo] = exo_sim(controller, x0, ref)
 	params = ParametersScript();
 	addpath controllers;
 
-	T_end = 30; % [s]
+	T_end = 2; % [s]
 	S = T_end/params.Ts; % Samples total
 	t = 0:params.Ts:T_end-params.Ts;
 
@@ -21,6 +21,11 @@ function [exo] = exo_sim(controller, x0, ref)
 	x(:,1) = x0;
 	u(:,1) = [0; 0];
 	cpars.ei = [0 0]';
+
+	if isequal(controller, @c_jerk)
+		acc = [linspace(0,1,S/4) linspace(1,0,S/4)];
+		cpars.acc = [acc -acc];
+	end
 
 	if isequal(controller, @c_mex)
 		mex -I../software/udoo/arduino-part/ GCC=/usr/bin/gcc-4.9.3 controllers/controller_mex.cpp ../software/udoo/arduino-part/AxoArmUtils.cpp ../software/udoo/arduino-part/Matrix.cpp
