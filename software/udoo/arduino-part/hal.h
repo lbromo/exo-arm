@@ -37,6 +37,7 @@ namespace AxoArm{
 	const int pin_on_shoulder = 7;
 	const int pin_dir_shoulder = 8;
 	const int pin_pwm_shoulder = 9;
+  const int pin_led = 13;
 
 	float getPos(int joint);
 	float getCur(int joint);

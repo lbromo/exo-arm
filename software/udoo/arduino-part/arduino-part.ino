@@ -32,30 +32,36 @@ int cnt = 0;
 bool led = false;
 
 void setup(){
+  /*
+   * If we are running on an Arduino are we using a external 3.3v analog reference
+   * On the Udoo (with an M4) are the ADC 12 bit
+   */
+  #if not defined(__arm__)
+  analogReference(EXTERNAL);
+  #elif defined (__arm__)
+  analogReadResolution(12);
+  #endif /* __arm__ */
 
   Serial0.begin(230400);
 
-  #if not defined(__arm__)
-    analogReference(EXTERNAL);
-  #endif
-
+  /* Setup shoulder pins */
   pinMode(pin_on_shoulder, OUTPUT);
   pinMode(pin_dir_shoulder, OUTPUT);
   pinMode(pin_pwm_shoulder, OUTPUT);
 
+  /* Setup elbow pins */
   pinMode(pin_on_elbow, OUTPUT);
   pinMode(pin_dir_elbow, OUTPUT);
   pinMode(pin_pwm_elbow, OUTPUT);
 
-  pinMode(13,OUTPUT);
+  /* For blinky :-) */
+  pinMode(pin_led, OUTPUT);
 
-  #ifdef __arm__
-    analogReadResolution(12);
-  #endif
-
+  /* The drivers gets angry if there isn't a signal, so we put on a little bit */
   analogWrite(pin_pwm_shoulder, 25);
   analogWrite(pin_pwm_elbow, 25);
 
+  /* CONTROLLER */
   K[0][0] = 1; // shoulder Ki;
   K[0][2] = 1; // Shoulder Kp;
   K[0][4] = 1; // Shoulder Kd;
@@ -63,6 +69,11 @@ void setup(){
   K[1][3] = 1; // Shoulder Kp;
   K[1][5] = 1; // Shoulder Kd;
 
+  /*
+   * We use small intterups as pseudo tasks
+   * Timer1 is setting a flag to run the interface and pulse function
+   * Timer2 it setting a falg to run the controller function
+   */
   hwtimer_init(&timer2, &BSP_HWTIMER2_DEV, BSP_HWTIMER2_ID, 2);
   hwtimer_set_period(&timer2, BSP_HWTIMER2_SOURCE_CLK, SAMPLE_T_US);
   hwtimer_callback_reg(&timer2, t_ctrl, 0);
@@ -78,12 +89,12 @@ void setup(){
 ** Pulse function that blinks an LED to show that stuff is running
 */
 void pulse() {
-
   cnt++;
-  if(cnt > 500000/SAMPLE_T_US)
+
+  if(cnt >= 500000/SAMPLE_T_US)
   {
     led = !led;
-    digitalWrite(13, led);
+    digitalWrite(pin_led, led);
     cnt = 0;
   }
 }
@@ -94,11 +105,11 @@ void pulse() {
 ** Run everytime the RDY_CHAR is received.
 */
 void measure() {
-
   unsigned long time;
   char msg[100];
   time = millis();
 
+  /* Map values in easier to read variables */
   int iepos, spos, svel, scur;
   int ispos, epos, evel, ecur;
 
@@ -113,16 +124,14 @@ void measure() {
 
   sprintf(msg, "%c,%lu,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d%d,%d", START_CHAR, time, SHOULDER, (int)(100*ref[0]), ispos, spos, svel, scur, ELBOW, (int)(100*ref[1]), iepos, epos, evel, ecur);
   Serial0.println(msg);
-
 }
 
 /*
 ** Receives, parses and sets the new reference vector in angle and angular velocity domain.
 **
-** ref = [theta_s theta_e thetadot_s thetadot_e]
+** ref = [0 0 theta_s theta_e thetadot_s thetadot_e]
 */
 void getRef() {
-
   char *pos1_buff, *pos2_buff, *vel1_buff, *vel2_buff;
   char buff[50];
 
@@ -137,7 +146,6 @@ void getRef() {
   ref[3] = 0.01 * atoi(pos2_buff);
   ref[4] = 0.01 * atoi(vel1_buff);
   ref[5] = 0.01 * atoi(vel2_buff);
-
 }
 
 /*
@@ -146,7 +154,6 @@ void getRef() {
 ** Called from ctrl()
 */
 void applyControl(const Vector& u) {
-
   // Create direction signal
   dir_shoulder    = getDir(u[SHOULDER]);
   dir_elbow       = getDir(u[ELBOW]);
@@ -155,37 +162,38 @@ void applyControl(const Vector& u) {
   pwm_shoulder    = cur2pwm(SHOULDER, u[SHOULDER]);
   pwm_elbow       = cur2pwm(ELBOW, u[ELBOW]);
 
+  /* Set direction */
   digitalWrite(pin_dir_shoulder, dir_shoulder);
   digitalWrite(pin_dir_elbow, dir_elbow);
 
+  /* Set PWM signal */
   analogWrite(pin_pwm_shoulder, pwm_shoulder);
   analogWrite(pin_pwm_elbow, pwm_elbow);
-
-}
-
-void t_interface(void *param){
-
-  do_interface = true;
-  pulse();
-
-}
-
-void t_ctrl(void *param){
-
-  do_control = true;
-
 }
 
 /*
-** Main controller task
-** Gets measurements and applies control
-**
-** Is run with a period of SAMPLE_T_US on hwtimer2
-*/
-float tmp[4] = {0, 0, 0, 0};
-void ctrl(void *param) {
-  // Do measurements
+ * Small ISR for Timer 1
+ */
+void t_interface(void *param){
+  do_interface = true;
+  pulse();
+}
 
+/*
+ * Small ISR for Timer 2
+ */
+void t_ctrl(void *param){
+  do_control = true;
+}
+
+/*
+ * Main controller task
+ * Gets measurements and applies control
+ *
+ * Is run with a period of SAMPLE_T_US on hwtimer2
+ * states = [i_theta_s i_theta_e theta_s theta_e thetadot_s thetadot_e]
+ */
+void ctrl(void *param) {
   auto s_pos = getPos(SHOULDER);
   auto e_pos = getPos(ELBOW);
 
@@ -207,10 +215,15 @@ void ctrl(void *param) {
   applyControl(u);
 }
 
+/*
+ * The interface task revices and performs commands based on inputs from the serial interface
+ */
 void interface(void *param){
+  /* Set "enable" signal */
   digitalWrite(pin_on_shoulder, on);
   digitalWrite(pin_on_elbow, on);
 
+  /* Input buffer - commands headers are 1 byte */
   char inByte;
 
   // Get command
@@ -238,7 +251,7 @@ void interface(void *param){
   }
 }
 
-void loop() {
+void loop(){
   if (do_control){
     ctrl(NULL);
     do_control = false;
