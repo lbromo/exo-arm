@@ -19,8 +19,8 @@ bool do_interface = false;
 int dir_shoulder, dir_elbow;
 int pwm_shoulder, pwm_elbow;
 
-void ctrl();  
-void interface(); 
+void ctrl();
+void interface();
 
 // Periodic tasks
 void t_ctrl(void *param);
@@ -31,42 +31,49 @@ HWTIMER timer1, timer2;
 int cnt = 0;
 bool led = false;
 
-void setup() {
+void setup(){
+  /*
+   * If we are running on an Arduino are we using a external 3.3v analog reference
+   * On the Udoo (with an M4) are the ADC 12 bit
+   */
+  #if not defined(__arm__)
+  analogReference(EXTERNAL);
+  #elif defined (__arm__)
+  analogReadResolution(12);
+  #endif /* __arm__ */
 
   Serial0.begin(230400);
 
-  #if not defined(__arm__)
-    analogReference(EXTERNAL);
-  #endif
-
+  /* Setup shoulder pins */
   pinMode(pin_on_shoulder, OUTPUT);
   pinMode(pin_dir_shoulder, OUTPUT);
   pinMode(pin_pwm_shoulder, OUTPUT);
 
+  /* Setup elbow pins */
   pinMode(pin_on_elbow, OUTPUT);
   pinMode(pin_dir_elbow, OUTPUT);
   pinMode(pin_pwm_elbow, OUTPUT);
 
-  pinMode(13,OUTPUT);
+  /* For blinky :-) */
+  pinMode(pin_led, OUTPUT);
 
-  #ifdef __arm__
-    analogReadResolution(12);
-  #endif
-
+  /* The drivers gets angry if there isn't a signal, so we put on a little bit */
   analogWrite(pin_pwm_shoulder, 25);
   analogWrite(pin_pwm_elbow, 25);
 
-  K[0][0] = 0;//100;
-  K[0][2] = 20;
-  K[1][1] = 0;//100;
-  K[1][3] = 20;
+  /* CONTROLLER */
+  K[0][0] = 1; // shoulder Ki;
+  K[0][2] = 1; // Shoulder Kp;
+  K[0][4] = 1; // Shoulder Kd;
+  K[1][1] = 1; // shoulder Ki;
+  K[1][3] = 1; // Shoulder Kp;
+  K[1][5] = 1; // Shoulder Kd;
 
-  // K[0][0] = 12;
-  // K[0][2] = 3;
-  // K[1][1] = 12;
-  // K[1][3] = 3;
-
-
+  /*
+   * We use small intterups as pseudo tasks
+   * Timer1 is setting a flag to run the interface and pulse function
+   * Timer2 it setting a falg to run the controller function
+   */
   hwtimer_init(&timer2, &BSP_HWTIMER2_DEV, BSP_HWTIMER2_ID, 2);
   hwtimer_set_period(&timer2, BSP_HWTIMER2_SOURCE_CLK, SAMPLE_T_US);
   hwtimer_callback_reg(&timer2, t_ctrl, 0);
@@ -76,19 +83,18 @@ void setup() {
   hwtimer_set_period(&timer1, BSP_HWTIMER1_SOURCE_CLK, SAMPLE_T_US);
   hwtimer_callback_reg(&timer1, t_interface, 0);
   hwtimer_start(&timer1);
-
 }
 
 /*
 ** Pulse function that blinks an LED to show that stuff is running
 */
 void pulse() {
-
   cnt++;
-  if(cnt > 500000/SAMPLE_T_US)
+
+  if(cnt >= 500000/SAMPLE_T_US)
   {
     led = !led;
-    digitalWrite(13, led);
+    digitalWrite(pin_led, led);
     cnt = 0;
   }
 }
@@ -99,56 +105,55 @@ void pulse() {
 ** Run everytime the RDY_CHAR is received.
 */
 void measure() {
-
   unsigned long time;
   char msg[100];
   time = millis();
 
-  int spos,svel,scur,epos,evel,ecur;
+  /* Map values in easier to read variables */
+  int iepos, spos, svel, scur;
+  int ispos, epos, evel, ecur;
 
-  spos = (int) (100 * getPos(SHOULDER));
-  svel = (int) (100 * getVel(SHOULDER));
+  ispos = (int) (100 * meas[0]);
+  iepos = (int) (100 * meas[1]);
+  spos = (int) (100 * meas[2]);
+  spos = (int) (100 * meas[3]);
+  svel = (int) (100 * meas[4]);
+  svel = (int) (100 * meas[5]);
   scur = (int) (100 * getCur(SHOULDER));
-  epos = (int) (100 * getPos(ELBOW));
-  evel = (int) (100 * getVel(ELBOW));
   ecur = (int) (100 * getCur(ELBOW));
 
-  sprintf(msg, "%c,%lu,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d", START_CHAR, time, SHOULDER, (int)(100*ref[0]), spos, svel, scur, ELBOW, (int)(100*ref[1]), epos, evel, ecur);
+  sprintf(msg, "%c,%lu,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d%d,%d", START_CHAR, time, SHOULDER, (int)(100*ref[0]), ispos, spos, svel, scur, ELBOW, (int)(100*ref[1]), iepos, epos, evel, ecur);
   Serial0.println(msg);
-
 }
 
 /*
 ** Receives, parses and sets the new reference vector in angle and angular velocity domain.
 **
-** ref = [theta_s theta_e thetadot_s thetadot_e]
+** ref = [0 0 theta_s theta_e thetadot_s thetadot_e]
 */
 void getRef() {
-
   char *pos1_buff, *pos2_buff, *vel1_buff, *vel2_buff;
   char buff[50];
-  
+
   Serial0.readBytesUntil(END_CHAR, buff, 50);
-  
+
   pos1_buff = strtok(buff, ",");
   pos2_buff = strtok(NULL, ",");
   vel1_buff = strtok(NULL, ",");
   vel2_buff = strtok(NULL, ",");
 
-  ref[0] = 0.01 * atoi(pos1_buff);
-  ref[1] = 0.01 * atoi(pos2_buff);
-  ref[2] = 0.01 * atoi(vel1_buff);
-  ref[3] = 0.01 * atoi(vel2_buff);
-
+  ref[2] = 0.01 * atoi(pos1_buff);
+  ref[3] = 0.01 * atoi(pos2_buff);
+  ref[4] = 0.01 * atoi(vel1_buff);
+  ref[5] = 0.01 * atoi(vel2_buff);
 }
 
 /*
 ** Parses input current into something than can be applied in HW
-** 
+**
 ** Called from ctrl()
 */
-void applyControl(Vector u) {
-
+void applyControl(const Vector& u) {
   // Create direction signal
   dir_shoulder    = getDir(u[SHOULDER]);
   dir_elbow       = getDir(u[ELBOW]);
@@ -157,45 +162,50 @@ void applyControl(Vector u) {
   pwm_shoulder    = cur2pwm(SHOULDER, u[SHOULDER]);
   pwm_elbow       = cur2pwm(ELBOW, u[ELBOW]);
 
+  /* Set direction */
   digitalWrite(pin_dir_shoulder, dir_shoulder);
   digitalWrite(pin_dir_elbow, dir_elbow);
 
+  /* Set PWM signal */
   analogWrite(pin_pwm_shoulder, pwm_shoulder);
   analogWrite(pin_pwm_elbow, pwm_elbow);
-
-}
-
-void t_interface(void *param){
-
-  do_interface = true;
-  pulse();
-
-}
-
-void t_ctrl(void *param){
-
-  do_control = true;
-  
 }
 
 /*
-** Main controller task
-** Gets measurements and applies control
-**
-** Is run with a period of SAMPLE_T_US on hwtimer2
-*/
-void ctrl(void *param) {
+ * Small ISR for Timer 1
+ */
+void t_interface(void *param){
+  do_interface = true;
+  pulse();
+}
 
-  // Do measurements
-  meas[0] = getPos(SHOULDER);
-  meas[1] = getPos(ELBOW);
-  meas[2] = getVel(SHOULDER);
-  meas[3] = getVel(ELBOW);
+/*
+ * Small ISR for Timer 2
+ */
+void t_ctrl(void *param){
+  do_control = true;
+}
+
+/*
+ * Main controller task
+ * Gets measurements and applies control
+ *
+ * Is run with a period of SAMPLE_T_US on hwtimer2
+ * states = [i_theta_s i_theta_e theta_s theta_e thetadot_s thetadot_e]
+ */
+void ctrl(void *param) {
+  auto s_pos = getPos(SHOULDER);
+  auto e_pos = getPos(ELBOW);
+
+  meas[0] += -1 * SAMPLE_T_S * s_pos; /* Flipped sign as we later do ref - meas */
+  meas[1] += -1 * SAMPLE_T_S * e_pos; /* Flipped sign as we later do ref - meas */
+  meas[2] = s_pos;
+  meas[3] = e_pos;
+  meas[4] = getVel(SHOULDER);
+  meas[5] = getVel(ELBOW);
 
   // Run cuntroller
   auto u = controller(meas, ref, K);
-
-  // auto u_tmp = K * (ref - meas);
 
   // Convert torque to current
   u[0] /= Nkt0;
@@ -203,15 +213,17 @@ void ctrl(void *param) {
 
   // Apply current
   applyControl(u);
-
 }
 
-
+/*
+ * The interface task revices and performs commands based on inputs from the serial interface
+ */
 void interface(void *param){
-
+  /* Set "enable" signal */
   digitalWrite(pin_on_shoulder, on);
   digitalWrite(pin_on_elbow, on);
 
+  /* Input buffer - commands headers are 1 byte */
   char inByte;
 
   // Get command
@@ -220,7 +232,6 @@ void interface(void *param){
     inByte = Serial0.read();
   } else {
     inByte = '\0';
-    return;
   }
 
   // Figure out what to do!
@@ -238,12 +249,9 @@ void interface(void *param){
     default:
       break;
   }
-
 }
 
-
-void loop() {
-
+void loop(){
   if (do_control){
     ctrl(NULL);
     do_control = false;
@@ -251,6 +259,5 @@ void loop() {
   if (do_interface){
     interface(NULL);
     do_interface = false;
-  }  
-
+  }
 }

@@ -33,9 +33,6 @@ Vector::Vector(size_t elements){
  */
 Vector::Vector(const Vector& other){
   if(!(this == &other)){
-    /* Free all the "old" buffers */
-    this->~Vector();
-
     /* Allocate new memory*/
     /* New syntax -- doesn't work with AVR-GCC */
     //new (this) Vector(other.elements);
@@ -65,7 +62,7 @@ Vector& Vector::operator= (const Vector& other){
 
     this->_allocate(other.elements);
     this->_copy(other);
-    
+
   }
   return *this;
 }
@@ -174,9 +171,6 @@ Matrix::Matrix(size_t rows, size_t columns){
  */
 Matrix::Matrix(const Matrix& other){
   if(!(this == &other)){
-    /* Free all the "old" buffers */
-    this->~Matrix();
-
     /* Allocate new memory*/
     this->_allocate(other.rows, other.columns);
 

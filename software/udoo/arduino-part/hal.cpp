@@ -2,24 +2,8 @@
 
 float AxoArm::getPos(int joint) {
 
-  // if (joint == SHOULDER) {
-  //   return analogRead(pin_pos_shoulder) * -0.001681795 + 3.1331837;
-  // }
-  // else if (joint == ELBOW) {
-  //   return analogRead(pin_pos_elbow) * -0.00165696 + 3.4945247;
-  // }
-  // else {
-  //   return 0;
-  // }
-  int a_r;
-  float ang_rad;
   if (joint == SHOULDER) {
-    a_r = analogRead(pin_pos_shoulder);
-    if(a_r < MAGIC_VOLTAGE){
-      a_r += MAGIC_OFFSET;
-    }
-    ang_rad = map(a_r, 5808, 3817, MIN_RAD, MAX_RAD);
-    // return analogRead(pin_pos_shoulder) * -0.001681795 + 3.1331837;
+    return analogRead(pin_pos_shoulder) * -0.001681795 + 3.1331837;
   }
   else if (joint == ELBOW) {
     return analogRead(pin_pos_elbow) * -0.00165696 + 3.4945247;
@@ -27,7 +11,6 @@ float AxoArm::getPos(int joint) {
   else {
     return 0;
   }
-
 }
 
 float AxoArm::getCur(int joint) {

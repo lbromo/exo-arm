@@ -2,6 +2,7 @@
 
 namespace AxoArm{
 	const int SAMPLE_F = 100; // Hz
+	const float SAMPLE_T_S = 1.0/SAMPLE_F;
 	const unsigned long SAMPLE_T_MS = 1000 * 1/SAMPLE_F;
 	const unsigned long SAMPLE_T_US = 1000000 * 1/SAMPLE_F;
 	const int SHOULDER = 0;
@@ -19,13 +20,7 @@ namespace AxoArm{
 
 	const float Nkt0 = 3.54; // Gear and motor constant multipliers
 	const float Nkt1 = 3.82;
-	const int N_STATES = 4; // Number of states
-
-	// Fix for shitty pos
-	const int MAGIC_VOLTAGE = 3750;
-	const int MAGIC_OFFSET	= 3873;
-	const float MIN_RAD = -0.1745;
-	const float MAX_RAD = 3.3163;
+	const int N_STATES = 6; // Number of states
 
 	// Analog inputs
 	const int pin_cur_elbow = A3;
@@ -42,6 +37,7 @@ namespace AxoArm{
 	const int pin_on_shoulder = 7;
 	const int pin_dir_shoulder = 8;
 	const int pin_pwm_shoulder = 9;
+  const int pin_led = 13;
 
 	float getPos(int joint);
 	float getCur(int joint);
