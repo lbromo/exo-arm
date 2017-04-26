@@ -49,8 +49,56 @@ def tUpdateRef(ser):
                     ref_msg = REF_CHAR + (intTo3Bytes(int(ref[0]*100))) + b',' + (intTo3Bytes(int(ref[1]*100))) + b',' + (intTo3Bytes(int(ref[2]*100))) + b',' + (intTo3Bytes(int(ref[3]*100))) + b',' + END_CHAR
                     ser.write(ref_msg)
 
+def tLogger(ser, f):
+    with SER_LOCK:
+        ser.write(READY)
+    log1msg(ser,f)
+    threading.Timer(0.01, tLogger, (ser, f)).start()
 
 
+
+def manual_input_mode(ser, logfile):
+    t = threading.Thread(target=tUpdateRef, args=(ser,))
+    t.daemon = True
+    t.start()
+
+    f = open(logfile, 'w')
+
+    while True:
+        try:
+            with SER_LOCK:
+                ser.write(READY)
+                log1msg(ser, f)
+        except:
+            time.sleep(0.01)
+            ser.write(b'S')
+            time.sleep(0.01)
+            f.close()
+            exit()
+        else:
+            time.sleep(0.01)
+
+def csv_input_mode(ser, logfile, datafile):
+    f = open(logfile, 'w')
+    data = np.genfromtxt(datafile,delimiter=',')
+    
+    # print(data.shape)
+    print(time.time())
+    #
+    for idx in range(1,len(data)):
+        begin = time.time()
+        
+        ref_msg = REF_CHAR + intTo3Bytes(int(data[idx,0]*100)) + b',' + intTo3Bytes(int(data[idx,0]*100)) + b',' + intTo3Bytes(int(data[idx,1]*100)) + b',' + intTo3Bytes(int(data[idx,1]*100)) + b',' + END_CHAR
+        ser.write(ref_msg)
+        
+        ser.write(READY)
+        log1msg(ser,f)
+        
+        sleep_time = 0.01 - (time.time() - begin)
+        if sleep_time > 0:
+            time.sleep(sleep_time)
+    #
+    print(time.time())
 
 def intTo3Bytes(intvar):
     return str.encode(str(intvar).zfill(3))
@@ -70,24 +118,11 @@ if __name__ == "__main__":
         ser.open()
         print("Serial Open")
 
-    t = threading.Thread(target=tUpdateRef, args=(ser,))
-    t.daemon = True
-    t.start()
+    if len(sys.argv) == 4:
+        csv_input_mode(ser, LOG_FILE, sys.argv[3])
+    else:
+        manual_input_mode(ser, LOG_FILE)
 
-    f = open(LOG_FILE, 'w')
 
-    while True:
-        try:
-            with SER_LOCK:
-                ser.write(READY)
-                log1msg(ser, f)
-        except:
-            time.sleep(0.01)
-            ser.write(b'S')
-            time.sleep(0.01)
-            f.close()
-            exit()
-        else:
-            time.sleep(0.01)
 
 
