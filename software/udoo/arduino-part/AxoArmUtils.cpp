@@ -58,7 +58,20 @@ Vector AxoArm::controller(Vector& x, Vector& ref, Matrix& K){
 }
 
 #if defined (__i386__) || defined (__x86_64__)
+Vector tmp(2);
+
+void stupid(){
+  tmp[0] = tmp[0] + 1;
+  tmp[1] = tmp[1] + 1;
+  std::cout << tmp << std::endl;
+}
+
 int main(){
+
+  for(int i = 0; i < 10; i++){
+    std::cout << "run: " << i << std::endl;
+    stupid();
+  }
   Vector x(4);
   Vector r(4);
   Matrix K(2,4);
