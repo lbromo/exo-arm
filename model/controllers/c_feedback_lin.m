@@ -17,9 +17,9 @@ if isfield(cpars,'cl')
 end
 
 
-	kp = 12;
-	kd = 1.5;
-	ki = 5;
+	kp = 1000;
+	kd = 2 * sqrt(1000);
+	ki = 200;
 
 	k = [kp 0  kd 0  ki 0;...
 		   0  kp 0  kd 0  ki];
