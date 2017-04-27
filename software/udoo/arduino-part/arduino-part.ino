@@ -9,8 +9,9 @@ using namespace AxoArm;
 
 Vector meas(N_STATES);
 Vector ref(N_STATES);
+Vector e(N_STATES_W_INTEGRATOR);
 
-Matrix K(2, N_STATES);
+Matrix K(2, N_STATES_W_INTEGRATOR);
 
 bool on = false;
 bool do_control = false;
@@ -62,12 +63,16 @@ void setup(){
   analogWrite(pin_pwm_elbow, 25);
 
   /* CONTROLLER */
-  K[0][0] = 1; // shoulder Ki;
-  K[0][2] = 1; // Shoulder Kp;
-  K[0][4] = 1; // Shoulder Kd;
-  K[1][1] = 1; // shoulder Ki;
-  K[1][3] = 1; // Shoulder Kp;
-  K[1][5] = 1; // Shoulder Kd;
+  int ki = 216;
+  int kp = 108;
+  int kd = 18;
+
+  K[0][0] = ki; // shoulder Ki;
+  K[0][2] = kp; // Shoulder Kp;
+  K[0][4] = kd; // Shoulder Kd;
+  K[1][1] = ki; // shoulder Ki;
+  K[1][3] = kp; // Shoulder Kp;
+  K[1][5] = kd; // Shoulder Kd;
 
   /*
    * We use small intterups as pseudo tasks
@@ -100,7 +105,7 @@ void pulse() {
 }
 
 /*
-** Function that gets a set of measurements and thansmits them over the Serial0 port.
+** Function that gets a set of measurements and transmits them over the Serial0 port.
 **
 ** Run everytime the RDY_CHAR is received.
 */
@@ -113,12 +118,12 @@ void measure() {
   int iepos, spos, svel, scur;
   int ispos, epos, evel, ecur;
 
-  ispos = (int) (100 * meas[0]);
-  iepos = (int) (100 * meas[1]);
-  spos = (int) (100 * meas[2]);
-  spos = (int) (100 * meas[3]);
-  svel = (int) (100 * meas[4]);
-  svel = (int) (100 * meas[5]);
+  ispos = (int) (100 * e[0]);
+  iepos = (int) (100 * e[1]);
+  spos = (int) (100 * meas[0]);
+  spos = (int) (100 * meas[1]);
+  svel = (int) (100 * meas[2]);
+  svel = (int) (100 * meas[3]);
   scur = (int) (100 * getCur(SHOULDER));
   ecur = (int) (100 * getCur(ELBOW));
 
@@ -190,22 +195,37 @@ void t_ctrl(void *param){
  * Main controller task
  * Gets measurements and applies control
  *
- * Is run with a period of SAMPLE_T_US on hwtimer2
+ * Is run whenever do_control is true
  * states = [i_theta_s i_theta_e theta_s theta_e thetadot_s thetadot_e]
  */
-void ctrl(void *param) {
+void ctrl() {
+  /*
   auto s_pos = getPos(SHOULDER);
   auto e_pos = getPos(ELBOW);
 
-  meas[0] += -1 * SAMPLE_T_S * s_pos; /* Flipped sign as we later do ref - meas */
-  meas[1] += -1 * SAMPLE_T_S * e_pos; /* Flipped sign as we later do ref - meas */
+  meas[0] += -1 * SAMPLE_T_S * s_pos; // Flipped sign as we later do ref - meas 
+  meas[1] += -1 * SAMPLE_T_S * e_pos; // Flipped sign as we later do ref - meas 
   meas[2] = s_pos;
   meas[3] = e_pos;
   meas[4] = getVel(SHOULDER);
   meas[5] = getVel(ELBOW);
+  */
+
+  meas[0] = getPos(SHOULDER);
+  meas[1] = getPos(ELBOW);
+  meas[2] = getVel(SHOULDER);
+  meas[3] = getVel(ELBOW);
+
+  e[0] += SAMPLE_T_S * (ref[0]-meas[0]); 
+  e[1] += SAMPLE_T_S * (ref[1]-meas[1]); 
+  e[2] = ref[0] - meas[0];  
+  e[3] = ref[1] - meas[1];
+  e[4] = ref[2] - meas[2];
+  e[5] = ref[3] - meas[3];
+
 
   // Run cuntroller
-  auto u = controller(meas, ref, K);
+  auto u = controller(meas, e, K);
 
   // Convert torque to current
   u[0] /= Nkt0;
@@ -218,7 +238,7 @@ void ctrl(void *param) {
 /*
  * The interface task revices and performs commands based on inputs from the serial interface
  */
-void interface(void *param){
+void interface(){
   /* Set "enable" signal */
   digitalWrite(pin_on_shoulder, on);
   digitalWrite(pin_on_elbow, on);
@@ -253,11 +273,11 @@ void interface(void *param){
 
 void loop(){
   if (do_control){
-    ctrl(NULL);
+    ctrl();
     do_control = false;
   }
   if (do_interface){
-    interface(NULL);
+    interface();
     do_interface = false;
   }
 }

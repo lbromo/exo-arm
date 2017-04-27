@@ -39,13 +39,13 @@ Matrix AxoArm::get_M_matrix(Vector& x){
   return M;
 }
 
-Vector AxoArm::controller(Vector& x, Vector& ref, Matrix& K){
+
+Vector AxoArm::controller(Vector& x, Vector& e, Matrix& K){
   Vector u; /* Output vector */
   
   auto n = get_N_vector(x);
   auto M = get_M_matrix(x);
 
-  auto e = ref - x;
   auto tmp1 = K * e;
   auto tmp2 = M * tmp1;
   u = tmp2 + n;
@@ -54,6 +54,7 @@ Vector AxoArm::controller(Vector& x, Vector& ref, Matrix& K){
   
   return u;
 }
+
 
 #if defined (__i386__) || defined (__x86_64__)
 Vector tmp(2);
