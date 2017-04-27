@@ -10,6 +10,7 @@ using namespace AxoArm;
 Vector meas(N_STATES);
 Vector ref(N_STATES);
 Vector e(N_STATES_W_INTEGRATOR);
+Vector u(2);
 
 Matrix K(2, N_STATES_W_INTEGRATOR);
 
@@ -63,16 +64,16 @@ void setup(){
   analogWrite(pin_pwm_elbow, 25);
 
   /* CONTROLLER */
-  int ki = 216;
-  int kp = 108;
-  int kd = 18;
+  int ki = 216; // 216;
+  int kp = 108; // 108;
+  int kd = 28;
 
-  K[0][0] = ki; // shoulder Ki;
-  K[0][2] = kp; // Shoulder Kp;
-  K[0][4] = kd; // Shoulder Kd;
-  K[1][1] = ki; // shoulder Ki;
-  K[1][3] = kp; // Shoulder Kp;
-  K[1][5] = kd; // Shoulder Kd;
+  K[0][0] = ki; // 27; // ki; // shoulder Ki;
+  K[0][2] = kp; // 27; // Shoulder Kp;
+  K[0][4] = kd; // 6;  // Shoulder Kd;
+  K[1][1] = ki; // 125;//ki; // elbow Ki;
+  K[1][3] = kp; // 75; // elbow Kp;
+  K[1][5] = kd; // 15; // elbow Kd;
 
   /*
    * We use small intterups as pseudo tasks
@@ -127,7 +128,7 @@ void measure() {
   scur = (int) (100 * getCur(SHOULDER));
   ecur = (int) (100 * getCur(ELBOW));
 
-  sprintf(msg, "%c,%lu,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d", START_CHAR, time, SHOULDER, (int)(100*ref[0]), ispos, spos, svel, scur, ELBOW, (int)(100*ref[1]), iepos, epos, evel, ecur);
+  sprintf(msg, "%c,%lu,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d", START_CHAR, time, SHOULDER, (int)(100*ref[0]), (int)(100*ref[2]), ispos, spos, svel, scur, pwm_shoulder, dir_shoulder, ELBOW, (int)(100*ref[1]),(int)(100*ref[3]), iepos, epos, evel, ecur, pwm_elbow, dir_elbow);
   Serial0.println(msg);
 }
 
@@ -147,10 +148,10 @@ void getRef() {
   vel1_buff = strtok(NULL, ",");
   vel2_buff = strtok(NULL, ",");
 
-  ref[2] = 0.01 * atoi(pos1_buff);
-  ref[3] = 0.01 * atoi(pos2_buff);
-  ref[4] = 0.01 * atoi(vel1_buff);
-  ref[5] = 0.01 * atoi(vel2_buff);
+  ref[0] = 0.01 * atoi(pos1_buff);
+  ref[1] = 0.01 * atoi(pos2_buff);
+  ref[2] = 0.01 * atoi(vel1_buff);
+  ref[3] = 0.01 * atoi(vel2_buff);
 }
 
 /*
@@ -211,6 +212,7 @@ void ctrl() {
   meas[5] = getVel(ELBOW);
   */
 
+
   meas[0] = getPos(SHOULDER);
   meas[1] = getPos(ELBOW);
   meas[2] = getVel(SHOULDER);
@@ -223,9 +225,13 @@ void ctrl() {
   e[4] = ref[2] - meas[2];
   e[5] = ref[3] - meas[3];
 
-
+  // Make sure that we do not integrate when motors are inactive
+  if (on == false){
+    e[0] = 0;
+    e[1] = 0;
+  }
   // Run cuntroller
-  auto u = controller(meas, e, K);
+  u = controller(meas, e, K);
 
   // Convert torque to current
   u[0] /= Nkt0;
