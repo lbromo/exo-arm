@@ -23,6 +23,12 @@ namespace AxoArm{
 	const int N_STATES = 4; // Number of states
 	const int N_STATES_W_INTEGRATOR = 6; // Number of states + the integrator
 
+	// Fix for shitty pos
+	const int MAGIC_VOLTAGE = 3750;
+	const int MAGIC_OFFSET	= 3873;
+	const float MIN_RAD = -0.1745;
+	const float MAX_RAD = 3.3163;
+
 	// Analog inputs
 	const int pin_cur_elbow = A3;
 	const int pin_vel_elbow = A4;
@@ -45,4 +51,5 @@ namespace AxoArm{
 	float getVel(int joint);
 	int cur2pwm(int joint, float cur);
 	int getDir(float u);
+	float map_float(float x, float in_min, float in_max, float out_min, float out_max);
 }

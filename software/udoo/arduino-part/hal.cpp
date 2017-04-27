@@ -1,9 +1,18 @@
 #include "hal.h"
 
 float AxoArm::getPos(int joint) {
+int a_r; 
+float ang_rad;
 
   if (joint == SHOULDER) {
-    return analogRead(pin_pos_shoulder) * -0.001681795 + 3.1331837;
+    a_r = analogRead(pin_pos_shoulder);
+
+    if(a_r < MAGIC_VOLTAGE){
+      a_r += MAGIC_OFFSET;
+    }
+    ang_rad = map_float((float)a_r, (float)5808, (float)3817, MIN_RAD, MAX_RAD);
+    return ang_rad;
+    // return analogRead(pin_pos_shoulder) * -0.001681795 + 3.1331837;
   }
   else if (joint == ELBOW) {
     return analogRead(pin_pos_elbow) * -0.00165696 + 3.4945247;
@@ -76,4 +85,9 @@ int AxoArm::cur2pwm(int joint, float cur) {
 int AxoArm::getDir(float u) {
 
   return (int)(u > 0);
+}
+
+float AxoArm::map_float(float x, float in_min, float in_max, float out_min, float out_max)
+{
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }

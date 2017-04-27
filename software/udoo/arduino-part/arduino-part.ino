@@ -121,13 +121,13 @@ void measure() {
   ispos = (int) (100 * e[0]);
   iepos = (int) (100 * e[1]);
   spos = (int) (100 * meas[0]);
-  spos = (int) (100 * meas[1]);
+  epos = (int) (100 * meas[1]);
   svel = (int) (100 * meas[2]);
-  svel = (int) (100 * meas[3]);
+  evel = (int) (100 * meas[3]);
   scur = (int) (100 * getCur(SHOULDER));
   ecur = (int) (100 * getCur(ELBOW));
 
-  sprintf(msg, "%c,%lu,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d%d,%d", START_CHAR, time, SHOULDER, (int)(100*ref[2]), ispos, spos, svel, scur, ELBOW, (int)(100*ref[3]), iepos, epos, evel, ecur);
+  sprintf(msg, "%c,%lu,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d", START_CHAR, time, SHOULDER, (int)(100*ref[0]), ispos, spos, svel, scur, ELBOW, (int)(100*ref[1]), iepos, epos, evel, ecur);
   Serial0.println(msg);
 }
 
