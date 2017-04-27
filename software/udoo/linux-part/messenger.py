@@ -50,10 +50,16 @@ def tUpdateRef(ser):
                     ser.write(ref_msg)
 
 def tLogger(ser, f):
-    with SER_LOCK:
-        ser.write(READY)
-    log1msg(ser,f)
-    threading.Timer(0.01, tLogger, (ser, f)).start()
+    while True:
+        t_start = time.time()
+        with SER_LOCK:
+            ser.write(READY)
+        log1msg(ser,f)
+        t_sleep = time.time() - t_start;
+
+        if 0 < t_sleep:
+            time.sleep(t_sleep)
+    
 
 
 
@@ -81,20 +87,24 @@ def manual_input_mode(ser, logfile):
 def csv_input_mode(ser, logfile, datafile):
     f = open(logfile, 'w')
     data = np.genfromtxt(datafile,delimiter=',')
+
+    # logger = threading.Thread(target=tLogger, args=(ser, f))
+    # logger.daemon = True
+    # logger.start()
     
     # print(data.shape)
     print(time.time())
     #
-    for idx in range(1,len(data)):
+    for idx in range(1,len(data),4):
         begin = time.time()
         
         ref_msg = REF_CHAR + intTo3Bytes(int(data[idx,0]*100)) + b',' + intTo3Bytes(int(data[idx,0]*100)) + b',' + intTo3Bytes(int(data[idx,1]*100)) + b',' + intTo3Bytes(int(data[idx,1]*100)) + b',' + END_CHAR
+        # with SER_LOCK:
         ser.write(ref_msg)
-        
         ser.write(READY)
-        log1msg(ser,f)
-        
-        sleep_time = 0.01 - (time.time() - begin)
+        log1msg(ser, f)
+    
+        sleep_time = 0.04 - (time.time() - begin)
         if sleep_time > 0:
             time.sleep(sleep_time)
     #
