@@ -68,6 +68,10 @@ function [exo] = exo_sim(controller, x0, ref)
 
 	n = [0.1 0.1 1 1]' .* randn(params.n_s,S);
 
+	d = importdata('minjerk.csv');
+	ref = [d.data(:,1) d.data(:,1) d.data(:,2) d.data(:,2)]';
+
+
 % 8=====================================D
 % SIMULATE
 % 8=====================================D
