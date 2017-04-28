@@ -1,5 +1,5 @@
-import sys, pickle
-from threading import Timer
+import sys, pickle, io
+import time, threading
 import serial
 import numpy as np
 sys.path.append('../../model/mechanics')
@@ -17,56 +17,72 @@ START = str('b\'$\\r\\n\'')
 REF_CHAR = b'R'
 END_CHAR = b'E'
 
+LOGGING = True
+SER_LOCK = threading.Lock()
+
 _angles = None
 _emg = None
 _ser = None
 _logfile = None
 _muscles = None
+_raf = None
 
 ref = np.zeros((4,))
-
 B = 0.25
+
+MAX_LOG_MSG_LEN = 1 + 10 + 11*12
 
 def intTo3Bytes(intvar):
     return str.encode(str(intvar).zfill(3))
 
-def get_angles(ser, logfile):
+def log1msg(ser, logfile):
+    msg = ser.read(ser.in_waiting)
+
+    if msg:
+        msg = msg.replace(b'$,', b'').replace(b'\r', b'')
+        logfile.write(msg)
+
+    return len(msg)
+
+def tLogger(ser, f):
+    while LOGGING:
+        t_start = time.time()
+        with SER_LOCK:
+            ser.write(READY)
+        log1msg(ser,f)
+        time.sleep(0.01)
+
+def get_angles(f):
     global _angles
     """
     Message format:
          [0]       [1]     [2]            [3]              [4]               [5]             [6]        [7]        [8]             [9]         [10]          [11]
     <start char>, time, shoulder, <shoulder pos ref>, <shoulder pos>, <shoulder vel>, <shoulder cur>, elbow, <elbow pos ref>, <elbow pos>, <elbow vel>, <elbow cur>
     """
-    if ser.isOpen():
-        ser.write(READY)
-        initmsg = ser.readline()
-        if not len(initmsg):
-            return
+    offset = -2 * MAX_LOG_MSG_LEN
+    f.seek(offset, io.SEEK_END)
+    buff = f.read(abs(offset))
+    msgs = buff.split(b'\n')
+    lastest_full_msg = msgs[-2]  # The last line may not fu a "fulll" line, so we go 2 back
+    shoulder_angle = int(lastest_full_msg[4]) * 0.01
+    elbow_angle    = int(lastest_full_msg[14]) * 0.01
 
-        initmsg = initmsg.decode()
+    _angles = [shoulder_angle, elbow_angle]
+    return _angles
 
-        if initmsg[0] == START_CHAR:
-            # Removeing the <start char,> -- we have the following left
-            #  [0]    [1]             [2]               [3]             [4]             [5]        [6]        [7]             [8]          [9]         [10]
-            # time, shoulder, <shoulder pos ref>, <shoulder pos>, <shoulder vel>, <shoulder cur>, elbow, <elbow pos ref>, <elbow pos>, <elbow vel>, <elbow cur>
-            msg = initmsg[2:]
-            data_w_units = msg.strip().split(',')
-            logfile.write(','.join(str(x) for x in data_w_units) + '\n')
-
-            shoulder_pos = int(data_w_units[3]) * 0.01
-            elbow_pos = int(data_w_units[8]) * 0.01
-            _angles = [shoulder_pos, elbow_pos]
-            Timer(0.01, get_angles, (ser, logfile)).start()
 
 def update(emg_meas):
+    global _raf
     _emg.on_emg_measurement(emg_meas.sample1)
     _emg.on_emg_measurement(emg_meas.sample2)
 
+    t_start = time.time()
+    angles = get_angles(_raf)
     tau = np.array([0, 0])
     for m in _muslces:
         tmp = np.array([
             0, #m.get_torque_estimate(angles, muscle_utils.MUSCLE_JOINT.SHOULDER),
-            m.get_torque_estimate(_angles, muscle_utils.MUSCLE_JOINT.ELBOW),
+            m.get_torque_estimate(angles, muscle_utils.MUSCLE_JOINT.ELBOW),
         ])
         if abs(tmp[1]) < 1:
             tmp = 0
@@ -81,7 +97,8 @@ def update(emg_meas):
 
     ref_msg = REF_CHAR + (intTo3Bytes(int(ref[0]*100))) + b',' + (intTo3Bytes(int(ref[1]*100))) + b',' + (intTo3Bytes(int(ref[2]*100))) + b',' + (intTo3Bytes(int(ref[3]*100))) + b',' + END_CHAR
     print(ref_msg)
-    _ser.write(ref_msg)
+    with SER_LOCK:
+        _ser.write(ref_msg)
 
 
 if __name__ == "__main__":
@@ -100,10 +117,12 @@ if __name__ == "__main__":
     if not _ser.isOpen():
         _ser.open()
         print("Serial Open")
-
     _ser.write(STOP)
-    _logfile = open(log_path, 'w')
-    t = Timer(0.01, get_angles, (_ser, _logfile))
+
+    _raf = io.BufferedRandom(io.FileIO(log_path, 'wb+'))
+
+    t = threading.Thread(target=tLogger, args=(_ser, _raf))
+    t.daemon = False
     t.start()
 
     # Setup muscles
@@ -119,8 +138,20 @@ if __name__ == "__main__":
     myo = pymyo.PyMyo(on_emg=update)
     myo.connect()
     myo.enable_services(emg_mode=2)
-    while(1):
-        myo.waitForNotifications()
+    while True:
+        try:
+            myo.waitForNotifications()
+        except KeyboardInterrupt as e:
+            print(e)
+            break
+        except Exception as e:
+            print(e)
+            break
+
+    LOGGING = False
+    t.join()
+    _raf.close()
+    _ser.write(STOP)
 
 
 
