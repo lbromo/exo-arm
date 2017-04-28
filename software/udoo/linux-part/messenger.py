@@ -26,6 +26,16 @@ def log1msg(ser, logfile):
 
     return len(msg)
 
+def tLogger(ser, f):
+    while LOGGING:
+        with SER_LOCK:
+            ser.write(READY)
+        log1msg(ser,f)
+        time.sleep(0.01)
+
+    #ser.reset_output_buffer()
+    #ser.reset_input_buffer()
+
 def updateRef(ser):
     try:
         ref_shoulder, ref_elbow = [int(var) for var in raw_input("Enter new reference: ").split()]
@@ -44,17 +54,6 @@ def updateRef(ser):
         ref_msg = REF_CHAR + (intTo3Bytes(int(ref[0]*100))) + b',' + (intTo3Bytes(int(ref[1]*100))) + b',' + (intTo3Bytes(int(ref[2]*100))) + b',' + (intTo3Bytes(int(ref[3]*100))) + b',' + END_CHAR
         with SER_LOCK:
             ser.write(ref_msg)
-
-def tLogger(ser, f):
-    while LOGGING:
-        t_start = time.time()
-        with SER_LOCK:
-            ser.write(READY)
-        log1msg(ser,f)
-        time.sleep(0.01)
-
-    #ser.reset_output_buffer()
-    #ser.reset_input_buffer()
 
 def manual_input_mode(ser, logger_h, log_file_h):
     global LOGGING
@@ -102,7 +101,6 @@ def csv_input_mode(ser, logger_h, log_file_h, datafile):
 
     ser.write(b'S')
     ser.close()
-
 
 if __name__ == "__main__":
     import sys
