@@ -22,6 +22,7 @@ SER_LOCK = threading.Lock()
 
 _angles = None
 _emg = None
+_emg_logger = None
 _ser = None
 _logfile = None
 _muscles = None
@@ -136,6 +137,8 @@ if __name__ == "__main__":
         pars = pickle.load(f)
 
     _emg = emg.EMG()
+    _emg_logger = emg.EMG_logger(log_path + '.emg')
+    _emg.register_observer(_emg_logger)
     _muslces = muscle.create_muscles(pars)
 
     for m in _muslces:
