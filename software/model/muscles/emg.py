@@ -29,7 +29,7 @@ class EMG_logger():
     def __init__(self, log_file):
         self.log_file = log_file
         self.f  = open(log_file, 'w')
-        self.f.write('POD1,POD2,POD3,POD4,POD5,POD6,POD7,POD8')
+        self.f.write('POD1,POD2,POD3,POD4,POD5,POD6,POD7,POD8\n')
 
     def notify(self, observable, emg):
         line = ','.join(map(str, emg))
