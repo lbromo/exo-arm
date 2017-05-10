@@ -3,7 +3,7 @@ import numpy as np
 
 # join 1 -- shoulder to elbow
 l1 = 224e-3
-a1 = 330e-3
+a1 = 320e-3
 m1 = 1491.070e-3
 
 I1_xx = 17401661.51e-9
