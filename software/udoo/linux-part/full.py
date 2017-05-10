@@ -2,11 +2,15 @@ import sys, pickle, io
 import time, threading
 import serial
 import numpy as np
+import scipy.signal as sc
 sys.path.append('../../model/mechanics')
 sys.path.append('../../model/muscles')
 import mech_arm
 import activation_signal
 import muscle, muscle_utils, emg, pymyo
+
+from collections import deque
+from iir_filter import iir_filter
 
 BAUD = 230400
 
@@ -22,13 +26,26 @@ SER_LOCK = threading.Lock()
 
 _angles = None
 _emg = None
+_emg_logger = None
 _ser = None
 _logfile = None
 _muscles = None
 _raf = None
 
+M = 1
+B = 1
+D = 0
+
+tau = deque([0]*3, maxlen=3)
+vel = deque([0]*3, maxlen=3)
+num = [0, 1, 0]
+den = [M, B, D]
+sysd = sc.cont2discrete( (num, den), dt=0.01, method='tustin')
+numd = sysd[0][0]
+dend = sysd[1]
+
+
 ref = np.zeros((4,))
-B = 0.25
 
 MAX_LOG_MSG_LEN = 1 + 10 + 11*12
 
@@ -63,8 +80,9 @@ def get_angles(f):
     f.seek(offset, io.SEEK_END)
     buff = f.read(abs(offset))
     msgs = buff.split(b'\n')
-    lastest_full_msg = msgs[-2]  # The last line may not fu a "fulll" line, so we go 2 back
-    shoulder_angle = int(lastest_full_msg[4]) * 0.01
+    lastest_full_msg = msgs[-2]  # The last line may not fu a "full" line, so we go 2 back
+    lastest_full_msg = lastest_full_msg.decode('ascii').split(',')
+    shoulder_angle = int(lastest_full_msg[5]) * 0.01
     elbow_angle    = int(lastest_full_msg[14]) * 0.01
 
     _angles = [shoulder_angle, elbow_angle]
@@ -76,27 +94,36 @@ def update(emg_meas):
     _emg.on_emg_measurement(emg_meas.sample1)
     _emg.on_emg_measurement(emg_meas.sample2)
 
-    t_start = time.time()
     angles = get_angles(_raf)
-    tau = np.array([0, 0])
+    tau_tmp = np.array([0, 0])
     for m in _muslces:
         tmp = np.array([
             0, #m.get_torque_estimate(angles, muscle_utils.MUSCLE_JOINT.SHOULDER),
-            m.get_torque_estimate(angles, muscle_utils.MUSCLE_JOINT.ELBOW),
+            m.get_torque_estimate([angles[1], angles[0]], muscle_utils.MUSCLE_JOINT.ELBOW),
         ])
-        if abs(tmp[1]) < 1:
-            tmp = 0
-        tau = tau + tmp
+        #if abs(tmp[1]) < 1:
+        #    tmp = 0
+        tau_tmp = tau_tmp + tmp
 
-    tmp = tau * B
+    tau.append(tau_tmp[1])
+    tmp = iir_filter(numd, dend, tau, vel)
+    vel.append(tmp)
+    #print("tau:", tau)
+    #print('vel:', vel)
+    
+    ref[0] = 0#angles[0] + 0.01 * ref[2]
+    ref[1] = angles[1] + 0.01 * tmp
+    ref[2] = 0#tmp[0]
+    ref[3] = tmp
 
-    ref[0] = ref[0] + ref[2] * 0.01
-    ref[1] = ref[1] + ref[3] * 0.01
-    ref[2] = tmp[0]
-    ref[3] = tmp[1]
+    # if ref[0] > np.pi/2:
+    #     ref[0] = np.pi/2
+    # if ref[1] > np.pi/2:
+    #     ref[1] = np.pi/2
 
     ref_msg = REF_CHAR + (intTo3Bytes(int(ref[0]*100))) + b',' + (intTo3Bytes(int(ref[1]*100))) + b',' + (intTo3Bytes(int(ref[2]*100))) + b',' + (intTo3Bytes(int(ref[3]*100))) + b',' + END_CHAR
-    print(ref_msg)
+
+    print('{},{}'.format(time.time(), ref_msg.decode('ascii')))
     with SER_LOCK:
         _ser.write(ref_msg)
 
@@ -130,6 +157,8 @@ if __name__ == "__main__":
         pars = pickle.load(f)
 
     _emg = emg.EMG()
+    _emg_logger = emg.EMG_logger(log_path + '.emg')
+    _emg.register_observer(_emg_logger)
     _muslces = muscle.create_muscles(pars)
 
     for m in _muslces:
@@ -137,6 +166,7 @@ if __name__ == "__main__":
 
     myo = pymyo.PyMyo(on_emg=update)
     myo.connect()
+    myo.set_sleep_mode(sleep_mode=pymyo.lib.myohw_sleep_mode_never_sleep)
     myo.enable_services(emg_mode=2)
     while True:
         try:
