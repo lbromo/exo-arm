@@ -33,12 +33,12 @@ _muscles = None
 _raf = None
 
 M = 1
-B = 1
-D = 0
+B = 10
+D = 1
 
 tau = deque([0]*3, maxlen=3)
 vel = deque([0]*3, maxlen=3)
-num = [0, 1, 0]
+num = [0, B, 0]
 den = [M, B, D]
 sysd = sc.cont2discrete( (num, den), dt=0.01, method='tustin')
 numd = sysd[0][0]
@@ -73,7 +73,7 @@ def get_angles(f):
     global _angles
     """
     Message format:
-         [0]       [1]     [2]            [3]              [4]               [5]             [6]        [7]        [8]             [9]         [10]          [11]
+         [0]       [1]     [2]            [3]              [4]               [5]             [6]        [7]        [8]    software/model/muscles/emg.py         [9]         [10]          [11]
     <start char>, time, shoulder, <shoulder pos ref>, <shoulder pos>, <shoulder vel>, <shoulder cur>, elbow, <elbow pos ref>, <elbow pos>, <elbow vel>, <elbow cur>
     """
     offset = -2 * MAX_LOG_MSG_LEN
@@ -82,10 +82,11 @@ def get_angles(f):
     msgs = buff.split(b'\n')
     lastest_full_msg = msgs[-2]  # The last line may not fu a "full" line, so we go 2 back
     lastest_full_msg = lastest_full_msg.decode('ascii').split(',')
-    shoulder_angle = int(lastest_full_msg[5]) * 0.01
-    elbow_angle    = int(lastest_full_msg[14]) * 0.01
+    shoulder_angle = int(lastest_full_msg[5])  * 0.01 if int(lastest_full_msg[5]) * 0.01 > 0 else 0
+    elbow_angle    = int(lastest_full_msg[14]) * 0.01 if int(lastest_full_msg[14]) * 0.01 > 0 else 0
 
     _angles = [shoulder_angle, elbow_angle]
+
     return _angles
 
 
