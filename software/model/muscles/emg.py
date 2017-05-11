@@ -29,11 +29,14 @@ class EMG_logger():
     def __init__(self, log_file):
         self.log_file = log_file
         self.f  = open(log_file, 'w')
-        self.f.write('POD1,POD2,POD3,POD4,POD5,POD6,POD7,POD8\n')
+        self.f.write('TIME,POD1,POD2,POD3,POD4,POD5,POD6,POD7,POD8\n')
 
     def notify(self, observable, emg):
         line = ','.join(map(str, emg))
-        self.f.write(line + '\n')
+        self.f.write("{},{}\n".format(
+            time.time(),
+            line)
+        )
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
