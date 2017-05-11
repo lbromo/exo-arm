@@ -31,10 +31,11 @@ _ser = None
 _logfile = None
 _muscles = None
 _raf = None
+_raf_lock = threading.Lock()
 
 M = 1
-B = 10
-D = 1
+B = 8
+D = 0
 
 tau = deque([0]*3, maxlen=3)
 vel = deque([0]*3, maxlen=3)
@@ -57,7 +58,8 @@ def log1msg(ser, logfile):
 
     if msg:
         msg = msg.replace(b'$,', b'').replace(b'\r', b'')
-        logfile.write(msg)
+        with _raf_lock:
+            logfile.write(msg)
 
     return len(msg)
 
@@ -67,7 +69,7 @@ def tLogger(ser, f):
         with SER_LOCK:
             ser.write(READY)
         log1msg(ser,f)
-        time.sleep(0.01)
+        time.sleep(0.008)
 
 def get_angles(f):
     global _angles
@@ -77,8 +79,11 @@ def get_angles(f):
     <start char>, time, shoulder, <shoulder pos ref>, <shoulder pos>, <shoulder vel>, <shoulder cur>, elbow, <elbow pos ref>, <elbow pos>, <elbow vel>, <elbow cur>
     """
     offset = -2 * MAX_LOG_MSG_LEN
-    f.seek(offset, io.SEEK_END)
-    buff = f.read(abs(offset))
+    with _raf_lock:
+        f.seek(offset, io.SEEK_END)
+        buff = f.read(abs(offset))
+        f.seek(0, io.SEEK_END)
+
     msgs = buff.split(b'\n')
     lastest_full_msg = msgs[-2]  # The last line may not fu a "full" line, so we go 2 back
     lastest_full_msg = lastest_full_msg.decode('ascii').split(',')
