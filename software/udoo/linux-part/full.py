@@ -33,6 +33,9 @@ _muscles = None
 _raf = None
 _raf_lock = threading.Lock()
 
+_ref_log = None
+
+
 M = 1
 B = 8
 D = 0
@@ -128,8 +131,9 @@ def update(emg_meas):
     #     ref[1] = np.pi/2
 
     ref_msg = REF_CHAR + (intTo3Bytes(int(ref[0]*100))) + b',' + (intTo3Bytes(int(ref[1]*100))) + b',' + (intTo3Bytes(int(ref[2]*100))) + b',' + (intTo3Bytes(int(ref[3]*100))) + b',' + END_CHAR
-
-    print('{},{}'.format(time.time(), ref_msg.decode('ascii')))
+    print_msg = '{},{}'.format(time.time(), ref_msg.decode('ascii'))
+    print(print_msg)
+    _ref_log.write(print_msg + '\n')
     with SER_LOCK:
         _ser.write(ref_msg)
 
@@ -153,6 +157,7 @@ if __name__ == "__main__":
     _ser.write(STOP)
 
     _raf = io.BufferedRandom(io.FileIO(log_path, 'wb+'))
+    _ref_log = open(log_path + '.ref', 'w')
 
     t = threading.Thread(target=tLogger, args=(_ser, _raf))
     t.daemon = False
@@ -169,6 +174,14 @@ if __name__ == "__main__":
 
     for m in _muslces:
         _emg.register_observer(m._activation_signal)
+
+    tmp = 0
+    _muslces[0]._activation_signal._d = tmp
+    _muslces[1]._activation_signal._d = tmp
+
+    # _muslces[0].Fcemax = _muslces[0].Fcemax * 1.5 for test1
+    _muslces[0].Fcemax = _muslces[0].Fcemax
+    _muslces[1].Fcemax = _muslces[1].Fcemax
 
     myo = pymyo.PyMyo(on_emg=update)
     myo.connect()
@@ -187,6 +200,7 @@ if __name__ == "__main__":
     LOGGING = False
     t.join()
     _raf.close()
+    _ref_log.close()
     _ser.write(STOP)
 
 
