@@ -24,10 +24,16 @@ namespace AxoArm{
 	const int N_STATES_W_INTEGRATOR = 6; // Number of states + the integrator
 
 	// Fix for shitty pos
+	// SHOULDER
 	const int MAGIC_VOLTAGE = 3750;
 	const int MAGIC_OFFSET	= 3873;
 	const float MIN_RAD = -0.1745;
 	const float MAX_RAD = 3.3163;
+	// ELBOW
+	const int E_MAX_ADC = 2147;
+	const int E_MIN_ADC = 710;
+	const float E_MIN_RAD = 0;
+	const float E_MAX_RAD = 2.5656;
 
 	// Analog inputs
 	const int pin_cur_elbow = A3;

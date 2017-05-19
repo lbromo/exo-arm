@@ -15,7 +15,9 @@ float ang_rad;
     // return analogRead(pin_pos_shoulder) * -0.001681795 + 3.1331837;
   }
   else if (joint == ELBOW) {
-    return analogRead(pin_pos_elbow) * -0.00165696 + 3.4945247;
+    a_r = analogRead(pin_pos_elbow);
+    ang_rad = map_float((float)a_r, (float)E_MAX_ADC, (float)E_MIN_ADC, E_MIN_RAD, E_MAX_RAD);
+    return ang_rad;
   }
   else {
     return 0;
