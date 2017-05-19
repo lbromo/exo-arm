@@ -4,6 +4,7 @@
 
 namespace AxoArm{
   Vector controller(Vector& x, Vector& e, Matrix& K);
+  Vector controller2(Vector& x, Vector& tau);
   Vector get_N_vector(Vector& x);
   Matrix get_M_matrix(Vector& x);
 }
