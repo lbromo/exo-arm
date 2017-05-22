@@ -231,13 +231,12 @@ void ctrl() {
     e[1] = 0;
   }
   // Run cuntroller
-  // u = controller(meas, e, K);
-  Vector tau(2);
-  
-  tau[0] = ref[2];
-  tau[1] = ref[3];
+  u = controller(meas, e, K);
 
-  u = controller2(meas, tau);
+  // Vector tau(2);
+  // tau[0] = ref[2];
+  // tau[1] = ref[3];
+  // u = controller2(meas, tau);
 
   // Convert torque to current
   u[0] /= Nkt0;
