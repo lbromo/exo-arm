@@ -48,7 +48,6 @@ sysd = sc.cont2discrete( (num, den), dt=0.01, method='tustin')
 numd = sysd[0][0]
 dend = sysd[1]
 
-
 ref = np.zeros((4,))
 
 MAX_LOG_MSG_LEN = 1 + 10 + 11*12
@@ -99,7 +98,7 @@ def get_angles(f):
 
 
 def update(emg_meas):
-    global _raf
+    global _raf, tau_int, tau_diff
     _emg.on_emg_measurement(emg_meas.sample1)
     _emg.on_emg_measurement(emg_meas.sample2)
 
@@ -110,28 +109,30 @@ def update(emg_meas):
             0, #m.get_torque_estimate(angles, muscle_utils.MUSCLE_JOINT.SHOULDER),
             m.get_torque_estimate([angles[1], angles[0]], muscle_utils.MUSCLE_JOINT.ELBOW),
         ])
-        #if abs(tmp[1]) < 1:
-        #    tmp = 0
+        # HACK used in <best.log> with 8*s/(s+8)
+        if m.muscle_type == muscle_utils.MUSCLE_NAME.BICEPS_BRACHII:
+            tmp = 1.5 * tmp
         tau_tmp = tau_tmp + tmp
 
     tau.append(tau_tmp[1])
     tmp = iir_filter(numd, dend, tau, vel)
     vel.append(tmp)
-    #print("tau:", tau)
-    #print('vel:', vel)
-    
-    ref[0] = 0#angles[0] + 0.01 * ref[2]
+
+#    tmp = 2.5*tau_tmp[1]
+
+    ref[0] = 0
     ref[1] = angles[1] + 0.01 * tmp
-    ref[2] = 0#tmp[0]
+    ref[2] = 0
     ref[3] = tmp
 
-    # if ref[0] > np.pi/2:
-    #     ref[0] = np.pi/2
-    # if ref[1] > np.pi/2:
-    #     ref[1] = np.pi/2
-
     ref_msg = REF_CHAR + (intTo3Bytes(int(ref[0]*100))) + b',' + (intTo3Bytes(int(ref[1]*100))) + b',' + (intTo3Bytes(int(ref[2]*100))) + b',' + (intTo3Bytes(int(ref[3]*100))) + b',' + END_CHAR
-    print_msg = '{},{}'.format(time.time(), ref_msg.decode('ascii'))
+
+    print_msg = "{},{},{},{},{},{},{}".format(
+        time.time(),
+        ref[0], ref[1],
+        ref[2], ref[3],
+        0, tmp,
+    )
     print(print_msg)
     _ref_log.write(print_msg + '\n')
     with SER_LOCK:
@@ -158,6 +159,7 @@ if __name__ == "__main__":
 
     _raf = io.BufferedRandom(io.FileIO(log_path, 'wb+'))
     _ref_log = open(log_path + '.ref', 'w')
+    _ref_log.write("time,spos,epos,svel,evel,stau,etau" + '\n')
 
     t = threading.Thread(target=tLogger, args=(_ser, _raf))
     t.daemon = False
