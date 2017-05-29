@@ -22,6 +22,7 @@ import mmrf2
 
 ts = 0.01
 padding = int(10/ts)
+_mse = []
 
 angles_in = [mre7.angles_in,
              [0]*padding,
@@ -131,7 +132,7 @@ NR_MUSCLES = 2
 
 class FlexProblem(problem.base):
 
-    def __init__(self, dim=13*NR_MUSCLES, fdim=1, cdim=2*NR_MUSCLES):
+    def __init__(self, dim=13*NR_MUSCLES, fdim=1, cdim=0*NR_MUSCLES):
         super(FlexProblem, self).__init__(dim, 0, fdim, cdim)
 
 
@@ -151,7 +152,7 @@ class FlexProblem(problem.base):
 
         self.set_bounds(
             [-1, -1, 0.01, 0.01,  200, 100, 100,   500, 0.5,  1,  1, 0.1, 0.1]*NR_MUSCLES,
-            [ 1,  1,    1,  0.1, 900, 400, 400, 10000,   1, 20, 20,   1,   1]*NR_MUSCLES
+            [ 1,  1,    1,  0.1,  900, 400, 400, 10000,   1, 20, 20,   1,   1]*NR_MUSCLES
         )
 
 
@@ -200,6 +201,7 @@ class FlexProblem(problem.base):
         return muscles
 
     def simulate(self, muscles):
+        print('sim')
         # Prepare for EMG measurements
         for m in muscles:
             if not m.muscle_type == muscle_utils.MUSCLE_NAME.BRACHIORADIALIS:
@@ -250,6 +252,7 @@ class FlexProblem(problem.base):
         return torque, actvation, taus
 
     def _objfun_impl(self, x):
+        global _mse
         muscles = self.set_up_muscles(x)
         est, _, _ = self.simulate(muscles)
 
@@ -258,24 +261,32 @@ class FlexProblem(problem.base):
         # Normalized root-mean-square deviation
         nrmse = np.sqrt(mse) / (max(self.y) - min(self.y))
 
-        print('MSE:', mse)
-
-        return (mse,)
-
-    def _compute_constraints_impl(self, x):
+        print('constraints')
         n = 13
         muscles_sets = [x[i:i+n] for i in range(0, len(x), n)]
 
         i = 0
+
         out = [0] * 2 * NR_MUSCLES
         for xm in muscles_sets:
-            out[i] = 0 if xm[0] * xm[1] or (xm[0] < 0 and xm[1] < 0) else 1
+            # C_1 and C_2 both negative
+            if all(c < 0 for c in xm[0:2]) or any(c < 0 for c in xm[0:2]) and abs(xm[0]) > abs(xm[1]):
+                pass
+            else:
+                mse = mse + 1e6
             i = i + 1
-            out[i] = 0 if xm[4] > (xm[5] + xm[6]) else 1
+
+            if not xm[4] > (xm[5] + xm[6]):
+                mse = mse + 1e3
             i = i +1
 
-        return tuple(out)
+            print(xm[0:2])
+            print("%d > %d + %d" % (xm[4], xm[5], xm[6]))
 
+        _mse.append(mse)
+        print('MSE:', mse)
+
+        return (mse,)
 
 
 if __name__ == '__main__':
@@ -289,15 +300,15 @@ if __name__ == '__main__':
 
     prob = FlexProblem()
 
-    algo = algorithm.pso(gen=1000, eta1=0.9, eta2=1)  # 500 generations of bee_colony algorithm
+    algo = algorithm.pso(gen=10)  # 500 generations of bee_colony algorithm
     #isl = island(algo, prob, 500)  # Instantiate population with 20 individuals
     #isl.evolve(1)  # Evolve the island once
     #isl.join()
 
-    archi = archipelago(algo,prob, 1, 1000)
+    archi = archipelago(algo,prob, 2, 2)
 
     #And we start the evolution loops (each evolve will advance each island 10 generation)
-    archi.evolve(1)
+    archi.evolve(10)
     archi.join()
 
     val, idx = min((val, idx) for (idx, val) in enumerate([isl.population.champion.f for isl in archi]))
@@ -305,7 +316,10 @@ if __name__ == '__main__':
 
     best = [isl.population.champion.x for isl in archi][idx]
 
-    out = {'MSE': val}
+    out = {
+        'BEST_MSE': val,
+        'MSE': _mse
+    }
     muscle_names = [
             muscle_utils.MUSCLE_NAME.TRICEPS_BRACHII,
             muscle_utils.MUSCLE_NAME.BICEPS_BRACHII,
