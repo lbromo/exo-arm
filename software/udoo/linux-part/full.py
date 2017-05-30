@@ -35,6 +35,7 @@ _raf_lock = threading.Lock()
 
 _ref_log = None
 
+_t_start = None
 
 M = 1
 B = 8
@@ -77,7 +78,7 @@ def get_angles(f):
     global _angles
     """
     Message format:
-         [0]       [1]     [2]            [3]              [4]               [5]             [6]        [7]        [8]    software/model/muscles/emg.py         [9]         [10]          [11]
+         [0]       [1]     [2]            [3]              [4]               [5]             [6]        [7]        [8]             [9]         [10]          [11]
     <start char>, time, shoulder, <shoulder pos ref>, <shoulder pos>, <shoulder vel>, <shoulder cur>, elbow, <elbow pos ref>, <elbow pos>, <elbow vel>, <elbow cur>
     """
     offset = -2 * MAX_LOG_MSG_LEN
@@ -118,20 +119,20 @@ def update(emg_meas):
     tmp = iir_filter(numd, dend, tau, vel)
     vel.append(tmp)
 
-#    tmp = 2.5*tau_tmp[1]
+    #tmp = 2.5*tau_tmp[1]
 
     ref[0] = 0
     ref[1] = angles[1] + 0.01 * tmp
     ref[2] = 0
-    ref[3] = tmp
+    ref[3] = 2*tau_tmp[1]
 
     ref_msg = REF_CHAR + (intTo3Bytes(int(ref[0]*100))) + b',' + (intTo3Bytes(int(ref[1]*100))) + b',' + (intTo3Bytes(int(ref[2]*100))) + b',' + (intTo3Bytes(int(ref[3]*100))) + b',' + END_CHAR
 
     print_msg = "{},{},{},{},{},{},{}".format(
-        time.time(),
+        time.time() - t_start,
         ref[0], ref[1],
         ref[2], ref[3],
-        0, tmp,
+        tau_tmp[0], tau_tmp[1]
     )
     print(print_msg)
     _ref_log.write(print_msg + '\n')
@@ -161,10 +162,6 @@ if __name__ == "__main__":
     _ref_log = open(log_path + '.ref', 'w')
     _ref_log.write("time,spos,epos,svel,evel,stau,etau" + '\n')
 
-    t = threading.Thread(target=tLogger, args=(_ser, _raf))
-    t.daemon = False
-    t.start()
-
     # Setup muscles
     with open('../../../software/model/2muslces_cleaned.pickle', 'rb') as f:
         pars = pickle.load(f)
@@ -189,6 +186,12 @@ if __name__ == "__main__":
     myo.connect()
     myo.set_sleep_mode(sleep_mode=pymyo.lib.myohw_sleep_mode_never_sleep)
     myo.enable_services(emg_mode=2)
+
+    t = threading.Thread(target=tLogger, args=(_ser, _raf))
+    t.daemon = False
+    t.start()
+
+    t_start = time.time()
     while True:
         try:
             myo.waitForNotifications()
