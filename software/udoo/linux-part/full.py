@@ -140,7 +140,8 @@ def update(emg_meas):
     if ref[1] < 0:
     	ref[1] = 0
 
-    ref_msg = REF_CHAR + (intTo3Bytes(int(ref[0]*100))) + b',' + (intTo3Bytes(int(ref[1]*100))) + b',' + (intTo3Bytes(int(ref[2]*100))) + b',' + (intTo3Bytes(int(ref[3]*100))) + b',' + END_CHAR
+    # ref_msg = REF_CHAR + (intTo3Bytes(int(ref[0]*100))) + b',' + (intTo3Bytes(int(ref[1]*100))) + b',' + (intTo3Bytes(int(ref[2]*100))) + b',' + (intTo3Bytes(int(ref[3]*100))) + b',' + END_CHAR
+    re_msg = REF_CHAR + (int(ref[0]*10000)) + b',' + (int(ref[1]*10000)) + b',' + (int(ref[2]*10000)) + b',' + (int(ref[3]*10000)) + b',' + END_CHAR
 
     print_msg = "{},{},{},{},{},{},{}".format(
         time.time() - t_start,
