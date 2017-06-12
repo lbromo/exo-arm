@@ -53,6 +53,9 @@ ref = np.zeros((4,))
 
 MAX_LOG_MSG_LEN = 1 + 10 + 11*12
 
+# Hacky flag
+first = True
+
 def intTo3Bytes(intvar):
     return str.encode(str(intvar).zfill(3))
 
@@ -121,10 +124,21 @@ def update(emg_meas):
 
     #tmp = 2.5*tau_tmp[1]
 
+	if first == True:
+		ref[1] = angles[1]
+		first == False
+
     ref[0] = 0
-    ref[1] = angles[1] + 0.01 * tmp
+    # ref[1] = angles[1] + 0.01 * tmp
+    ref[1] = ref[1] + 0.01 * tmp
     ref[2] = 0
     ref[3] = 2*tau_tmp[1]
+
+    # Antiwindup
+    if ref[1] > 1.6:
+    	ref[1] = 1.6
+    if ref[1] < 0:
+    	ref[1] = 0
 
     ref_msg = REF_CHAR + (intTo3Bytes(int(ref[0]*100))) + b',' + (intTo3Bytes(int(ref[1]*100))) + b',' + (intTo3Bytes(int(ref[2]*100))) + b',' + (intTo3Bytes(int(ref[3]*100))) + b',' + END_CHAR
 
