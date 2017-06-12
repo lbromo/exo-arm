@@ -148,10 +148,10 @@ void getRef() {
   vel1_buff = strtok(NULL, ",");
   vel2_buff = strtok(NULL, ",");
 
-  ref[0] = 0.01 * atoi(pos1_buff);
-  ref[1] = 0.01 * atoi(pos2_buff);
-  ref[2] = 0.01 * atoi(vel1_buff);
-  ref[3] = 0.01 * atoi(vel2_buff);
+  ref[0] = 0.0001 * atoi(pos1_buff);
+  ref[1] = 0.0001 * atoi(pos2_buff);
+  ref[2] = 0.0001 * atoi(vel1_buff);
+  ref[3] = 0.0001 * atoi(vel2_buff);
 }
 
 /*
