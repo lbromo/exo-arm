@@ -64,9 +64,9 @@ void setup(){
   analogWrite(pin_pwm_elbow, 25);
 
   /* CONTROLLER */
-  int ki = 216;
-  int kp = 108;
-  int kd = 18; //50;
+  int ki = 0; //216;
+  int kp = 0; //108;
+  int kd = 38; //50;
 
   K[0][0] = ki; // 27; // ki; // shoulder Ki;
   K[0][2] = kp; // 27; // Shoulder Kp;
